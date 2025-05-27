@@ -1,0 +1,23 @@
+@use "../../styles/variables" as *
+
+.stock
+  &__container
+    height: 350px
+    width: 100%
+    border: 1px solid #000
+
+.swiper-pagination-bullet-active
+  transform: scale(1.4)
+  background: $mainBlue
+
+.swiper-button
+  &-prev, &-next
+    width: 45px
+    height: 45px
+    border-radius: 50%
+    background: #fff
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2)
+
+    &::after
+      font-size: 20px
+      color: $mainBlue

@@ -1,0 +1,33 @@
+@use "../../styles/variables" as *
+
+.delivery
+  &Block
+    width: 100%
+    background: #ffffff
+    border-radius: 10px
+    position: relative
+
+    &Top
+      position: absolute
+      top: -17px
+      left: 40px
+      height: 35px
+
+      &Block
+        background: $mainBlue
+        color: #ffffff
+        border-radius: 5px
+
+.payment
+  width: 100%
+  display: grid
+  grid-template-columns: repeat(5, 1fr)
+  gap: 20px
+  &Block
+    width: 100%
+    height: 200px
+    border-radius: 10px
+    background: #ffffff
+    img
+      width: 60px
+      height: 60px

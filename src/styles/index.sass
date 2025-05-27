@@ -1,0 +1,129 @@
+@use "./variables" as v
+@use "global"
+
+*,
+*::before,
+*::after
+  box-sizing: border-box
+  margin: 0
+  padding: 0
+  font-family: "Russo One", serif
+
+@font-face
+  font-family: 'Russo One'
+  src: url('/fonts/Russo_One.ttf') format('truetype')
+  font-weight: normal
+  font-style: normal
+  font-display: swap
+
+body
+  background: v.$bodyColor
+  color: v.$mainTextColor
+  font-family: "Russo One", serif
+  font-size: 14px
+
+.header
+  width: 100%
+  height: v.$headerHeight
+
+  &__container
+    max-width: v.$contentWidth
+    width: 100%
+    margin: 0 auto
+    height: 100%
+
+  &__top
+    width: 100%
+
+  &__navigation
+    display: flex
+    gap: 20px
+    font-size: 12px
+
+  &__buttons
+    &-button
+      width: 40px
+      height: 40px
+      border-radius: 50%
+      background: v.$searchInputBg
+
+      &.cart
+        position: relative
+        & > .absolute
+          position: absolute
+          top: -5px
+          right: -5px
+          background: v.$mainRed
+          color: #fff
+          width: 20px
+          height: 20px
+          border-radius: 50%
+
+  &-logo
+    width: 160px
+    height: 53px
+
+  &__search
+    width: 100%
+    max-width: 640px
+
+  &__catalog
+    background: v.$mainBlue
+    color: #fff
+    padding: 5px 10px
+    height: max-content
+    font-size: 14px
+    border-radius: 5px
+    position: relative
+    z-index: 3
+
+    &-full
+      background: #0000006d
+      position: fixed
+      left: 0
+      top: 0
+      z-index: 2
+      width: 100%
+      height: 100vh
+
+    &__menu
+      position: absolute
+      top: 47px
+      background: #fff
+      border-radius: 5px
+      width: 500px
+      height: 400px
+      z-index: 3
+
+    &-lines
+      height: 25px
+      width: 20px
+      margin-right: 8px
+      display: flex
+      flex-direction: column
+      justify-content: center
+
+      & div
+        width: 100%
+        height: 3px
+        border-radius: 5px
+        background: #fff
+
+.main
+  width: 100%
+  min-height: calc(100vh - v.$headerHeight)
+  height: 100%
+  padding: 25px 0
+  display: flex
+  flex-direction: column
+
+  &__container
+    width: 100%
+    max-width: v.$contentWidth
+    height: 100%
+    margin: 0 auto
+    flex: 1
+
+  &__block
+    margin-bottom: 25px
+    width: 100%

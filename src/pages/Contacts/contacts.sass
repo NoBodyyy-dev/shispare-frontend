@@ -1,0 +1,24 @@
+@use "../../styles/_variables" as v
+.contacts
+    &__container
+        display: grid
+        &.top
+            grid-template-columns: 2fr 1fr
+        &.bottom
+            grid-template-columns: repeat(3, 1fr)
+
+    &__block
+        width: 100%
+        height: 100%
+        background: #fff
+        border-radius: 10px
+
+        &.certificate
+            background: no-repeat url("../../../public/about/certificate-image.png") center
+            background-size: 130%
+
+        &-circle
+            width: 40px
+            height: 40px
+            background: v.$mainBlue
+            border-radius: 50%

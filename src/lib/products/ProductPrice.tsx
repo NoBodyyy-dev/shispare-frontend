@@ -1,0 +1,18 @@
+import styles from "./product.module.sass";
+
+type Props = {
+    discount: number;
+    price: number;
+}
+
+export default function ProductPrice(props: Props) {
+    const handlePriceWithDiscount = () => props.price - props.price * props.discount / 100
+    if (props.discount) return <div>
+        <div className={styles.discountValue}>-{props.discount}%</div>
+        <div className="flex-align-center gap-20 mt-5">
+            <p className={`${styles.productCartContentLine} color-gray fz-18`}>{props.price}</p>
+            <p className="color-red fz-24">{handlePriceWithDiscount()} руб.</p>
+        </div>
+    </div>
+    return <p className="fz-24">{props.price} руб.</p>
+}
