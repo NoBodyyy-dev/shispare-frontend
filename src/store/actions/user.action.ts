@@ -16,9 +16,9 @@ export const authenticateFunc = createAsyncThunk(
     "/user/authenticate", async (payload: {
         email: string,
         password: string
-    }, {rejectWithValue}) => {
+    }, {rejectWithValue}): Promise<{ message: string, success: boolean } | undefined> => {
         try {
-            const response = await api.post("/auth/authenticate", payload)
+            const response = await api.post("/auth/login", payload)
             return response.data;
         } catch (e) {
             rejectWithValue(e);
@@ -39,15 +39,33 @@ export const verifyCodeFunc = createAsyncThunk(
     }
 )
 
-export const refreshTokenFunc = createAsyncThunk(
-    "/user/refreshToken", async (payload: {
-        code: string;
-    }, {rejectWithValue}) => {
+export const getMeFunc = createAsyncThunk(
+    "user/getMe", async (_, thunkAPI) => {
         try {
-            const response = await api.post("/auth/refresh", payload)
+            const response = await api.get("/auth/refresh", {withCredentials: true})
+            if (response.status === 200) {
+                const getUser = await api.get("/user/me", {
+                    withCredentials: true,
+                    headers: {
+                        Authorization: `Bearer ${response.data.accessToken}`
+                    }
+                });
+                return {user: getUser.data.user, tokens: response.data}
+            } else return thunkAPI.rejectWithValue(response.data)
+        } catch (e) {
+            return thunkAPI.rejectWithValue(e)
+        }
+    }
+)
+
+export const logoutFunc = createAsyncThunk(
+    "user/logout", async (_, thunkAPI) => {
+        try {
+            const response = await api.post("/auth/logout")
+            if (response.status !== 200) return thunkAPI.rejectWithValue(response.data)
             return response.data;
         } catch (e) {
-            rejectWithValue(e);
+            return thunkAPI.rejectWithValue(e);
         }
     }
 )

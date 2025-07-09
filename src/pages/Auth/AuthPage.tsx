@@ -1,24 +1,25 @@
-// import styles from "./auth.module.sass"
-// import {useState} from "react";
-// import Button from "../../lib/buttons/Button.tsx";
-// import AuthForm from "./AuthForm.tsx";
-// import RegisterForm from "./RegisterForm.tsx";
-//
-// export default function Auth() {
-//     const [isAuth, setIsAuth] = useState<boolean>(true);
-//
-//     return (
-//         <div className="main__container flex-to-center-col">
-//             <div className={`${styles.auth} p-20`}>
-//                 <div className={`${styles.authContainer}`}>
-//                     <div className={`${styles.authBlock}`}>
-//                         {isAuth
-//                             ? <AuthForm/> : <RegisterForm/>
-//                         }
-//                     </div>
-//                     <Button onClick={() => setIsAuth(s => !s)}>Изменить</Button>
-//                 </div>
-//             </div>
-//         </div>
-//     )
-// }
+import {useAppDispatch, useAppSelector} from "../../hooks/state.hook.ts";
+import CodeVerification from "./CodeVerification.tsx";
+import {Auth} from "./Auth.tsx";
+import {useEffect} from "react";
+import {useNavigate} from "react-router-dom";
+import {getMeFunc} from "../../store/actions/user.action.ts";
+
+export const AuthPage = () => {
+    const {successAuth, isAuthenticated} = useAppSelector(state => state.user);
+    const navigate = useNavigate();
+    const dispatch = useAppDispatch();
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            navigate(-1);
+            dispatch(getMeFunc());
+        }
+    }, [isAuthenticated]);
+
+    return (
+        <div className="main__container flex-to-center-col">
+            {successAuth ? <CodeVerification/> : <Auth/>}
+        </div>
+    );
+};

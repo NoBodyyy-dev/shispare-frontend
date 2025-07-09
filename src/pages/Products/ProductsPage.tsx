@@ -6,7 +6,7 @@ import Breadcrumbs from "../../lib/breadcrumbs/Breadcrumbs";
 import Product from "../../lib/products/Product";
 import SkeletonProductCard from "../../lib/skeletons/ProductSkeleton";
 
-export default function Products() {
+export const Products = () => {
     const dispatch = useAppDispatch();
     const {products, isLoadingProducts, curCategory} = useAppSelector(
         (state) => state.product

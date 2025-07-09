@@ -14,7 +14,8 @@ export default function StockSwiper() {
     const {stocks, isLoadingStocks} = useAppSelector(state => state.stock);
 
     useEffect(() => {
-        dispatch(getAllStocks());
+        // dispatch(getAllStocks());
+        console.log("penis")
     }, [dispatch]);
 
     if (isLoadingStocks) {

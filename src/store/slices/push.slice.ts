@@ -1,9 +1,9 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import {store} from "../store.ts";
 
 type Message = {
     id: string;
     text: string;
+    type: 'error' | 'success' | 'warning' | 'info';
 };
 
 type PushMessagesState = {
@@ -21,11 +21,7 @@ const pushSlice = createSlice({
         addMessage: (state, action: PayloadAction<string>) => {
             if (state.messages.length >= 10) return;
             const id = Date.now().toString();
-            state.messages.push({ id, text: action.payload });
-
-            setTimeout(() => {
-                store.dispatch(removeMessage(id));
-            }, 4000);
+            state.messages.push({ id, text: action.payload, type: action.type as 'error' | 'success' | 'warning' | 'info' });
         },
         removeMessage: (state, action: PayloadAction<string>) => {
             state.messages = state.messages.filter((msg) => msg.id !== action.payload);

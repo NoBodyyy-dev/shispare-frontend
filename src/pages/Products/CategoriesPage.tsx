@@ -1,11 +1,11 @@
-import {useEffect} from "react";
+import {FC, useEffect} from "react";
 import {useAppDispatch, useAppSelector} from "../../hooks/state.hook";
 import {getAllCategoriesFunc} from "../../store/actions/category.action";
 import {Link} from "react-router-dom";
 import Breadcrumbs from "../../lib/breadcrumbs/Breadcrumbs.tsx";
 import styles from "./product.page.module.sass"
 
-export default function Categories() {
+export const Categories: FC = () => {
     const dispatch = useAppDispatch();
     const {categories, isLoadingCategory} = useAppSelector(
         (state) => state.category

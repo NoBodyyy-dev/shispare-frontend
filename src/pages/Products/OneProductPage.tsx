@@ -7,7 +7,7 @@ import StarRating from "../../lib/products/StarRating.tsx";
 import styles from "../../lib/products/product.module.sass"
 import Button from "../../lib/buttons/Button.tsx";
 
-export default function OneProductPage() {
+export const OneProductPage: FC = () => {
     const dispatch = useAppDispatch();
     const {product, isLoadingProduct} = useAppSelector(
         (state) => state.product
@@ -110,11 +110,11 @@ export default function OneProductPage() {
                             <p>Расход: <span className="font-roboto">{product.consumption} g/m</span></p>
                             <p>В наличии: <span className="font-roboto">{product.countProducts}</span></p>
                             <p>Категория: <a
-                                    href={`/categories/${product.category?.slug}`}
-                                    className="font-roboto color-blue"
-                                >
-                                    {product.category?.title}
-                                </a>
+                                href={`/categories/${product.category?.slug}`}
+                                className="font-roboto color-blue"
+                            >
+                                {product.category?.title}
+                            </a>
                             </p>
                             <Button
                                 className={`full mt-20 ${isInCart ? "disabled" : ""}`}

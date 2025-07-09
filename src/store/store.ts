@@ -1,3 +1,4 @@
+// store.ts
 import {configureStore} from "@reduxjs/toolkit";
 import productSlice from "./slices/product.slice.ts";
 import userSlice from "./slices/user.slice.ts";
@@ -6,21 +7,24 @@ import stockSlice from "./slices/stock.slice.ts";
 import blogSlice from "./slices/blog.slice.ts";
 import cartSlice from "./slices/cart.slice.ts";
 import pushSlice from "./slices/push.slice.ts";
+import socketSlice from "./slices/socket.slice.ts";
 
 export const store = configureStore({
     middleware: (getDefaultMiddleware) => getDefaultMiddleware({
-            serializableCheck: false,
+        serializableCheck: false,
     }),
     reducer: {
         product: productSlice,
         user: userSlice,
         category: categorySlice,
         stock: stockSlice,
+        socket: socketSlice,
         blog: blogSlice,
         cart: cartSlice,
         push: pushSlice,
     }
 });
 
+// Затем в другом файле (например, types.ts или hooks.ts)
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

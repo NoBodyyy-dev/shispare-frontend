@@ -1,8 +1,9 @@
 import styles from "./about.module.sass"
 import Tabs from "../../lib/tabs/Tabs.tsx";
 import Breadcrumbs from "../../lib/breadcrumbs/Breadcrumbs.tsx";
+import {FC} from "react";
 
-export default function About() {
+export const About: FC = () => {
     const breadcrumbsItems = [
         {
             path: "/",

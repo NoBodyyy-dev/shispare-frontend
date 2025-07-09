@@ -3,18 +3,14 @@ import DeliveryBlock from "./DeliveryBlock.tsx";
 import PaymentBlock from "./PaymentBlock.tsx";
 import Breadcrumbs from "../../lib/breadcrumbs/Breadcrumbs.tsx";
 
-export default function DeliveryPayment() {
+export const DeliveryPayment = () => {
     const items = [
         {path: "/", label: "Главная"},
         {path: "/delivery-payment", label: "Оплата и доставка"},
     ]
 
-
     const deliveryInformation = [
-        {
-            title: "Самовывоз",
-
-        }
+        {title: "Самовывоз"}
     ]
 
     const paymentInformation = [

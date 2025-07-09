@@ -1,8 +1,9 @@
 import Breadcrumbs from "../../lib/breadcrumbs/Breadcrumbs";
 import MainMap from "../../lib/Map/Map";
 import "./contacts.sass";
+import {FC} from "react";
 
-export default function Contacts() {
+export const Contacts: FC = () => {
     const breadcrumbsItems = [
         {path: "/", label: "Главная"},
         {path: `/contacts`, label: "Контакты"},

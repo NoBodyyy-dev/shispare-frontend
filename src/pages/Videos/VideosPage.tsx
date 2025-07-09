@@ -1,6 +1,6 @@
-import React from 'react'
+import {FC} from "react";
 
-export default function VideosPage() {
+export const VideosPage: FC = () => {
   return (
     <div>VideosPage</div>
   )

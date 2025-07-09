@@ -4,7 +4,7 @@ import Button from "../buttons/Button";
 import styles from "./product.module.sass";
 import {useNavigate} from "react-router-dom";
 import StarRating from "./StarRating";
-import {addToCart} from "../../store/slices/cart.slice";
+// import {addToCart} from "../../store/slices/cart.slice";
 import {useAppDispatch, useAppSelector} from "../../hooks/state.hook.ts";
 import ProductPrice from "./ProductPrice.tsx";
 
@@ -20,7 +20,7 @@ export default React.memo(function Product(props: Props) {
 
     const handleAddToCart = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.stopPropagation();
-        dispatch(addToCart(props.productData!));
+        // dispatch(addToCart(props.productData!));
     };
 
     const handleClickCard = (e: React.MouseEvent<HTMLDivElement>) => {

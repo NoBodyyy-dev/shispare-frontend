@@ -5,11 +5,25 @@
   background: #ffffff
   border-radius: 10px
 
-  &Block
-    border: 1px solid #000
-
 .verify
   &Container
     display: grid
     grid-template-columns: repeat(6, 60px)
     gap: 60px
+
+.btn
+  width: 100%
+  background: v.$textGray
+  color: #ffffff
+  height: 40px
+  cursor: default
+
+  &:nth-child(1)
+    border-radius: 5px 0 0 5px
+
+  &:nth-child(2)
+    border-radius: 0 5px 5px 0
+
+  &.active
+    background: v.$mainBlue
+

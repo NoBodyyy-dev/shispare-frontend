@@ -2,10 +2,13 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { ProductInterface } from "../interfaces/product.interface";
 
 const calculateCartTotals = (cart: Record<string, { product: ProductInterface, count: number }>) => {
+    console.log(cart);
     const products = Object.values(cart);
     console.log(products);
-    const totalPrice = products.reduce((sum, data) => sum + data.product.price! * data.count, 0);
-    const discount = products.reduce((sum, data) => sum + (data.product.price! * data.product.discount! / 100) * data.count, 0);
+    const totalPrice = 0
+        //products.reduce((sum, data) => sum + data.product.price! * data.count, 0);
+    const discount = 0
+        // products.reduce((sum, data) => sum + (data.product.price! * data.product.discount! / 100) * data.count, 0);
     const priceWithDiscount = totalPrice - discount;
     const totalProducts = products.length;
 
@@ -63,5 +66,4 @@ const cartSlice = createSlice({
     },
 });
 
-export const { addToCart, decreaseQuantity, removeFromCart, clearCart } = cartSlice.actions;
 export default cartSlice.reducer;

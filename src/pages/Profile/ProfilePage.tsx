@@ -1,6 +1,6 @@
-import React from 'react'
+import {FC} from 'react'
 
-export default function Profile() {
+export const Profile: FC = () => {
   return (
     <div>ProfilePage</div>
   )

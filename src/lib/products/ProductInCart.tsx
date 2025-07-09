@@ -3,7 +3,7 @@ import {ProductInterface} from "../../store/interfaces/product.interface";
 import styles from "./product.module.sass";
 import ProductPrice from "./ProductPrice.tsx";
 import {useAppDispatch} from "../../hooks/state.hook.ts";
-import {addToCart, decreaseQuantity, removeFromCart} from "../../store/slices/cart.slice.ts";
+// import {addToCart, decreaseQuantity, removeFromCart} from "../../store/slices/cart.slice.ts";
 
 type Props = {
     productData: ProductInterface;
@@ -30,10 +30,10 @@ export default React.memo(function ProductInCart(props: Props) {
                 <div className={`flex-align-end-sbetw full-width`}>
                     <ProductPrice discount={props.productData.discount!} price={props.productData.price!}/>
                     <div className="flex">
-                        <div className={styles.productCartDelete} onClick={() => dispatch(removeFromCart(props.productData._id!))} />
-                        <div className={`${styles.productCartAdd} flex-to-center`} onClick={() => dispatch(addToCart(props.productData))}>+</div>
+                        {/*<div className={styles.productCartDelete} onClick={() => dispatch(removeFromCart(props.productData._id!))} />*/}
+                        {/*<div className={`${styles.productCartAdd} flex-to-center`} onClick={() => dispatch(addToCart(2props.productData))}>+</div>*/}
                         {props.count}
-                        <div onClick={() => dispatch(decreaseQuantity(props.productData._id!))}>-</div>
+                        {/*<div onClick={() => dispatch(decreaseQuantity(props.productData._id!))}>-</div>*/}
                     </div>
                 </div>
             </div>

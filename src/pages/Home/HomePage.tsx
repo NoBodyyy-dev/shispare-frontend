@@ -1,4 +1,4 @@
-import {useEffect} from "react";
+import {FC, useEffect} from "react";
 import * as action from "../../store/actions/product.action.ts";
 import {useAppDispatch, useAppSelector} from "../../hooks/state.hook.ts";
 import {Link} from "react-router-dom";
@@ -6,9 +6,10 @@ import Product from "../../lib/products/Product.tsx";
 import SkeletonProductCard from "../../lib/skeletons/ProductSkeleton.tsx";
 import StockSwiper from "./StockSwiper.tsx";
 import MainMap from "../../lib/Map/Map.tsx";
+import {Feedback} from "./Feedback.tsx";
 
 
-export default function Home() {
+export const Home: FC = () => {
     const dispatch = useAppDispatch();
     const {
         isLoadingPopularProducts,
@@ -35,8 +36,8 @@ export default function Home() {
                     <h1 className="title mb-25">Товары по скидке</h1>
                     <div className="products__container">
                         {isLoadingDiscountProducts ? (
-                            [...Array(4)].map(() => {
-                                return <SkeletonProductCard/>;
+                            [...Array(4)].map((value) => {
+                                return <SkeletonProductCard key={`skeleton-${value}`}/>;
                             })
                         ) : discountProducts.length ? (
                             discountProducts.map((product) => {
@@ -51,8 +52,8 @@ export default function Home() {
                     <h1 className="title mb-25">Популярное</h1>
                     <div className="home__products products__container">
                         {isLoadingPopularProducts
-                            ? [...Array(4)].map(() => {
-                                return <SkeletonProductCard/>;
+                            ? [...Array(4)].map((value) => {
+                                return <SkeletonProductCard key={`skel-prod-${value}`}/>;
                             })
                             : popularProducts.map((product) => {
                                 return <Product key={product._id} productData={product}/>;
@@ -68,11 +69,11 @@ export default function Home() {
                 </div>
                 <div className="main__block home__block">
                     <h1 className="title mb-25">Адрес</h1>
-                    <MainMap geomX={38.859358} geomY={45.047813} showInfo={true} />
+                    <MainMap geomX={38.859358} geomY={45.047813} showInfo={true}/>
                 </div>
                 <div className="main__block home__block">
                     <h1 className="title mb-25">Есть вопросы? Оставьте заявку</h1>
-
+                    <Feedback/>
                 </div>
             </div>
         </div>
