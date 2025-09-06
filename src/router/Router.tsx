@@ -21,6 +21,7 @@ import {UsersPage} from "../pages/users/UsersPage.tsx";
 import {Chat} from "../pages/Chat/Chat.tsx";
 import CheckoutPage from "../pages/Cart/CheckoutPage";
 import {OrdersPage} from "../pages/Orders/OrdersPage.tsx";
+import {OneOrderPage} from "../pages/Orders/OneOrderPage.tsx";
 // import CodeVerification from "../pages/Auth/CodeVerification.tsx";
 
 const router = createBrowserRouter([
@@ -43,6 +44,7 @@ const router = createBrowserRouter([
             {path: "/categories/:category-slug/:product-slug", element: <OneProductPage/>},
             {path: "/lk/:id", element: <Lk/>},
             {path: "/orders", element: <OrdersPage/>},
+            {path: "/orders/:orderId", element: <OneOrderPage/>},
             {path: "/profile", element: <Profile/>},
             {path: "/solution", element: <Solution/>},
             {path: "/solution/:solution-slug", element: <OneSolution/>},
