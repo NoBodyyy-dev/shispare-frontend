@@ -1,33 +1,212 @@
-@use "../../styles/variables" as *
+@use "sass:color"
 
-.delivery
-  &Block
-    width: 100%
-    background: #ffffff
-    border-radius: 10px
-    position: relative
+// Variables
+$primary-color: #2c3e50
+$secondary-color: #7f8c8d
+$accent-color: #3498db
+$border-color: #e0e0e0
+$light-bg: #f9f9f9
+$warning-bg: #fff8e1
+$warning-border: #ffc107
+$warning-text: #e65100
 
-    &Top
-      position: absolute
-      top: -17px
-      left: 40px
-      height: 35px
+// Base styles
+.container
+  max-width: 1200px
+  margin: 0 auto
+  padding: 2rem 1rem
+  display: flex
+  flex-direction: column
+  gap: 3rem
 
-      &Block
-        background: $mainBlue
-        color: #ffffff
-        border-radius: 5px
+.pageHeader
+  text-align: center
+  margin-bottom: 1rem
 
-.payment
-  width: 100%
+  h1
+    font-size: clamp(1.8rem, 5vw, 2.5rem)
+    color: $primary-color
+    margin-bottom: 0.5rem
+
+.subtitle
+  font-size: clamp(1rem, 2vw, 1.2rem)
+  color: $secondary-color
+  max-width: 700px
+  margin: 0 auto
+
+// Sections
+.section
+  background: white
+  border-radius: 12px
+  padding: 2rem
+  box-shadow: 0 2px 15px rgba(0,0,0,0.05)
+  margin-bottom: 20px
+
+  h2
+    font-size: 1.5rem
+    color: $primary-color
+    margin-top: 0
+    margin-bottom: 1.5rem
+
+.sectionDescription
+  color: $secondary-color
+  margin-bottom: 2rem
+
+// Delivery cards
+.deliveryGrid
   display: grid
-  grid-template-columns: repeat(5, 1fr)
-  gap: 20px
-  &Block
-    width: 100%
-    height: 200px
-    border-radius: 10px
-    background: #ffffff
-    img
-      width: 60px
-      height: 60px
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr))
+  gap: 1.5rem
+
+.deliveryCard
+  background: $light-bg
+  border-radius: 8px
+  padding: 1.5rem
+  transition: transform 0.3s ease, box-shadow 0.3s ease
+  border: 1px solid $border-color
+
+  &:hover
+    transform: translateY(-5px)
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08)
+
+.cardHeader
+  display: flex
+  align-items: center
+  gap: 1rem
+  margin-bottom: 1rem
+
+.cardIcon
+  width: 48px
+  height: 48px
+
+.cardTitle
+  font-size: 1.3rem
+  margin: 0
+  color: $primary-color
+
+.cardDescription
+  color: $accent-color
+  font-weight: 500
+  margin-bottom: 1rem
+
+.cardDetails
+  padding-left: 1.2rem
+  margin: 0
+
+  li
+    margin-bottom: 0.5rem
+    line-height: 1.5
+    color: $primary-color
+
+    &:last-child
+      margin-bottom: 0
+
+// Pricing factors
+.factorsGrid
+  display: grid
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr))
+  gap: 1.2rem
+  margin-bottom: 2rem
+
+.factorCard
+  display: flex
+  flex-direction: column
+  align-items: center
+  padding: 1rem
+  background: $light-bg
+  border-radius: 6px
+  transition: background 0.2s ease
+
+  &:hover
+    background: color.adjust($light-bg, $lightness: -5%)
+
+.factorIcon
+  width: 40px
+  height: 40px
+  margin-bottom: 0.8rem
+
+.factorText
+  font-weight: 500
+  text-align: center
+  color: $primary-color
+
+.importantNote
+  background: $warning-bg
+  border-left: 4px solid $warning-border
+  padding: 1rem
+  border-radius: 4px
+  margin-top: 1.5rem
+
+  strong
+    color: $warning-text
+
+// Payment methods
+.paymentGrid
+  display: grid
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr))
+  gap: 1rem
+
+.paymentCard
+  display: flex
+  align-items: center
+  gap: 1rem
+  padding: 1rem
+  background: $light-bg
+  border-radius: 6px
+  transition: background 0.2s ease
+
+  &:hover
+    background: color.adjust($light-bg, $lightness: -5%)
+
+.paymentIcon
+  width: 40px
+  height: 40px
+
+.paymentTitle
+  font-size: 1.1rem
+  margin: 0 0 0.2rem 0
+  color: $primary-color
+
+.paymentDescription
+  margin: 0
+  font-size: 0.9rem
+  color: $secondary-color
+
+// Accordion section
+.accordionWrapper
+  display: flex
+  flex-direction: column
+  gap: 0.8rem
+
+.termsList, .policyContent
+  ul, ol
+    padding-left: 1.2rem
+    margin: 0.8rem 0
+
+    li
+      margin-bottom: 0.5rem
+      line-height: 1.5
+
+// Responsive
+@media (max-width: 768px)
+  .section
+    padding: 1.5rem
+
+  .deliveryGrid, .paymentGrid
+    grid-template-columns: 1fr
+
+  .factorsGrid
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr))
+
+@media (max-width: 480px)
+  .container
+    padding: 1.5rem 1rem
+    gap: 2rem
+
+  .cardHeader
+    flex-direction: column
+    text-align: center
+
+  .paymentCard
+    flex-direction: column
+    text-align: center

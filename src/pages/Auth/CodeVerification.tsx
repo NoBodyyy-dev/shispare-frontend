@@ -4,7 +4,7 @@ import * as action from "../../store/actions/user.action.ts";
 import styles from "./auth.module.sass"
 import {MainInput} from "../../lib/input/MainInput.tsx";
 
-export default function CodeVerification() {
+export const CodeVerification = () => {
     const dispatch = useAppDispatch();
     const [code, setCode] = useState<string[]>(new Array(6).fill(''));
     const inputsRef = useRef<HTMLInputElement[]>([]);

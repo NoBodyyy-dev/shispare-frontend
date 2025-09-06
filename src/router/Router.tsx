@@ -17,6 +17,10 @@ import {StockPage} from "../pages/Stock/StockPage.tsx";
 import {VideosPage} from "../pages/Videos/VideosPage.tsx";
 import {AuthPage} from "../pages/Auth/AuthPage.tsx";
 import {Lk} from "../pages/LK/LK.tsx";
+import {UsersPage} from "../pages/users/UsersPage.tsx";
+import {Chat} from "../pages/Chat/Chat.tsx";
+import CheckoutPage from "../pages/Cart/CheckoutPage";
+import {OrdersPage} from "../pages/Orders/OrdersPage.tsx";
 // import CodeVerification from "../pages/Auth/CodeVerification.tsx";
 
 const router = createBrowserRouter([
@@ -27,24 +31,24 @@ const router = createBrowserRouter([
             {path: "/", element: <Home/>},
             {path: "/auth", element: <AuthPage/>},
             {path: "/blog", element: <Blog/>},
-            {path: "/blog/:blog-slug", element: <OneBlog/>},
+            {path: "/blog/:slug", element: <OneBlog/>},
             {path: "/about", element: <About/>},
-            {},
             {path: "/cart", element: <Cart/>},
+            {path: "/cart/checkout", element: <CheckoutPage/>},
+            {path: "/chat", element: <Chat/>},
             {path: "/contacts", element: <Contacts/>},
             {path: "/delivery-payment", element: <DeliveryPayment/>},
             {path: "/categories", element: <Categories/>},
             {path: "/categories/:category-slug", element: <Products/>},
-            {
-                path: "/categories/:category-slug/:product-slug",
-                element: <OneProductPage/>,
-            },
+            {path: "/categories/:category-slug/:product-slug", element: <OneProductPage/>},
             {path: "/lk/:id", element: <Lk/>},
+            {path: "/orders", element: <OrdersPage/>},
             {path: "/profile", element: <Profile/>},
             {path: "/solution", element: <Solution/>},
             {path: "/solution/:solution-slug", element: <OneSolution/>},
             {path: "/stock/:stock-slug", element: <StockPage/>},
             {path: "/videos", element: <VideosPage/>},
+            {path: "/users", element: <UsersPage/>}
         ],
         errorElement: (
             <>

@@ -25,7 +25,10 @@ const socketSlice = createSlice({
     initialState,
     reducers: {
         setSocket: (state, action) => {
-            state.socket = action.payload.socket;
+            state.socket = action.payload;
+        },
+        setOrders: (state, action) => {
+            state.orders = action.payload.orders;
         },
         setConnectionStatus: (state, action: PayloadAction<{ isConnected: boolean }>) => {
             state.isConnected = action.payload.isConnected;
@@ -45,6 +48,8 @@ const socketSlice = createSlice({
         },
         setOnlineAdmins: (state, action: PayloadAction<{ onlineAdmins: string[] }>) => {
             state.onlineAdmins = action.payload.onlineAdmins;
+            console.log('onlineAdmins: ', state.onlineAdmins);
+            console.log(action.payload)
         },
         clearSocket: (state) => {
             if (state.socket) {
@@ -60,6 +65,7 @@ const socketSlice = createSlice({
 
 export const {
     setSocket,
+    setOrders,
     setConnectionStatus,
     setReconnectAttempts,
     setConnectionError,

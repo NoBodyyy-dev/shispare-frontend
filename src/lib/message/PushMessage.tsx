@@ -41,7 +41,6 @@ export const PushMessageList = () => {
             }
         });
 
-        // Очищаем таймеры для удаленных сообщений
         const currentIds = messages.map(msg => msg.id);
         Object.keys(timersRef.current).forEach(id => {
             if (!currentIds.includes(id)) {

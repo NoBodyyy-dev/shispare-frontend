@@ -13,7 +13,7 @@ type Props = {
     isLoading: boolean;
 };
 
-export default memo(function Breadcrumbs(props: Props) {
+export const Breadcrumbs = memo((props: Props) => {
     return (
         <nav aria-label="breadcrumb" className="mb-25">
             <ol className={`${styles["container"]} flex gap-10`}>

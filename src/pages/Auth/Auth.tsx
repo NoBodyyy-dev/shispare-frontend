@@ -1,7 +1,7 @@
 import {FormEvent, useCallback, useEffect, useState} from 'react';
 import styles from "./auth.module.sass";
 import {AuthForm} from "./AuthForm.tsx";
-import Button from "../../lib/buttons/Button.tsx";
+import {Button} from "../../lib/buttons/Button.tsx";
 import {useAppDispatch, useAppSelector} from "../../hooks/state.hook.ts";
 import {authenticateFunc, registerFunc} from "../../store/actions/user.action.ts";
 import {RegisterForm} from "./RegisterForm.tsx";
@@ -23,7 +23,7 @@ const validatePassword = (password: string): { isValid: boolean; errors: string[
 
 export const Auth = () => {
     const dispatch = useAppDispatch();
-    const {isAuthenticated} = useAppSelector(state => state.user);
+    const {isAuthenticated, errorAuthenticated, isLoadingAuthenticated} = useAppSelector(state => state.user);
     const [isAuth, setIsAuth] = useState<boolean>(true);
     const [errors, setErrors] = useState<Record<string, string[]>>({});
 
@@ -120,6 +120,7 @@ export const Auth = () => {
             if (isAuth) await dispatch(authenticateFunc(authData));
             else await dispatch(registerFunc(registerData));
         } catch (error) {
+            console.log(error)
             showError(error instanceof Error ? error.message : "Произошла ошибка");
         }
     }, [isAuth, authData, registerData, dispatch, validateForm, showError]);
@@ -132,6 +133,12 @@ export const Auth = () => {
     useEffect(() => {
         if (isAuthenticated) setAuthData({email: "", password: ""});
     }, [isAuthenticated]);
+
+    useEffect(() => {
+        if (errorAuthenticated) {
+            showError(errorAuthenticated)
+        }
+    }, [errorAuthenticated]);
 
     return (
         <div className={`${styles.auth} p-20`}>
@@ -159,7 +166,7 @@ export const Auth = () => {
                         </p>
                     </div>
 
-                    <Button type="submit" className="full-width">
+                    <Button type="submit" className="full-width" loading={isLoadingAuthenticated}>
                         {isAuth ? "Войти" : "Зарегистрироваться"}
                     </Button>
                 </form>

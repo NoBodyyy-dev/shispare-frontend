@@ -1,10 +1,13 @@
-import {useEffect} from "react";
+import {useEffect, useState} from "react";
 import {useParams} from "react-router-dom";
 import {useAppDispatch, useAppSelector} from "../../hooks/state.hook";
 import {getProductsByCategoryFunc} from "../../store/actions/product.action";
-import Breadcrumbs from "../../lib/breadcrumbs/Breadcrumbs";
-import Product from "../../lib/products/Product";
+import {Breadcrumbs} from "../../lib/breadcrumbs/Breadcrumbs";
+import {Product} from "../../lib/products/Product";
 import SkeletonProductCard from "../../lib/skeletons/ProductSkeleton";
+import {Modal} from "../../lib/modal/Modal.tsx";
+import {CreateCategoryForm} from "./CreateCategoryForm.tsx";
+import {TitleWithCreateButton} from "../../lib/title/TitleWithCreateButton.tsx";
 
 export const Products = () => {
     const dispatch = useAppDispatch();
@@ -12,6 +15,8 @@ export const Products = () => {
         (state) => state.product
     );
     const params = useParams();
+
+    const [openModal, setOpenModal] = useState(false);
 
     const breadcrumbsItems = [
         {path: "/", label: "Главная"},
@@ -23,15 +28,13 @@ export const Products = () => {
     ];
 
     useEffect(() => {
-        console.log(params["category-slug"]);
         dispatch(getProductsByCategoryFunc(params["category-slug"]!));
-        console.log(products);
     }, [dispatch]);
 
     return (
         <div className="main__container products">
-            <Breadcrumbs items={breadcrumbsItems} isLoading={isLoadingProducts} />
-            <h1 className="title mb-25">{curCategory}</h1>
+            <Breadcrumbs items={breadcrumbsItems} isLoading={isLoadingProducts}/>
+            <TitleWithCreateButton title={curCategory} openModal={setOpenModal}/>
             <div className="products__container">
                 {isLoadingProducts
                     ? [...Array(8)].map((_, index) => <SkeletonProductCard key={index}/>)
@@ -39,6 +42,12 @@ export const Products = () => {
                         return <Product key={product._id} productData={product}/>;
                     })}
             </div>
+            {
+                openModal
+                && <Modal modal={openModal} setModal={setOpenModal}>
+                    <CreateCategoryForm/>
+                </Modal>
+            }
         </div>
     );
 }

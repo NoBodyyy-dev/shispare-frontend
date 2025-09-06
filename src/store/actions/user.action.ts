@@ -5,9 +5,10 @@ export const registerFunc = createAsyncThunk(
     "/user/register", async (payload: { fullName: string }, {rejectWithValue}) => {
         try {
             const response = await api.post("/auth/register", payload)
+            if (response.status !== 200) return rejectWithValue(response.data);
             return response.data;
         } catch (e) {
-            rejectWithValue(e);
+            return  rejectWithValue(e);
         }
     }
 )
@@ -16,12 +17,13 @@ export const authenticateFunc = createAsyncThunk(
     "/user/authenticate", async (payload: {
         email: string,
         password: string
-    }, {rejectWithValue}): Promise<{ message: string, success: boolean } | undefined> => {
+    }, {rejectWithValue}) => {
         try {
             const response = await api.post("/auth/login", payload)
+            if (response.status !== 200) return rejectWithValue(response.data);
             return response.data;
         } catch (e) {
-            rejectWithValue(e);
+            return rejectWithValue(e);
         }
     }
 )
@@ -32,9 +34,10 @@ export const verifyCodeFunc = createAsyncThunk(
     }, {rejectWithValue}) => {
         try {
             const response = await api.post("/auth/verify", payload)
+            if (response.status !== 200) return rejectWithValue(response.data);
             return response.data;
         } catch (e) {
-            rejectWithValue(e);
+            return rejectWithValue(e);
         }
     }
 )
@@ -66,6 +69,38 @@ export const logoutFunc = createAsyncThunk(
             return response.data;
         } catch (e) {
             return thunkAPI.rejectWithValue(e);
+        }
+    }
+)
+
+export const getAllUsersFunc = createAsyncThunk(
+    "/user/getAllUsers", async (_, {rejectWithValue}) => {
+        try {
+            const response = await api.get("/user/get-user/all", {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                }
+            })
+            if (response.status !== 200) return rejectWithValue(response.data);
+            return response.data;
+        } catch (e) {
+            rejectWithValue(e);
+        }
+    }
+)
+
+export const getProfileUserFunc = createAsyncThunk(
+    "/user/getProfileUser", async (payload: {id: string}, {rejectWithValue}) => {
+        try {
+            const response = await api.get(`/user/get-user/${payload.id}`, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                }
+            })
+            if (response.status !== 200) return rejectWithValue(response.data);
+            return response.data;
+        } catch (e) {
+            rejectWithValue(e);
         }
     }
 )

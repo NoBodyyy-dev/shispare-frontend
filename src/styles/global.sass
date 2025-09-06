@@ -38,6 +38,7 @@ p
 .full
   &-width
     width: 100%
+
   &-height
     height: 100vh
 
@@ -50,7 +51,7 @@ a
 
 .font
   &-roboto
-    font-family: "Roboto", sans-serif
+    font-family: "Roboto", sans-serif !important
 
 .color
   &-gray
@@ -115,6 +116,26 @@ a
         display: flex
         justify-content: space-between
 
+.ellipsis
+  white-space: nowrap
+  overflow: hidden
+  text-overflow: ellipsis
+
+
+.multi-line-ellipsis
+  display: -webkit-box
+  -webkit-line-clamp: 3
+  -webkit-box-orient: vertical
+  overflow: hidden
+
+.border
+  border: 1px solid #000
+
+.dotted
+  width: 90%
+  height: 10px
+  border-bottom: 1px dotted #000
+
 button
   height: 40px
   background: v.$mainBlue
@@ -123,9 +144,13 @@ button
   outline: none
   width: 100px
   border-radius: 5px
+  cursor: pointer
 
   &.full
     width: 100%
+
+  &:disabled
+    opacity: 0.5
 
 input
   height: 40px

@@ -1,5 +1,10 @@
-import React, { ButtonHTMLAttributes } from "react";
+import {FC, ButtonHTMLAttributes, ReactNode, memo} from "react";
 
-export default function Button(props: ButtonHTMLAttributes<HTMLButtonElement>) {
-  return <button {...props}>{props.children}</button>;
+type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
+    children: ReactNode;
+    loading?: boolean;
 }
+
+export const Button: FC<Props> = memo(({loading = false, children, ...attributes}: Props) => {
+    return <button {...attributes}>{loading ? "Загрузка" : children}</button>;
+})

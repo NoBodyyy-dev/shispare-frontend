@@ -5,6 +5,8 @@ import * as handler from "../handlers/category.handler";
 const initialState: CategoryState = {
   categories: [],
   isLoadingCategory: false,
+  isLoadingCreateCategory: false,
+  errorCreateCategory: "",
 };
 
 const categorySlice = createSlice({
@@ -13,6 +15,7 @@ const categorySlice = createSlice({
   reducers: {},
   extraReducers: (builder: ActionReducerMapBuilder<CategoryState>) => {
     handler.getAllCategoriesHandler(builder);
+    handler.createCategoryHandler(builder);
   },
 });
 

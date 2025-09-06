@@ -8,4 +8,6 @@ export interface CategoryData {
 export interface CategoryState {
   categories: CategoryData[];
   isLoadingCategory: boolean;
+  isLoadingCreateCategory: boolean;
+  errorCreateCategory: string;
 }

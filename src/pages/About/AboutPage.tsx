@@ -1,6 +1,6 @@
 import styles from "./about.module.sass"
 import Tabs from "../../lib/tabs/Tabs.tsx";
-import Breadcrumbs from "../../lib/breadcrumbs/Breadcrumbs.tsx";
+import {Breadcrumbs} from "../../lib/breadcrumbs/Breadcrumbs.tsx";
 import {FC} from "react";
 
 export const About: FC = () => {
@@ -92,8 +92,6 @@ export const About: FC = () => {
             image: "/about/ECOVADIS-logo.png"
         },
     ]
-
-    // const projects = []
 
     return (
         <div className={`main__container`}>

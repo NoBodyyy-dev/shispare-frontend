@@ -1,0 +1,123 @@
+.container
+  max-width: 1200px
+  margin: 0 auto
+  padding: 2rem 1rem
+
+.header
+  display: flex
+  justify-content: space-between
+  align-items: center
+  margin-bottom: 2rem
+
+.loader, .noOrders
+  text-align: center
+  padding: 3rem
+  font-size: 1.2rem
+  color: #666
+
+.profileSection, .ordersSection
+  background: white
+  border-radius: 12px
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08)
+  padding: 2rem
+  margin-bottom: 2rem
+
+  h2
+    margin-top: 0
+    margin-bottom: 1.5rem
+    font-size: 1.5rem
+    color: #333
+
+.profileGrid
+  display: grid
+  grid-template-columns: minmax(150px, 30%) 1fr
+  gap: 1.2rem 1rem
+  font-size: 1.1rem
+
+  .label
+    font-weight: 500
+    color: #555
+
+  .value
+    color: #333
+
+    &.success
+      color: #2ecc71
+      font-weight: 500
+
+    &.error
+      color: #e74c3c
+      font-weight: 500
+
+.ordersGrid
+  display: grid
+  grid-template-columns: repeat(4, 1fr)
+  gap: 1rem
+  font-size: 1rem
+
+  .orderHeader
+    font-weight: 600
+    padding-bottom: 0.5rem
+    border-bottom: 2px solid #eee
+
+  & > div:not(.orderHeader)
+    padding: 0.8rem 0
+    border-bottom: 1px solid #f5f5f5
+
+  .status
+    &-completed
+      color: #27ae60
+      font-weight: 500
+    &-pending
+      color: #f39c12
+    &-canceled
+      color: #e74c3c
+
+.logoutBtn
+  background: #e74c3c
+  color: white
+  padding: 0.6rem 1.5rem
+  border-radius: 8px
+  font-weight: 500
+  transition: background 0.3s
+
+  &:hover
+    background: #c0392b
+
+// Адаптация
+@media (max-width: 900px)
+  .ordersGrid
+    grid-template-columns: repeat(2, 1fr)
+    gap: 0.5rem
+
+    .orderHeader
+      display: none
+
+    & > div:nth-child(4n+1)::before
+      content: "ID: "
+      font-weight: 500
+    & > div:nth-child(4n+2)::before
+      content: "Дата: "
+      font-weight: 500
+    & > div:nth-child(4n+3)::before
+      content: "Сумма: "
+      font-weight: 500
+    & > div:nth-child(4n)::before
+      content: "Статус: "
+      font-weight: 500
+
+@media (max-width: 600px)
+  .profileGrid
+    grid-template-columns: 1fr
+
+  .ordersGrid
+    grid-template-columns: 1fr
+
+  .header
+    flex-direction: column
+    gap: 1rem
+    text-align: center
+
+  .logoutBtn
+    width: 100%
+    max-width: 300px

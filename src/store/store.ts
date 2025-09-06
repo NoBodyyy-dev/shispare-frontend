@@ -8,6 +8,7 @@ import blogSlice from "./slices/blog.slice.ts";
 import cartSlice from "./slices/cart.slice.ts";
 import pushSlice from "./slices/push.slice.ts";
 import socketSlice from "./slices/socket.slice.ts";
+import orderSlice from "./slices/order.slice.ts";
 
 export const store = configureStore({
     middleware: (getDefaultMiddleware) => getDefaultMiddleware({
@@ -22,9 +23,9 @@ export const store = configureStore({
         blog: blogSlice,
         cart: cartSlice,
         push: pushSlice,
+        order: orderSlice,
     }
 });
 
-// Затем в другом файле (например, types.ts или hooks.ts)
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

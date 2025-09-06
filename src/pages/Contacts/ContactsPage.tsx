@@ -1,4 +1,4 @@
-import Breadcrumbs from "../../lib/breadcrumbs/Breadcrumbs";
+import {Breadcrumbs} from "../../lib/breadcrumbs/Breadcrumbs";
 import MainMap from "../../lib/Map/Map";
 import "./contacts.sass";
 import {FC} from "react";

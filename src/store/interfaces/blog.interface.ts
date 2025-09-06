@@ -1,18 +1,20 @@
-export type PostInterface = Partial<{
+export type PostInterface = {
     _id: string;
     title: string;
-    description: string;
+    content: string;
     image: string;
     slug: string;
     createdAt: Date,
     updatedAt: Date
-}>
+}
 
 export interface BlogState {
     posts: PostInterface[];
-    currentPost: PostInterface;
+    currentPost: PostInterface | null;
     isLoadingPosts: boolean;
     isLoadingCurrentPost: boolean;
+    isLoadingEventPosts: boolean;
+    errorEventPost: string;
     errorPosts: string;
     errorCurrentPost: string;
 }

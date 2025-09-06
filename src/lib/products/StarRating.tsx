@@ -4,7 +4,7 @@ interface StarRatingProps {
   rating: number;
 }
 
-const StarRating: React.FC<StarRatingProps> = ({ rating }) => {
+export const StarRating: React.FC<StarRatingProps> = ({ rating }) => {
   const maxStars = 5;
   const fullStars = Math.floor(rating);
   const partialStarWidth = (rating - fullStars) * 100;
@@ -58,4 +58,3 @@ const StarRating: React.FC<StarRatingProps> = ({ rating }) => {
   );
 };
 
-export default StarRating;

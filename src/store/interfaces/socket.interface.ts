@@ -1,3 +1,7 @@
+import {Socket} from "socket.io-client";
+import {UserInterface} from "./user.interface.ts";
+import {IOrder} from "./order.interface.ts";
+
 export type OrderStatus =
     | 'pending'     // Ожидает подтверждения
     | 'processing'  // В обработке
@@ -39,37 +43,6 @@ export interface IDeliveryInfo {
     comment?: string;
 }
 
-export interface IOrder {
-    _id: string;
-    orderNumber: string;
-    owner: string;
-    items: IOrderItem[];
-    totalAmount: number;
-    discountAmount: number;
-    deliveryCost: number;
-    finalAmount: number;
-    status: OrderStatus;
-    deliveryType: DeliveryType;
-    deliveryInfo: IDeliveryInfo;
-    paymentMethod: PaymentMethod;
-    paymentStatus: boolean;
-    invoiceUrl?: string;
-    trackingNumber?: string;
-    createdAt: Date;
-    updatedAt: Date;
-    cancelledAt?: Date;
-    deliveredAt?: Date;
-    documentUrl: string;
-}
-
-// Типы для SocketContext
-export interface CreateOrderData {
-    deliveryType: DeliveryType;
-    deliveryInfo: IDeliveryInfo;
-    paymentMethod: PaymentMethod;
-    discount?: number;
-}
-
 export interface UpdateStatusData {
     orderId: string;
     newStatus: OrderStatus;
@@ -77,6 +50,48 @@ export interface UpdateStatusData {
     deliveryDate?: Date;
 }
 
-export interface SocketContextType {
+export interface IMessage {
+    _id: string;
+    senderId: UserInterface;
+    content?: string;
+    attachments?: Attachments[];
+    replyTo?: IMessage;
+    edited?: boolean;
+    createdAt: Date;
+    updatedAt?: Date;
+    readBy: {
+        user: UserInterface;
+        readAt: Date;
+    }[];
+}
 
+export interface Attachments {
+    type: 'image' | 'video' | 'file';
+    url: string;
+    filename: string;
+}
+
+export interface SocketContextType {
+    socket: Socket | null;
+
+    // ==== чат ===
+    onlineAdmins: string[];
+    chatMessages: IMessage[];
+    sendMessage: (content: string, attachments?: Attachments, replyTo?: string) => void;
+    editMessage: (messageId: string, content?: string, attachments?: Attachments) => void;
+    deleteMessage: (messageId: string) => void;
+
+    // ==== заказы ====
+    orders: IOrder[];
+    getOrders: () => void;
+    updateOrderStatus: (orderId: string, status: string) => void;
+
+    // ==== комнаты ====
+    joinRoom: (room: string, callback?: (res: any) => void) => void;
+    leaveRoom: (room: string) => void;
+    refreshRooms: () => void;
+
+    // ==== утилиты ====
+    ping: (callback?: (res: string) => void) => void;
+    markSeen: (messageId: string) => void;
 }

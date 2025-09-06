@@ -77,7 +77,7 @@ export const getProductFunc = createAsyncThunk(
 
 export const setDiscountFunc = createAsyncThunk(
   "setDiscount",
-  async (payload, thunkAPI) => {
+  async (payload: {productID: string}, thunkAPI) => {
     try {
       const response = await api.put(
         `/product/update-product/${payload.productID}`,
@@ -97,7 +97,7 @@ export const setDiscountFunc = createAsyncThunk(
 
 export const updateProductFunc = createAsyncThunk(
   "updateProduct",
-  async (payload, thunkAPI) => {
+  async (payload: {productID: string}, thunkAPI) => {
     try {
       const response = await api.put(
         `/product/update-product/${payload.productID}`,
@@ -114,3 +114,15 @@ export const updateProductFunc = createAsyncThunk(
     }
   }
 );
+
+export const checkProductsFunc = createAsyncThunk(
+    "checkProducts", async (payload: {ids: string[]}, thunkAPI) => {
+        try {
+            const response = await api.post("/product/check", payload.ids);
+            if (response.status !== 200)  return thunkAPI.rejectWithValue(response.data);
+            return response.data;
+        } catch (e) {
+            return thunkAPI.rejectWithValue(e);
+        }
+    }
+)

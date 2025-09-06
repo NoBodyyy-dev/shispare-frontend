@@ -1,26 +1,34 @@
-import {AdminHeader} from "../lib/header/AdminHeader.tsx";
 import {useAuth} from "../context/AuthContext.tsx";
 import {useEffect} from "react";
-import {useNavigate} from "react-router-dom";
-import {useSocket} from "../context/SocketContext.tsx";
+import {Outlet, useNavigate} from "react-router-dom";
 import {useAppSelector} from "../hooks/state.hook.ts";
+import {Header} from "../lib/header/Header.tsx";
+import {PushMessageList} from "../lib/message/PushMessage.tsx";
 
 export const AdminLayout = () => {
+    const {onlineAdmins} = useAppSelector(state => state.socket);
     const {user} = useAuth();
     const navigate = useNavigate();
-    const {updateOrderStatus, trackOrder, createOrder} = useSocket();
-    const {onlineAdmins} = useAppSelector(state => state.socket);
 
     useEffect(() => {
-        if (user?.role !== "Admin") navigate(-1);
+        if (user?.role !== "Admin") {
+            navigate(-1);
+            return;
+        };
     }, [user?.role]);
 
     return (
         <>
-            <AdminHeader/>
-            {onlineAdmins.map((p) => {
-                return <p>{p}</p>
-            })}
+            <PushMessageList/>
+            <Header/>
+            <main className="main">
+                <Outlet />
+                <div className="main__container">
+                    {onlineAdmins.map((p) => {
+                        return <p key={p}>{p}</p>
+                    })}
+                </div>
+            </main>
         </>
     );
 };

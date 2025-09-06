@@ -1,18 +1,19 @@
 import {Dispatch, ReactNode, SetStateAction, useEffect} from "react";
 import styles from "./modal.module.sass"
 
-type MODAL_PROPS = {
+type Props = {
     children: ReactNode;
     modal: boolean;
     setModal: Dispatch<SetStateAction<boolean>>;
 };
 
-export default function Modal(props: MODAL_PROPS) {
+export const Modal = (props: Props) => {
     useEffect(() => {
-        if (props.modal)
-            document.body.classList.add("fixed-height")
-        if (document.body.classList.contains("fixed-height") && !props.modal)
-            document.body.classList.remove("fixed-height")
+        if (props.modal) document.body.classList.add("fixed-height");
+
+        return () => {
+            document.body.classList.remove("fixed-height");
+        };
     }, [props.modal]);
 
     return (

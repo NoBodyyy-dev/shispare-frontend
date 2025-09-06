@@ -2,7 +2,7 @@ import {FC, useEffect} from "react";
 import * as action from "../../store/actions/product.action.ts";
 import {useAppDispatch, useAppSelector} from "../../hooks/state.hook.ts";
 import {Link} from "react-router-dom";
-import Product from "../../lib/products/Product.tsx";
+import {Product} from "../../lib/products/Product.tsx";
 import SkeletonProductCard from "../../lib/skeletons/ProductSkeleton.tsx";
 import StockSwiper from "./StockSwiper.tsx";
 import MainMap from "../../lib/Map/Map.tsx";

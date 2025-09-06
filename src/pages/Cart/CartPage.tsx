@@ -1,62 +1,51 @@
-import {FC, useState} from "react";
-import {ProductInterface} from "../../store/interfaces/product.interface";
-import ProductInCart from "../../lib/products/ProductInCart";
-import styles from "./cart.module.sass"
-import Button from "../../lib/buttons/Button.tsx";
-import {useAppDispatch, useAppSelector} from "../../hooks/state.hook.ts";
-import {addMessage} from "../../store/slices/push.slice.ts";
-import Modal from "../../lib/modal/Modal.tsx";
-import {OrderForm} from "./OrderForm.tsx";
-
+import axios from "axios";
+import {FC, useEffect} from "react";
+import {CartSummary} from "./CartSummary";
+import {CartItem} from "../../lib/products/ProductInCart.tsx";
+import {useAppSelector} from "../../hooks/state.hook.ts";
+import {Breadcrumbs} from "../../lib/breadcrumbs/Breadcrumbs.tsx";
+import styles from "./cart.module.sass";
+import {SeenStory} from "../../lib/seenstory/YouSeen.tsx";
 
 export const Cart: FC = () => {
-    const dispatch = useAppDispatch();
-    const {discount, priceWithDiscount, totalPrice, totalProducts, cart} = useAppSelector(state => state.cart);
+    const {products} = useAppSelector(state => state.cart)
 
-    const [createOrder, setCreateOrder] = useState<boolean>(false);
+    useEffect(() => {
+        axios.get("https://suggest-maps.yandex.ru/v1/suggest?apikey=a343e3ef-bfdd-4222-b31d-7c33ee9c2825&text=60-летия").then(r => {
+            console.log(r)
+        })
+    }, [])
 
-    const discountInformation = () => {
-        if (totalPrice === priceWithDiscount)
-            return <>
-                <p className="mb-20 fz-24">Итого:<span>{priceWithDiscount}</span></p>
-            </>
-        return <>
-            <p className="mb-20 fz-24">Итого: <span>{priceWithDiscount} руб.</span></p>
-            <p className="fz-20">Скидка: <span className="font-roboto">{discount} руб.</span></p>
-        </>
-    }
+    const breadcrumbsItems = [
+        {path: "/", label: "Главная"},
+        {path: "/cart", label: "Корзина"}
+    ]
 
     return (
-        <>
-            <div className="main__container cart">
-                <h1 className="title mb-25">Корзина</h1>
-                <div className={styles.containerGrid}>
-                    <div className={``}>
-                        {Object.values(cart as Record<string, {
-                            product: ProductInterface,
-                            count: number
-                        }>).map((data: { product: ProductInterface, count: number }) => {
-                            return <ProductInCart key={data.product._id} productData={data.product}
-                                                  count={data.count}/>;
-                        })}
-                    </div>
-                    <div className={`${styles.block} p-20`}>
-                        <div className="mb-20">
-                            {discountInformation()}
-                            <p className="fz-20">Количество товаров: <span
-                                className="font-roboto">{totalProducts}</span></p>
-                        </div>
-                        <Button className="full-width" onClick={() => dispatch(addMessage("Вы не авторизованы"))}>
-                            Оформить заказ
-                        </Button>
-                    </div>
-                </div>
-                <Modal modal={createOrder} setModal={setCreateOrder}>
+        <div className="main__container">
+            <Breadcrumbs items={breadcrumbsItems} isLoading={false}/>
+            <h1 className="title mb-20">Корзина</h1>
+            {products.length
+                ? <div className={`${styles.container} main__block gap-20`}>
                     <div>
-                        <OrderForm />
+                        <div className={styles.items}>
+                            {products.map(item => (
+                                <CartItem
+                                    key={item.product._id}
+                                    item={item}
+                                />
+                            ))}
+                        </div>
                     </div>
-                </Modal>
+                    <CartSummary isRedirect={true}/>
+                </div>
+                : <div className={`${styles.empty} main__block`}>
+                    <h1 className="title center color-gray">Корзина пустая</h1>
+                </div>
+            }
+            <div className="main__block">
+                <SeenStory/>
             </div>
-        </>
+        </div>
     );
-}
+};

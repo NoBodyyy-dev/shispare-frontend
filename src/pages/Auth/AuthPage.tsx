@@ -1,5 +1,5 @@
 import {useAppDispatch, useAppSelector} from "../../hooks/state.hook.ts";
-import CodeVerification from "./CodeVerification.tsx";
+import {CodeVerification} from "./CodeVerification.tsx";
 import {Auth} from "./Auth.tsx";
 import {useEffect} from "react";
 import {useNavigate} from "react-router-dom";

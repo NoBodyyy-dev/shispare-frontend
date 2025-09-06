@@ -12,23 +12,31 @@ export type UserInterface = Partial<{
 
 export interface UserState {
     curUser?: UserInterface;
+    profileUser?: UserInterface;
     isAuthenticated: boolean;
     token: string;
+    users: UserInterface[];
 
     isLoadingUser: boolean;
+    isLoadingProfileUser: boolean,
     isLoadingAuthenticated: boolean;
     isLoadingVerify: boolean;
     isLoadingLogout: boolean;
+    isLoadingUsers: boolean
 
     errorAuthenticated: string;
+    errorProfileUser: string;
     errorUser?: string;
     errorVerify: string;
     errorLogout: string;
+    errorUsers: string
 
     successCode: boolean;
+    successProfileUser: boolean,
     successUser: boolean;
     successAuth: boolean;
     successLogout: boolean;
+    successUsers: boolean
 }
 
 export interface RegisterData {

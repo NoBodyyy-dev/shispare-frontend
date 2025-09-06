@@ -1,6 +1,13 @@
 import {ActionReducerMapBuilder} from "@reduxjs/toolkit";
 import {UserState} from "../interfaces/user.interface.ts";
-import {authenticateFunc, getMeFunc, logoutFunc, registerFunc, verifyCodeFunc} from "../actions/user.action.ts";
+import {
+    authenticateFunc,
+    getAllUsersFunc,
+    getMeFunc, getProfileUserFunc,
+    logoutFunc,
+    registerFunc,
+    verifyCodeFunc
+} from "../actions/user.action.ts";
 
 export const getMeHandler = (builder: ActionReducerMapBuilder<UserState>) => {
     builder
@@ -84,3 +91,35 @@ export const logoutHandler = (builder: ActionReducerMapBuilder<UserState>) => {
             localStorage.clear();
         })
 }
+
+export const getAllUsersHandler = (builder: ActionReducerMapBuilder<UserState>) => {
+    builder
+        .addCase(getAllUsersFunc.pending, (state: UserState) => {
+            state.isLoadingUsers = true;
+        })
+        .addCase(getAllUsersFunc.rejected, (state: UserState, action) => {
+            state.isLoadingUsers = false;
+            state.errorUsers = action.error.message!;
+        })
+        .addCase(getAllUsersFunc.fulfilled, (state: UserState, action) => {
+            state.isLoadingUsers = false;
+            state.users = action.payload.users;
+        })
+}
+
+export const getProfileUserHandler = (builder: ActionReducerMapBuilder<UserState>) => {
+    builder
+        .addCase(getProfileUserFunc.pending, (state: UserState) => {
+            state.isLoadingProfileUser = true;
+        })
+        .addCase(getProfileUserFunc.rejected, (state: UserState, action) => {
+            state.isLoadingProfileUser = false;
+            state.errorProfileUser = action.error.message!;
+        })
+        .addCase(getProfileUserFunc.fulfilled, (state: UserState, action) => {
+            state.isLoadingProfileUser = false;
+            state.profileUser = action.payload.user;
+        })
+}
+
+

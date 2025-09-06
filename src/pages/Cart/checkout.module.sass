@@ -1,0 +1,183 @@
+.checkout
+  display: grid
+  grid-template-columns: 1fr 380px
+  gap: 24px
+
+  @media (max-width: 1024px)
+    grid-template-columns: 1fr
+
+.form
+  background: #fff
+  border-radius: 12px
+  padding: 20px
+  box-shadow: 0 2px 8px rgba(0,0,0,.06)
+  display: flex
+  flex-direction: column
+  gap: 20px
+
+.section
+  display: flex
+  flex-direction: column
+  gap: 12px
+
+.sectionTitle
+  font-size: 18px
+  font-weight: 600
+
+.radioGrid
+  display: grid
+  grid-template-columns: repeat(3, minmax(0,1fr))
+  gap: 10px
+
+  @media (max-width: 640px)
+    grid-template-columns: 1fr
+
+.radioItem
+  display: flex
+  align-items: center
+  gap: 8px
+  padding: 12px
+  border: 2px solid #f0f0f0
+  border-radius: 10px
+  cursor: pointer
+
+.radioIcon
+  font-size: 20px
+  margin-right: 4px
+
+.addressInputWrapper
+  position: relative
+
+.addressSpinner
+  position: absolute
+  right: 12px
+  top: 50%
+  transform: translateY(-50%)
+  width: 16px
+  height: 16px
+  border: 2px solid #e9ecef
+  border-top: 2px solid #00458B
+  border-radius: 50%
+  animation: spin 1s linear infinite
+
+@keyframes spin
+  0%
+    transform: translateY(-50%) rotate(0deg)
+  100%
+    transform: translateY(-50%) rotate(360deg)
+
+.addressSuggestions
+  position: absolute
+  top: 100%
+  left: 0
+  right: 0
+  background: white
+  border: 1px solid #e9ecef
+  border-top: none
+  border-radius: 0 0 8px 8px
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1)
+  z-index: 1000
+  max-height: 200px
+  overflow-y: auto
+
+.addressSuggestionItem
+  padding: 12px 16px
+  cursor: pointer
+  border-bottom: 1px solid #f0f0f0
+  transition: background-color 0.2s ease
+  
+  &:hover
+    background-color: #f8f9fa
+  
+  &:last-child
+    border-bottom: none
+
+.suggestionText
+  font-size: 14px
+  color: #333
+  margin-bottom: 4px
+  font-weight: 500
+
+.suggestionSubtitle
+  font-size: 12px
+  color: #666
+  margin-bottom: 6px
+
+.suggestionMeta
+  display: flex
+  justify-content: space-between
+  align-items: center
+  gap: 8px
+
+.suggestionType
+  font-size: 11px
+  color: #888
+  text-transform: capitalize
+  background: #f0f0f0
+  padding: 2px 6px
+  border-radius: 4px
+
+.suggestionDistance
+  font-size: 11px
+  color: #666
+  font-style: italic
+
+.phoneInputError
+  color: #dc3545
+  font-size: 12px
+  margin-top: 4px
+
+.formRow
+  display: flex
+  gap: 12px
+
+  @media (max-width: 640px)
+    flex-direction: column
+
+.inputGroup
+  flex: 1
+  display: flex
+  flex-direction: column
+  gap: 6px
+
+.checkbox
+  display: inline-flex
+  align-items: center
+  gap: 8px
+  user-select: none
+
+  input
+    width: 18px
+    height: 18px
+
+.error
+  color: #c0392b
+  font-size: 12px
+
+.actions
+  display: flex
+  justify-content: flex-end
+
+.summary
+  background: #fff
+  border-radius: 12px
+  padding: 16px
+  height: max-content
+  box-shadow: 0 2px 8px rgba(0,0,0,.06)
+
+.summaryList
+  display: flex
+  flex-direction: column
+  gap: 10px
+
+.summaryItem
+  display: flex
+  justify-content: space-between
+  gap: 12px
+
+.summaryName
+  color: #333
+
+.summaryPrice
+  font-weight: 600
+  color: #00458B

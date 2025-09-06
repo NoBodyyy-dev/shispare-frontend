@@ -7,7 +7,7 @@ const initialState: ProductState = {
   discountProducts: [],
   popularProducts: [],
   categoryProducts: [],
-  product: {},
+  currentProduct: null,
   curCategory: "",
   isLoadingProducts: false,
   isLoadingDiscountProducts: false,
