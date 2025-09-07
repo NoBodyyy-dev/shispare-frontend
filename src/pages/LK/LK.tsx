@@ -1,10 +1,10 @@
 import {useEffect, useCallback} from "react";
-import {useNavigate, useParams} from "react-router-dom";
+import {useNavigate, useParams, Link} from "react-router-dom";
 import {useAppDispatch, useAppSelector} from "../../hooks/state.hook.ts";
 import {useAuth} from "../../context/AuthContext.tsx";
 import {Button} from "../../lib/buttons/Button.tsx";
 import {logoutFunc, getProfileUserFunc} from "../../store/actions/user.action.ts";
-import styles from "./Lk.module.sass";
+import styles from "./lk.module.sass";
 import React from "react";
 
 export const Lk = () => {
@@ -34,8 +34,6 @@ export const Lk = () => {
         const loadData = async () => {
             if (paramsId && user._id !== paramsId) {
                 await dispatch(getProfileUserFunc({id: paramsId}));
-            } else {
-                console.log("Penis")
             }
         };
 
@@ -60,13 +58,16 @@ export const Lk = () => {
 
     return (
         <div className="main__container">
-            <h1 className="title mb-20">Личный кабинет</h1>
-            <Button
-                onClick={handleLogout}
-                className={styles.logoutBtn}
-            >
-                Выйти
-            </Button>
+            <div className={styles.header}>
+                <div>
+                    <h1 className="title mb-10">Личный кабинет</h1>
+                    <div className={styles.subTitle}>{currentUser?.email}</div>
+                </div>
+                <div className={styles.headerActions}>
+                    <Link to={`/lk/${currentUser?._id}/orders`} className={styles.secondaryBtn}>Мои заказы</Link>
+                    <Button onClick={handleLogout} className={styles.logoutBtn}>Выйти</Button>
+                </div>
+            </div>
 
             <section className={styles.profileSection}>
                 <h2>Профиль</h2>

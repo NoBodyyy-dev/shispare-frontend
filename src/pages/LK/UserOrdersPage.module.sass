@@ -1,0 +1,78 @@
+.container
+  max-width: 1200px
+  margin: 0 auto
+  padding: 1.5rem 1rem
+
+.header
+  display: flex
+  justify-content: space-between
+  align-items: center
+  margin-bottom: 1.5rem
+
+.backLink
+  color: #111827
+  background: #f3f4f6
+  padding: 0.5rem 0.9rem
+  border-radius: 8px
+  font-weight: 500
+  transition: background 0.2s
+  &:hover
+    background: #e5e7eb
+
+.filters
+  display: flex
+  gap: 0.75rem
+  margin-bottom: 1rem
+
+.search
+  flex: 1
+  border: 1px solid #e5e7eb
+  border-radius: 10px
+  padding: 0.6rem 0.8rem
+
+.select
+  border: 1px solid #e5e7eb
+  border-radius: 10px
+  padding: 0.6rem 0.8rem
+
+.tableWrapper
+  background: #fff
+  border-radius: 12px
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08)
+  overflow: hidden
+
+.table
+  width: 100%
+  border-collapse: collapse
+
+  thead
+    background: #f9fafb
+
+  th, td
+    text-align: left
+    padding: 0.9rem 1rem
+    border-bottom: 1px solid #f3f4f6
+
+.row
+  cursor: pointer
+  &:hover
+    background: #fcfcfd
+
+.status
+  &.pending
+    color: #f59e0b
+  &.confirmed
+    color: #10b981
+  &.shipped
+    color: #3b82f6
+  &.delivered
+    color: #16a34a
+  &.cancelled
+    color: #ef4444
+  &.refunded
+    color: #8b5cf6
+
+.empty
+  text-align: center
+  padding: 1.5rem
+  color: #6b7280

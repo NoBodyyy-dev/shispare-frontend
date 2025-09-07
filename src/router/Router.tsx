@@ -24,6 +24,7 @@ import {OrdersPage} from "../pages/Orders/OrdersPage.tsx";
 import {OneOrderPage} from "../pages/Orders/OneOrderPage.tsx";
 import {NotFoundPage} from "../pages/Error/NotFoundPage.tsx";
 import {ServerErrorPage} from "../pages/Error/ServerErrorPage.tsx";
+import {UserOrdersPage} from "../pages/LK/UserOrdersPage.tsx";
 // import CodeVerification from "../pages/Auth/CodeVerification.tsx";
 
 const router = createBrowserRouter([
@@ -45,6 +46,7 @@ const router = createBrowserRouter([
             {path: "/categories/:category-slug", element: <Products/>},
             {path: "/categories/:category-slug/:product-slug", element: <OneProductPage/>},
             {path: "/lk/:id", element: <Lk/>},
+            {path: "/lk/:id/orders", element: <UserOrdersPage/>},
             {path: "/orders", element: <OrdersPage/>},
             {path: "/orders/:orderId", element: <OneOrderPage/>},
             {path: "/profile", element: <Profile/>},
