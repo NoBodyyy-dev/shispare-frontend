@@ -22,6 +22,8 @@ import {Chat} from "../pages/Chat/Chat.tsx";
 import CheckoutPage from "../pages/Cart/CheckoutPage";
 import {OrdersPage} from "../pages/Orders/OrdersPage.tsx";
 import {OneOrderPage} from "../pages/Orders/OneOrderPage.tsx";
+import {NotFoundPage} from "../pages/Error/NotFoundPage.tsx";
+import {ServerErrorPage} from "../pages/Error/ServerErrorPage.tsx";
 // import CodeVerification from "../pages/Auth/CodeVerification.tsx";
 
 const router = createBrowserRouter([
@@ -50,13 +52,10 @@ const router = createBrowserRouter([
             {path: "/solution/:solution-slug", element: <OneSolution/>},
             {path: "/stock/:stock-slug", element: <StockPage/>},
             {path: "/videos", element: <VideosPage/>},
-            {path: "/users", element: <UsersPage/>}
+            {path: "/users", element: <UsersPage/>},
+            {path: "*", element: <NotFoundPage/>},
         ],
-        errorElement: (
-            <>
-                <h1>Error</h1>
-            </>
-        ),
+        errorElement: <ServerErrorPage/>,
     },
 ]);
 
