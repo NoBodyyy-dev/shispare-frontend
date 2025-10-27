@@ -1,25 +1,30 @@
-import {memo} from "react";
-import {IOrder} from "../../store/interfaces/order.interface.ts";
+import {memo, useState} from "react";
+import {IOrder, OrderStatus} from "../../store/interfaces/order.interface.ts";
+import {useSocket} from "../../context/SocketContext.tsx";
+import {StatusSelect} from "./StatusSelect.tsx";
 import styles from "./orders.module.sass";
+import {Link} from "react-router-dom";
 
 type Props = {
     order: IOrder;
     search: string;
-    status: string;
-    onClick: () => void;
 };
+export const OrderItem = memo(({order, search}: Props) => {
+    const {updateOrderStatus} = useSocket();
+    const [disabled, setDisabled] = useState(false);
 
-export const OrderItem = memo(({order, search, onClick, status}: Props) => {
+    const handleChangeStatus = (status: OrderStatus) => {
+        updateOrderStatus(order._id, status);
+        setDisabled(true);
+    };
+
     const highlightMatch = (text: string, query: string) => {
         if (!query) return text;
-
         const prefix = "ORD-";
         const digits = text.replace(/^ORD-/, "");
         const queryTrimmed = query.trim();
 
-        if (!digits.startsWith(queryTrimmed)) {
-            return text;
-        }
+        if (!digits.startsWith(queryTrimmed)) return text;
 
         return (
             <>
@@ -33,11 +38,17 @@ export const OrderItem = memo(({order, search, onClick, status}: Props) => {
     };
 
     return (
-        <tr className={styles.row} onClick={onClick}>
-            <td>{highlightMatch(order.orderNumber, search)}</td>
+        <tr className={styles.row}>
+            <td><Link to={`/orders/${order.orderNumber}`}>{highlightMatch(order.orderNumber, search)}</Link></td>
             <td>{order.owner.fullName}</td>
-            <td>{order.finalAmount.toLocaleString()} ₽</td>
-            <td>{status}</td>
+            <td>{order.finalAmount} ₽</td>
+            <td>
+                <StatusSelect
+                    current={order.status}
+                    onChange={handleChangeStatus}
+                    disabled={disabled}
+                />
+            </td>
             <td>{new Date(order.createdAt).toLocaleDateString()}</td>
         </tr>
     );

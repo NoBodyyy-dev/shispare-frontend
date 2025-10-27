@@ -1,16 +1,16 @@
-import {createOrderFunc, getAllOrdersFunc} from "../actions/order.action.ts";
+import {createOrderFunc, getUserOrdersFunc} from "../actions/order.action.ts";
 import {ActionReducerMapBuilder} from "@reduxjs/toolkit";
 import {OrderState} from "../interfaces/order.interface.ts";
 
-export const getAllOrdersHandler = (builder: ActionReducerMapBuilder<OrderState>) => {
+export const getUserOrdersHandler = (builder: ActionReducerMapBuilder<OrderState>) => {
     builder
-        .addCase(getAllOrdersFunc.pending, (state: OrderState) => {
+        .addCase(getUserOrdersFunc.pending, (state: OrderState) => {
             state.isLoadingOrders = true;
-        }).addCase(getAllOrdersFunc.rejected, (state: OrderState, action) => {
+        }).addCase(getUserOrdersFunc.rejected, (state: OrderState, action) => {
         state.isLoadingOrders = false;
         state.successOrders = false
         state.errorOrders = action.error.message as string;
-    }).addCase(getAllOrdersFunc.fulfilled, (state, action) => {
+    }).addCase(getUserOrdersFunc.fulfilled, (state, action) => {
         state.orders = action.payload.orders;
         state.isLoadingOrders = false;
         state.successOrders = true;

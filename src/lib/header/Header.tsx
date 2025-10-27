@@ -1,9 +1,11 @@
 import {Link} from "react-router-dom";
 import {memo, useEffect, useState} from "react";
-import SearchInput from "../input/SearchInput";
-import HeaderCatalog from "./HeaderCatalog.tsx";
+import {SearchInput} from "../input/SearchInput";
+import {HeaderCatalog} from "./HeaderCatalog.tsx";
 import {Button} from "../buttons/Button";
 import {useAppSelector} from "../../hooks/state.hook";
+import {FaCartShopping} from "react-icons/fa6";
+import {useAuth} from "../../context/AuthContext.tsx";
 
 interface NavPath {
     name: string;
@@ -28,8 +30,8 @@ const adminPaths: NavPath[] = [
 ]
 
 export const Header = memo(() => {
-    const {curUser, isAuthenticated, isLoadingUser} = useAppSelector((state) => state.user);
-    const {totalQuantity, totalProductsInCart} = useAppSelector((state) => state.cart)
+    const {user, isAuthenticated, isLoading} = useAuth()
+    const {totalProducts} = useAppSelector((state) => state.cart)
     const [iconName, setIconName] = useState("");
     const [paths, setPaths] = useState<NavPath[]>([]);
 
@@ -40,11 +42,11 @@ export const Header = memo(() => {
             return parts.slice(0, 2).map(part => part[0]?.toUpperCase() ?? '').join('');
         };
 
-        setIconName(getInitials(curUser?.fullName));
+        setIconName(getInitials(user?.fullName));
 
-        const isAdmin = curUser?.role === "Admin";
+        const isAdmin = user?.role === "Admin";
         setPaths(isAdmin ? adminPaths : userPaths);
-    }, [curUser]);
+    }, [user]);
 
     return (
         <header className="header">
@@ -53,16 +55,16 @@ export const Header = memo(() => {
                     <Link to="/" aria-label="На главную">
                         <img src="/logo.png" alt="shispare" className="header-logo"/>
                     </Link>
-                    <div className="header__search flex-align-center-sbetw w-100">
+                    <div className="header__search flex-to-center gap-10 w-100">
                         <HeaderCatalog/>
                         <SearchInput/>
                     </div>
                     <div className="header__buttons flex gap-20">
-                        {isLoadingUser ? (
+                        {isLoading ? (
                             <div className="header__buttons-button skeleton-loader"></div>
                         ) : isAuthenticated ? (
-                            <Link to={`/lk/${curUser?._id}`} aria-label="Личный кабинет">
-                                <div className="header__buttons-button user flex-to-center-col" title={curUser?.fullName}>
+                            <Link to={`/lk/${user?._id}`} aria-label="Личный кабинет">
+                                <div className="header__buttons-button user flex-to-center-col" title={user?.fullName}>
                                     {iconName}
                                 </div>
                             </Link>
@@ -72,16 +74,17 @@ export const Header = memo(() => {
                             </Link>
                         )}
                         <Link to="/cart" aria-label="Корзина">
-                            <div className="header__buttons-button cart" title="Корзина">
-                                {totalProductsInCart > 0 && (
-                                    <div className="absolute flex-to-center-col fz-12">{totalProductsInCart}</div>
+                            <div className="header__buttons-button cart flex-to-center-col" title="Корзина">
+                                <FaCartShopping className="fz-18" />
+                                {totalProducts > 0 && (
+                                    <div className="absolute flex-to-center-col fz-12">{totalProducts}</div>
                                 )}
                             </div>
                         </Link>
                     </div>
                 </div>
-                <nav className="">
-                    <ul className="flex gap-10"> {/* Добавлен ul для семантики */}
+                <nav>
+                    <ul className="flex gap-10">
                         {paths.map(({name, path}) => (
                             <li key={path} className="">
                                 <Link to={path}>{name}</Link>

@@ -30,13 +30,12 @@ export const SeenStory: FC = () => {
             <Swiper
                 modules={[Navigation, Pagination, A11y]}
                 spaceBetween={16}
-                slidesPerView={2}
+                slidesPerView={4}
                 navigation
                 pagination={{clickable: true}}
                 breakpoints={{
                     640: {slidesPerView: 3},
                     1024: {slidesPerView: 4},
-                    1280: {slidesPerView: 5}
                 }}
             >
                 {story.map((product) => (

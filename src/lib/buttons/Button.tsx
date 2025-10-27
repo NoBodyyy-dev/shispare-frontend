@@ -1,4 +1,5 @@
 import {FC, ButtonHTMLAttributes, ReactNode, memo} from "react";
+import {Spin} from "../loaders/Spin.tsx";
 
 type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
     children: ReactNode;
@@ -6,5 +7,5 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 }
 
 export const Button: FC<Props> = memo(({loading = false, children, ...attributes}: Props) => {
-    return <button {...attributes}>{loading ? "Загрузка" : children}</button>;
+    return <button {...attributes}>{loading ? <Spin/> : children}</button>;
 })

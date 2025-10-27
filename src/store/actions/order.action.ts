@@ -2,13 +2,11 @@ import {createAsyncThunk} from "@reduxjs/toolkit";
 import api from "../api.ts";
 import {DeliveryType, PaymentMethod} from "../interfaces/order.interface.ts";
 
-export const getAllOrdersFunc = createAsyncThunk(
-    "order/getAllOrdersFunc", async (_, {rejectWithValue}) => {
+export const getUserOrdersFunc = createAsyncThunk(
+    "order/getAllOrdersFunc", async ({userId}: {userId: string}, {rejectWithValue}) => {
         try {
-            const response = await api.get("/order/get-order/all", {
-                headers: {
-                    Authorization: `Bearer ${localStorage.getItem("token")}`
-                }
+            const response = await api.get(`/order/get-user-orders/${userId}`, {
+                headers: {Authorization: `Bearer ${localStorage.getItem("token")}`}
             })
             if (response.status !== 200) return rejectWithValue(response.data);
             return response.data;

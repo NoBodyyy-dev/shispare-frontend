@@ -1,0 +1,188 @@
+.title
+  font-size: 26px
+  font-weight: 600
+  color: #1c1c1c
+
+
+.accordion 
+  display: flex
+  flex-direction: column
+  gap: 14px
+
+
+.item 
+  background: #fff
+  border-radius: 10px
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05)
+  overflow: hidden
+  transition: all 0.3s ease
+
+  &.active 
+    border: 1px solid #2b7dfa
+
+
+
+.header 
+  display: flex
+  justify-content: space-between
+  align-items: center
+  padding: 14px 20px
+  background: #f4f6fb
+  border-bottom: 1px solid #e3e9f2
+  transition: background 0.2s
+
+  &:hover 
+    background: #ebf1fa
+
+
+  .headerLeft 
+    display: flex
+    align-items: center
+    gap: 10px
+    cursor: pointer
+
+    span:first-child 
+      font-weight: 600
+      font-size: 16px
+      color: #333
+  
+
+    .count 
+      font-size: 14px
+      color: #666
+  
+
+    .arrow 
+      font-size: 14px
+      color: #666
+      margin-left: 12px
+  
+
+
+
+.uploadWrapper 
+  display: flex
+  align-items: center
+
+
+.uploadLabel 
+  display: inline-flex
+  align-items: center
+  gap: 6px
+  background: #2b7dfa
+  color: #fff
+  padding: 6px 14px
+  border-radius: 6px
+  font-size: 14px
+  cursor: pointer
+  transition: background 0.2s
+
+  &:hover 
+    background: #1e63c4
+
+.hiddenInput 
+  display: none
+
+.body
+  padding: 0 0 16px 0
+  background: #fff
+  max-height: 600px
+  overflow-y: auto
+
+
+.loading 
+  text-align: center
+  padding: 20px
+  color: #777
+
+
+.tableWrapper
+  width: 100%
+  overflow-x: auto
+  background: #fff
+  border-radius: 12px
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05)
+  margin-top: 10px
+
+  &::-webkit-scrollbar 
+    height: 10px
+
+
+  &::-webkit-scrollbar-thumb 
+    background: #c6cdd8
+    border-radius: 5px
+
+
+  &::-webkit-scrollbar-thumb:hover 
+    background: #9aa8b8
+
+
+
+.table 
+  width: max-content
+  border-collapse: collapse
+  font-size: 14px
+  min-width: 1200px
+  text-align: left
+
+  th,
+  td 
+    padding: 10px 14px
+    white-space: nowrap
+
+
+  th 
+    background: #eef2f6
+    font-weight: 600
+    color: #333
+    position: sticky
+    top: 0
+    z-index: 2
+
+
+  tr:nth-child(even) 
+    background: #fafafa
+
+
+  tr:hover 
+    background: #f0f7ff
+
+
+  td 
+    border-top: 1px solid #f1f1f1
+
+
+
+.actionsCol 
+  text-align: center
+
+
+.actions 
+  display: flex
+  gap: 8px
+  justify-content: center
+
+  button 
+    border: none
+    background: none
+    cursor: pointer
+    font-size: 16px
+    transition: transform 0.2s
+
+    &:hover 
+      transform: scale(1.1)
+  
+
+
+  .edit 
+    color: #2b7dfa
+
+
+  .delete 
+    color: #e74c3c
+
+.empty 
+  padding: 20px
+  text-align: center
+  color: #777
+  font-size: 15px

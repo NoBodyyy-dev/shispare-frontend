@@ -46,46 +46,49 @@ export const UsersPage: FC = () => {
     }
 
     return (
-        <div className={styles.container}>
-            <h1 className={styles.title}>Управление пользователями</h1>
+        <div className="main__container">
+            <h1 className="title mb-20">Управление пользователями</h1>
 
-            <div className={`${styles.searchContainer} ${isSearchFocused ? styles.focused : ""}`}>
-                <FiSearch className={styles.searchIcon}/>
-                <MainInput
-                    type="text"
-                    placeholder="Поиск по имени, email или ИНН..."
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                    onFocus={() => setIsSearchFocused(true)}
-                    onBlur={() => setIsSearchFocused(false)}
-                    className={`full-width`}
-                />
+            <div className="main__block">
+
+                <div className={`${styles.searchContainer} ${isSearchFocused ? styles.focused : ""}`}>
+                    <FiSearch className={styles.searchIcon}/>
+                    <MainInput
+                        type="text"
+                        placeholder="Поиск по имени, email или ИНН..."
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        onFocus={() => setIsSearchFocused(true)}
+                        onBlur={() => setIsSearchFocused(false)}
+                        className={`full-width border-none`}
+                    />
+                </div>
+
+                {isLoadingUsers ? (
+                    <div className={styles.loader}>Загрузка пользователей...</div>
+                ) : (
+                    <>
+                        <div className={`${styles.header} p-20`}>
+                            <div>Пользователь</div>
+                            <div>Email</div>
+                            <div>Статус</div>
+                            <div>Тип</div>
+                        </div>
+
+                        <div className={styles.usersList}>
+                            {filteredUsers.length === 0 ? (
+                                <div className={styles.noResults}>
+                                    Пользователи не найдены
+                                </div>
+                            ) : (
+                                filteredUsers.map(user => (
+                                    <UserCard key={user._id} user={user}/>
+                                ))
+                            )}
+                        </div>
+                    </>
+                )}
             </div>
-
-            {isLoadingUsers ? (
-                <div className={styles.loader}>Загрузка пользователей...</div>
-            ) : (
-                <>
-                    <div className={styles.header}>
-                        <div>Пользователь</div>
-                        <div>Email</div>
-                        <div>Статус</div>
-                        <div>Тип</div>
-                    </div>
-
-                    <div className={styles.usersList}>
-                        {filteredUsers.length === 0 ? (
-                            <div className={styles.noResults}>
-                                Пользователи не найдены
-                            </div>
-                        ) : (
-                            filteredUsers.map(user => (
-                                <UserCard key={user._id} user={user}/>
-                            ))
-                        )}
-                    </div>
-                </>
-            )}
         </div>
     );
 };
@@ -93,10 +96,10 @@ export const UsersPage: FC = () => {
 const UserCard = ({user}: { user: UserInterface }) => (
     <Link to={`/lk/${user._id}`} className={styles.userCard}>
         <div className={styles.userInfo}>
-            <div className={styles.nameContainer}>
+            <div>
                 <span className={styles.name}>{user.fullName || "Без имени"}</span>
                 {user.legalName && (
-                    <span className={styles.legalName}>{user.legalName}</span>
+                    <span className="fz-16 dotted">{user.legalName}</span>
                 )}
             </div>
 

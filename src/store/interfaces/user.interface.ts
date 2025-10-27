@@ -3,11 +3,14 @@ export type UserInterface = Partial<{
     fullName: string;
     legalName?: string;
     email: string;
+    password: string;
     role: "User" | "Admin" | "Creator";
     banned: boolean;
     legalType?: string;
     legalId?: number;
+    telegramId?: number;
     personalKey: string;
+    online: boolean;
 }>;
 
 export interface UserState {

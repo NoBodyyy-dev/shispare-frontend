@@ -19,12 +19,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const intervalRef = useRef<number>();
 
     useEffect(() => {
+        console.log("Penis")
         if (!token) {
             setIsLoading(false);
             return;
         }
 
-        const fetchUser = async () => {
+        const refreshToken = async () => {
             try {
                 setIsLoading(true);
                 await dispatch(getMeFunc()).unwrap();
@@ -33,18 +34,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             }
         };
 
-        fetchUser();
+        refreshToken();
 
         intervalRef.current = setInterval(() => {
             dispatch(getMeFunc());
-        }, 15 * 60 * 1000);
+            console.log("update")
+        }, 14 * 60 * 1000);
 
         return () => {
             if (intervalRef.current) {
                 clearInterval(intervalRef.current);
             }
         };
-    }, [token, isAuthenticated]);
+    }, []);
 
     return (
         <AuthContext.Provider value={{
@@ -60,8 +62,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
-    if (context === undefined) {
-        throw new Error('useAuth must be used within an AuthProvider');
-    }
+    if (context === undefined) throw new Error('useAuth must be used within an AuthProvider');
     return context;
 };

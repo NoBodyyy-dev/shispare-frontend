@@ -1,60 +1,19 @@
 import React from "react";
 
 interface StarRatingProps {
-  rating: number;
+    rating: number;
+    totalComments: number;
 }
 
-export const StarRating: React.FC<StarRatingProps> = ({ rating }) => {
-  const maxStars = 5;
-  const fullStars = Math.floor(rating);
-  const partialStarWidth = (rating - fullStars) * 100;
-
-  return (
-    <div className="rating flex-align-center">
-      <div className="rating__container flex gap-5">
-        {[...Array(maxStars)].map((_, index) => {
-          if (index < fullStars) {
-            return (
-              <span key={index} style={{ color: "gold", fontSize: "20px" }}>
+export const StarRating: React.FC<StarRatingProps> = ({rating, totalComments}) => {
+    return (
+        <div className="rating flex-align-center">
+            <div className="rating__container flex gap-5">
+                <span style={{color: "gold", fontSize: "16px"}}>
                 ★
-              </span>
-            );
-          } else if (index === fullStars && partialStarWidth > 0) {
-            return (
-              <div
-                key={index}
-                style={{ position: "relative", display: "inline-block" }}
-              >
-                <span style={{ color: "lightgray", fontSize: "20px" }}>★</span>
-                <span
-                  style={{
-                    position: "absolute",
-                    overflow: "hidden",
-                    width: `${partialStarWidth}%`,
-                    top: 0,
-                    left: 0,
-                    color: "gold",
-                    fontSize: "20px",
-                  }}
-                >
-                  ★
                 </span>
-              </div>
-            );
-          } else {
-            return (
-              <span
-                key={index}
-                style={{ color: "lightgray", fontSize: "20px" }}
-              >
-                ★
-              </span>
-            );
-          }
-        })}
-      </div>
-      <p className="fz-16 ml-10">{rating}</p>
-    </div>
-  );
+            </div>
+            <p className="fz-14 ml-10">{rating}<span className="color-gray">/{totalComments} отзывов</span></p>
+        </div>
+    );
 };
-

@@ -1,9 +1,76 @@
-import {createSlice, PayloadAction} from "@reduxjs/toolkit";
-import {CartState} from "../interfaces/cart.interface.ts";
-import {addToCart, clearCart, getCart, removeFromCart, updateQuantity} from "../actions/cart.action.ts";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { CartState } from "../interfaces/cart.interface";
+import { CartProductInterface, ProductInterface } from "../interfaces/product.interface";
+import { getCart, addToCart, updateQuantity, removeFromCart, clearCart } from "../actions/cart.action.ts";
+import { debounce } from "../../hooks/util.hook";
+
+const CART_KEY = "cart";
+const DEBOUNCE_DELAY = 2000;
+
+// ─────────────────────────────
+// localStorage helpers
+// ─────────────────────────────
+const loadLocal = (): CartProductInterface[] => {
+    try {
+        return JSON.parse(localStorage.getItem(CART_KEY) || "[]");
+    } catch {
+        return [];
+    }
+};
+
+const saveLocal = (items: CartProductInterface[]) => {
+    try {
+        localStorage.setItem(CART_KEY, JSON.stringify(items));
+    } catch {
+        localStorage.setItem(CART_KEY, JSON.stringify([]));
+    }
+};
+
+const recalcTotals = (state: CartState) => {
+    let total = 0;
+    let count = 0;
+
+    for (const item of state.products) {
+        const variant = item.product?.variants?.find(v => v.article === item.article);
+        if (!variant) continue;
+        total += variant.price * item.quantity;
+        count += item.quantity;
+    }
+
+    state.totalAmount = total;
+    state.discountAmount = 0;
+    state.finalAmount = total;
+    state.totalProducts = count;
+};
+
+const upsertItem = (
+    items: CartProductInterface[],
+    product: ProductInterface,
+    article: number,
+    quantity: number
+) => {
+    const idx = items.findIndex(i => i.product._id === product._id && i.article === article);
+
+    if (quantity <= 0) {
+        if (idx >= 0) items.splice(idx, 1);
+        return;
+    }
+
+    if (idx >= 0) {
+        items[idx].quantity = quantity;
+    } else {
+        items.push({
+            _id: crypto.randomUUID?.() || `${product._id}-${article}-${Date.now()}`,
+            product,
+            article,
+            quantity,
+            addedAt: new Date(),
+        });
+    }
+};
 
 const initialState: CartState = {
-    products: [],
+    products: loadLocal(),
     totalAmount: 0,
     discountAmount: 0,
     totalProducts: 0,
@@ -16,161 +83,89 @@ const cartSlice = createSlice({
     name: "cart",
     initialState,
     reducers: {
-        updateQuantityLocal: (state, action: PayloadAction<{
-            productId: string;
-            quantity: number
-        }>) => {
-            const {productId, quantity} = action.payload;
-            const product = state.products.find(
-                (p) => p.product._id === productId
-            );
-            if (product) {
-                product.quantity = quantity;
-
-                // Пересчитываем суммы локально
-                state.totalAmount = state.products.reduce((total, item) => {
-                    const price = item.product.variants?.[item.product.variantIndex || 0]?.price || 0;
-                    return total + (price * item.quantity);
-                }, 0);
-
-                // Здесь можно добавить логику для discount, vat и final amount
-                state.finalAmount = state.totalAmount - state.discountAmount;
-            }
+        setQuantityLocal: (
+            state,
+            action: PayloadAction<{
+                product: ProductInterface;
+                article: number;
+                quantity: number;
+            }>
+        ) => {
+            const { product, article, quantity } = action.payload;
+            upsertItem(state.products, product, article, Math.max(0, quantity));
+            recalcTotals(state);
+            saveLocal(state.products);
         },
-
-        rollbackQuantity: (state, action: PayloadAction<{
-            productId: string;
-            prevQuantity: number
-        }>) => {
-            const {productId, prevQuantity} = action.payload;
-            const product = state.products.find(
-                (p) => p.product._id === productId
-            );
-            if (product) {
-                product.quantity = prevQuantity;
-
-                // Пересчитываем суммы после отката
-                state.totalAmount = state.products.reduce((total, item) => {
-                    const price = item.product.variants?.[item.product.variantIndex || 0]?.price || 0;
-                    return total + (price * item.quantity);
-                }, 0);
-
-                state.finalAmount = state.totalAmount - state.discountAmount;
-            }
-        },
-
-        removeItemLocal: (state, action: PayloadAction<{ productId: string }>) => {
-            state.products = state.products.filter(
-                (p) => p.product._id !== action.payload.productId
-            );
-
-            // Пересчитываем суммы после удаления
-            state.totalAmount = state.products.reduce((total, item) => {
-                const price = item.product.variants?.[item.product.variantIndex || 0]?.price || 0;
-                return total + (price * item.quantity);
-            }, 0);
-
-            state.finalAmount = state.totalAmount - state.discountAmount;
+        clearCartLocal: (state) => {
+            state.products = [];
+            recalcTotals(state);
+            saveLocal([]);
         },
     },
     extraReducers: (builder) => {
         builder
-            // Get Cart - полная синхронизация с сервером
-            .addCase(getCart.pending, (state) => {
-                state.isLoading = true;
-                state.error = "";
-            })
             .addCase(getCart.fulfilled, (state, action) => {
-                state.isLoading = false;
-                state.error = "";
-                state.products = action.payload.products;
-                state.totalAmount = action.payload.totalAmount;
-                state.discountAmount = action.payload.discountAmount;
-                state.finalAmount = action.payload.finalAmount;
-                state.totalProducts = action.payload.totalProducts;
+                state.products = action.payload.products || [];
+                recalcTotals(state);
+                saveLocal(state.products);
             })
-            .addCase(getCart.rejected, (state, action) => {
-                state.isLoading = false;
-                state.error = (action.payload as string) || action.error.message || "Ошибка получения корзины";
-            })
-
-            // Add to Cart - полная синхронизация
-            .addCase(addToCart.pending, (state) => {
-                state.isLoading = true;
-                state.error = "";
-            })
-            .addCase(addToCart.fulfilled, (state, action) => {
-                state.isLoading = false;
-                state.error = "";
-                state.products = action.payload.products;
-                state.totalAmount = action.payload.totalAmount;
-                state.discountAmount = action.payload.discountAmount;
-                state.finalAmount = action.payload.finalAmount;
-                state.totalProducts = action.payload.totalProducts;
-            })
-            .addCase(addToCart.rejected, (state, action) => {
-                state.isLoading = false;
-                state.error = (action.payload as string) || action.error.message || "Ошибка добавления в корзину";
-            })
-
-            // Update Quantity - ТОЛЬКО обновляем суммы, продукты уже обновлены оптимистично
-            .addCase(updateQuantity.pending, (state) => {
-                state.isLoading = true;
-                state.error = "";
-            })
-            .addCase(updateQuantity.fulfilled, (state, action) => {
-                state.isLoading = false;
-                state.error = "";
-                // Не перезаписываем продукты, только суммы
-                state.totalAmount = action.payload.totalAmount;
-                state.discountAmount = action.payload.discountAmount;
-                state.finalAmount = action.payload.finalAmount;
-                state.totalProducts = action.payload.totalProducts;
-            })
-            .addCase(updateQuantity.rejected, (state, action) => {
-                state.isLoading = false;
-                state.error = (action.payload as string) || action.error.message || "Ошибка обновления количества";
-            })
-
-            // Remove from Cart - полная синхронизация
-            .addCase(removeFromCart.pending, (state) => {
-                state.isLoading = true;
-                state.error = "";
-            })
-            .addCase(removeFromCart.fulfilled, (state, action) => {
-                state.isLoading = false;
-                state.error = "";
-                state.products = action.payload.products;
-                state.totalAmount = action.payload.totalAmount;
-                state.discountAmount = action.payload.discountAmount;
-                state.finalAmount = action.payload.finalAmount;
-                state.totalProducts = action.payload.totalProducts;
-            })
-            .addCase(removeFromCart.rejected, (state, action) => {
-                state.isLoading = false;
-                state.error = (action.payload as string) || action.error.message || "Ошибка удаления из корзины";
-            })
-
-            // Clear Cart - полная синхронизация
-            .addCase(clearCart.pending, (state) => {
-                state.isLoading = true;
-                state.error = "";
-            })
-            .addCase(clearCart.fulfilled, (state, action) => {
-                state.isLoading = false;
-                state.error = "";
-                state.products = action.payload.products;
-                state.totalAmount = action.payload.totalAmount;
-                state.discountAmount = action.payload.discountAmount;
-                state.finalAmount = action.payload.finalAmount;
-                state.totalProducts = action.payload.totalProducts;
-            })
-            .addCase(clearCart.rejected, (state, action) => {
-                state.isLoading = false;
-                state.error = (action.payload as string) || action.error.message || "Ошибка очистки корзины";
+            .addCase(clearCart.fulfilled, (state) => {
+                state.products = [];
+                recalcTotals(state);
+                saveLocal([]);
             });
-    }
+    },
 });
 
-export const {updateQuantityLocal, rollbackQuantity, removeItemLocal} = cartSlice.actions;
+export const { setQuantityLocal, clearCartLocal } = cartSlice.actions;
 export default cartSlice.reducer;
+
+import { AppDispatch } from "../store"; // тип вашего dispatch
+
+export const setQuantitySmart = (() => {
+    const debounced = new Map<string, ReturnType<typeof debounce>>();
+
+    return ({
+                dispatch,
+                product,
+                article,
+                quantity,
+                isAuthenticated,
+                prevQuantity,
+            }: {
+        dispatch: AppDispatch;
+        product: ProductInterface;
+        article: number;
+        quantity: number;
+        isAuthenticated: boolean;
+        prevQuantity: number;
+    }) => {
+        // мгновенное обновление UI
+        dispatch(setQuantityLocal({ product, article, quantity }));
+
+        // гость → только localStorage
+        if (!isAuthenticated) return;
+
+        // debounce key
+        const key = `${product._id}:${article}`;
+        if (debounced.has(key)) debounced.get(key)?.cancel();
+
+        const action = debounce(async () => {
+            try {
+                if (quantity <= 0) {
+                    await dispatch(removeFromCart({ productId: product._id, article })).unwrap();
+                } else if (prevQuantity <= 0) {
+                    await dispatch(addToCart({ productId: product._id, article, quantity })).unwrap();
+                } else {
+                    await dispatch(updateQuantity({ productId: product._id, article, quantity })).unwrap();
+                }
+            } catch {
+                // rollback
+                dispatch(setQuantityLocal({ product, article, quantity: prevQuantity }));
+            }
+        }, DEBOUNCE_DELAY);
+
+        debounced.set(key, action);
+        action();
+    };
+})();

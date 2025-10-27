@@ -1,4 +1,4 @@
-import {CartProductInterface} from "./product.interface.ts";
+import {CartProductInterface} from "./product.interface";
 
 export interface CartState {
     products: CartProductInterface[];
@@ -6,6 +6,7 @@ export interface CartState {
     discountAmount: number;
     finalAmount: number;
     totalProducts: number;
+
     isLoading: boolean;
-    error: string;
+    error?: string;
 }

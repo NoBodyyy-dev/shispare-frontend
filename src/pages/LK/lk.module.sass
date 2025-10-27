@@ -1,29 +1,68 @@
+@use "../../styles/variables" as v
+
 .container
-  max-width: 1200px
-  margin: 0 auto
-  padding: 2rem 1rem
+  display: grid
+  grid-template-columns: 3fr 1fr
 
-.header
+.sidebar
+  background: #fff
+  border-radius: 12px
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08)
   display: flex
-  justify-content: space-between
-  align-items: center
-  margin-bottom: 2rem
+  flex-direction: column
+  max-height: 350px
 
-.loader, .noOrders
+.nav
+  display: flex
+  flex-direction: column
+  gap: 0.8rem
+
+.navItem
+  padding: 8px 15px
+  border-radius: 5px
+
+.active
+  background: v.$mainBlue
+  color: #fff
+
+.logoutBtn
+  background: v.$mainRed
+  margin-top: auto
+  text-align: center
+
+.content
+  flex: 1
+  background: white
+  border-radius: 12px
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08)
+  padding: 2rem
+  min-height: 400px
+
+.loader
   text-align: center
   padding: 3rem
   font-size: 1.2rem
   color: #666
 
-.profileSection, .ordersSection
-  background: white
-  border-radius: 12px
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08)
-  padding: 2rem
-  margin-bottom: 2rem
+// Адаптив
+@media (max-width: 900px)
+  .container
+    flex-direction: column
 
-  h2
+  .sidebar
+    flex-direction: row
+    justify-content: space-between
+    align-items: center
+
+    .nav
+      flex-direction: row
+      gap: 1rem
+
+  .logoutBtn
     margin-top: 0
+
+.profileSection
+  h2
     margin-bottom: 1.5rem
     font-size: 1.5rem
     color: #333
@@ -34,90 +73,17 @@
   gap: 1.2rem 1rem
   font-size: 1.1rem
 
-  .label
-    font-weight: 500
-    color: #555
-
-  .value
-    color: #333
-
-    &.success
-      color: #2ecc71
-      font-weight: 500
-
-    &.error
-      color: #e74c3c
-      font-weight: 500
-
-.ordersGrid
-  display: grid
-  grid-template-columns: repeat(4, 1fr)
-  gap: 1rem
-  font-size: 1rem
-
-  .orderHeader
-    font-weight: 600
-    padding-bottom: 0.5rem
-    border-bottom: 2px solid #eee
-
-  & > div:not(.orderHeader)
-    padding: 0.8rem 0
-    border-bottom: 1px solid #f5f5f5
-
-  .status
-    &-completed
-      color: #27ae60
-      font-weight: 500
-    &-pending
-      color: #f39c12
-    &-canceled
-      color: #e74c3c
-
-.logoutBtn
-  background: #e74c3c
-  color: white
-  padding: 0.6rem 1.5rem
-  border-radius: 8px
+.label
   font-weight: 500
-  transition: background 0.3s
+  color: #555
 
-  &:hover
-    background: #c0392b
+.value
+  color: #333
 
-// Адаптация
-@media (max-width: 900px)
-  .ordersGrid
-    grid-template-columns: repeat(2, 1fr)
-    gap: 0.5rem
+  &.success
+    color: #2ecc71
+    font-weight: 500
 
-    .orderHeader
-      display: none
-
-    & > div:nth-child(4n+1)::before
-      content: "ID: "
-      font-weight: 500
-    & > div:nth-child(4n+2)::before
-      content: "Дата: "
-      font-weight: 500
-    & > div:nth-child(4n+3)::before
-      content: "Сумма: "
-      font-weight: 500
-    & > div:nth-child(4n)::before
-      content: "Статус: "
-      font-weight: 500
-
-@media (max-width: 600px)
-  .profileGrid
-    grid-template-columns: 1fr
-
-  .ordersGrid
-    grid-template-columns: 1fr
-
-  .header
-    flex-direction: column
-    gap: 1rem
-    text-align: center
-
-  .logoutBtn
-    width: 100%
-    max-width: 300px
+  &.error
+    color: #e74c3c
+    font-weight: 500

@@ -1,11 +1,10 @@
 import {useSocket} from "../../context/SocketContext.tsx";
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {IOrder, OrderStatus} from "../../store/interfaces/order.interface.ts";
 import {OrderItem} from "./OrderItem.tsx";
 import styles from "./orders.module.sass";
-import {Modal} from "../../lib/modal/Modal.tsx";
 
-const TABS: {label: string; value: OrderStatus, statusLabel: string}[] = [
+const TABS: { label: string; value: OrderStatus, statusLabel: string }[] = [
     {label: "В ожидании", value: OrderStatus.PENDING, statusLabel: "В ожидании"},
     {label: "Подтвержденные", value: OrderStatus.CONFIRMED, statusLabel: "Подтвержден"},
     {label: "Отправленные", value: OrderStatus.SHIPPED, statusLabel: "Отправлен"},
@@ -17,27 +16,25 @@ const TABS: {label: string; value: OrderStatus, statusLabel: string}[] = [
 export const OrdersPage = () => {
     const {getOrders, orders} = useSocket();
     const [activeTab, setActiveTab] = useState<OrderStatus>(OrderStatus.PENDING);
-    const [status, setStatus] = useState("В ожидании");
     const [search, setSearch] = useState("");
-    const [selectedOrder, setSelectedOrder] = useState<IOrder | null>(null);
-    const [openModal, setOpenModal] = useState<boolean>(false);
-
     useEffect(() => {
         getOrders();
     }, []);
 
-    const filteredOrders = orders
-        .filter((o: IOrder) => o.status === activeTab)
-        .filter((o: IOrder) => {
-            if (!search.trim()) return true;
-            const digits = o.orderNumber.replace(/^ORD-/, "");
-            return digits.startsWith(search.trim());
-        });
+    useEffect(() => {
+        console.log('Orders:', orders);
+    }, [orders]);
 
-    const handleClickItem = (order: IOrder) => {
-        setOpenModal(true);
-        setSelectedOrder(order);
-    }
+    const filteredOrders = useMemo(() => {
+        return orders
+            .filter((o: IOrder) => o.status === activeTab)
+            .filter((o: IOrder) => {
+                if (!search.trim()) return true;
+                const digits = o.orderNumber.replace(/^ORD-/, "");
+                return digits.startsWith(search.trim());
+            });
+    }, [orders, activeTab, search]);
+
 
     return (
         <div className="main__container">
@@ -61,7 +58,6 @@ export const OrdersPage = () => {
                         className={`${styles.tab} ${activeTab === tab.value ? styles.active : ""}`}
                         onClick={() => {
                             setActiveTab(tab.value);
-                            setStatus(tab.statusLabel);
                         }}
                     >
                         {tab.label}
@@ -86,10 +82,8 @@ export const OrdersPage = () => {
                         filteredOrders.map((order: IOrder) => (
                             <OrderItem
                                 key={order._id}
-                                status={status}
                                 order={order}
                                 search={search}
-                                onClick={() => handleClickItem(order)}
                             />
                         ))
                     ) : (
@@ -102,31 +96,6 @@ export const OrdersPage = () => {
                     </tbody>
                 </table>
             </div>
-
-            {/* Модальное окно */}
-            <Modal modal={openModal} setModal={setOpenModal}>
-                {selectedOrder && (
-                    <div className={styles.orderDetails}>
-                        <h2>Заказ {selectedOrder.orderNumber}</h2>
-                        <p><b>Покупатель:</b> {selectedOrder.owner.fullName}</p>
-                        <p><b>Телефон:</b> {selectedOrder.deliveryInfo.phone}</p>
-                        <p><b>Адрес:</b> {selectedOrder.deliveryInfo.address}</p>
-                        <p><b>Сумма:</b> {selectedOrder.finalAmount} ₽</p>
-                        <p><b>Способ оплаты:</b> {selectedOrder.paymentMethod}</p>
-                        <p><b>Статус:</b> {selectedOrder.status}</p>
-
-                        <h3>Товары:</h3>
-                        <ul>
-                            {selectedOrder.items.map((it, i) => (
-                                <li key={i}>
-                                    {it.quantity}
-                                    {/*{it.product} × {it.quantity} — {it.price} ₽*/}
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
-            </Modal>
         </div>
     );
 };

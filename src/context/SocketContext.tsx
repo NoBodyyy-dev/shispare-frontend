@@ -23,7 +23,7 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
     const [chatMessages, setChatMessages] = useState<IMessage[]>([]);
     const [orders, setOrders] = useState<IOrder[]>([]);
     const [onlineAdmins, setOnlineAdmins] = useState<string[]>([]);
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
     useEffect(() => {
         if (!isAuthenticated || !token) {
@@ -38,7 +38,6 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
             reconnectionAttempts: Infinity,
         });
 
-        // ======== Подключение и инициализация ========
         newSocket.on("connect", () => {
             console.log("Socket connected");
 

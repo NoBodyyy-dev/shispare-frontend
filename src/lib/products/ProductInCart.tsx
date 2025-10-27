@@ -1,10 +1,9 @@
-import React, {useCallback} from "react";
+import React, { useCallback } from "react";
+import { CartProductInterface } from "../../store/interfaces/product.interface";
+import { removeFromCart } from "../../store/actions/cart.action";
+import { useAppDispatch } from "../../hooks/state.hook";
+import { QuantityButtons } from "./QuantityButtons";
 import styles from "./product.module.sass";
-import {CartProductInterface} from "../../store/interfaces/product.interface.ts";
-import {removeFromCart} from "../../store/actions/cart.action.ts";
-import {removeItemLocal} from "../../store/slices/cart.slice.ts";
-import {useAppDispatch} from "../../hooks/state.hook.ts";
-import {QuantityButtons} from "./QuantityButtons.tsx";
 
 type Props = {
     item: CartProductInterface;
@@ -12,8 +11,8 @@ type Props = {
 
 export const CartItem: React.FC<Props> = ({ item }) => {
     const dispatch = useAppDispatch();
-    const { product } = item;
-    const variant = product.variants[product.variantIndex];
+    const { product, article } = item;
+    const variant = product.variants.find((v) => v.article === article)!;
     const hasDiscount = variant.discount > 0;
 
     const finalPrice = hasDiscount
@@ -21,9 +20,8 @@ export const CartItem: React.FC<Props> = ({ item }) => {
         : variant.price;
 
     const handleRemove = useCallback(() => {
-        dispatch(removeItemLocal({ productId: product._id, optionIndex: product.variantIndex }));
-        dispatch(removeFromCart({ productId: product._id }));
-    }, [dispatch, product._id, product.variantIndex]);
+        dispatch(removeFromCart({ productId: product._id, article }));
+    }, [dispatch, product._id, article]);
 
     return (
         <div className={styles.cartItem}>
@@ -33,9 +31,9 @@ export const CartItem: React.FC<Props> = ({ item }) => {
                 className={styles.image}
             />
 
-            <div className={styles.info}>
-                <h3 className={styles.title}>{product.title}</h3>
-                <p className={styles.code}>Артикул: {variant.article}</p>
+            <div className="ml-15">
+                <h3 className="fz-18">{product.title}</h3>
+                <p className="fz-12 color-gray">Артикул: {variant.article}</p>
 
                 <div className={styles.priceBlock}>
                     {hasDiscount && (
@@ -63,7 +61,7 @@ export const CartItem: React.FC<Props> = ({ item }) => {
                     🗑
                 </button>
 
-                <QuantityButtons productId={product._id} />
+                <QuantityButtons product={product} article={article} />
             </div>
         </div>
     );

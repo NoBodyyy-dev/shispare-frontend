@@ -1,13 +1,45 @@
 @use "../../styles/variables" as v
 
-.input
-  &Header
-    height: 35px
-    max-width: 480px
-    width: 100%
-    border: none
-    background: v.$searchInputBg
+.header
+  height: 35px
+  max-width: 480px
+  border-radius: 5px
+  width: 100%
+  border: none
+  background: v.$searchInputBg
 
+  input
+    height: 100%
+    background: none
+
+  button
+    width: 39px
+    height: 35px
+    border-radius: 0 5px 5px 0
+
+.input
   &Main
     background: #ffffff
     border: 1px solid v.$mainBlue
+
+.textarea
+  flex: 1
+  display: block
+  width: 100%
+  resize: none
+  overflow-y: auto
+  min-height: 1.4em * 1.5      // примерно 1 строка (высота зависит от line-height)
+  max-height: calc(1.4em * 5 * 1.5) // ограничение на 5 строк
+  line-height: 1.5
+  font-size: 15px
+  padding: 8px 12px
+  border: 1px solid #ccc
+  border-radius: 8px
+  background: #fff
+  transition: border-color 0.2s, box-shadow 0.2s
+  &:focus
+    outline: none
+    border-color: #007aff
+    box-shadow: 0 0 0 2px rgba(0,122,255,0.15)
+  &.scroll
+    overflow-y: scroll

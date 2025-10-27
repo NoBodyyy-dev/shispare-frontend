@@ -1,6 +1,6 @@
 import {Link} from "react-router-dom";
 
-export default function HeaderCatalog() {
+export const HeaderCatalog = () => {
     return (
         <Link to="/categories">
             <div className="header__catalog flex-align-center-sbetw">

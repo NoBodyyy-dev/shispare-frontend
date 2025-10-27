@@ -2,7 +2,6 @@ import {createBrowserRouter, RouterProvider} from "react-router-dom";
 import {Layout} from "../Layout";
 import {Home} from "../pages/Home/HomePage";
 import {About} from "../pages/About/AboutPage";
-import {Profile} from "../pages/Profile/ProfilePage";
 import {Cart} from "../pages/Cart/CartPage";
 import {DeliveryPayment} from "../pages/DeliveryPayment/DeliveryPaymentPage";
 import {Categories} from "../pages/Products/CategoriesPage";
@@ -19,8 +18,15 @@ import {AuthPage} from "../pages/Auth/AuthPage.tsx";
 import {Lk} from "../pages/LK/LK.tsx";
 import {UsersPage} from "../pages/users/UsersPage.tsx";
 import {Chat} from "../pages/Chat/Chat.tsx";
-import CheckoutPage from "../pages/Cart/CheckoutPage";
+import {CheckoutPage} from "../pages/Cart/CheckoutPage";
 import {OrdersPage} from "../pages/Orders/OrdersPage.tsx";
+import {OneOrderPage} from "../pages/Orders/OneOrderPage.tsx";
+import {Error404} from "../pages/Error/Error404.tsx";
+import {ReviewsTab} from "../pages/LK/ReviewTab.tsx";
+import {OrdersTab} from "../pages/LK/OrdersTab.tsx";
+import {ProfileTab} from "../pages/LK/ProfileTab.tsx";
+import {SearchPage} from "../pages/Products/SearchPage.tsx";
+import {AdminProductsAccordionPage} from "../pages/Admin/AdminProductsAccordionPage.tsx";
 // import CodeVerification from "../pages/Auth/CodeVerification.tsx";
 
 const router = createBrowserRouter([
@@ -28,6 +34,7 @@ const router = createBrowserRouter([
         path: "/",
         element: <Layout/>,
         children: [
+            {path: "/admin", element: <AdminProductsAccordionPage />},
             {path: "/", element: <Home/>},
             {path: "/auth", element: <AuthPage/>},
             {path: "/blog", element: <Blog/>},
@@ -40,15 +47,29 @@ const router = createBrowserRouter([
             {path: "/delivery-payment", element: <DeliveryPayment/>},
             {path: "/categories", element: <Categories/>},
             {path: "/categories/:category-slug", element: <Products/>},
-            {path: "/categories/:category-slug/:product-slug", element: <OneProductPage/>},
-            {path: "/lk/:id", element: <Lk/>},
+            {
+                path: "/categories/:category-slug/:product-slug",
+                element: <OneProductPage/>,
+                errorElement: <Error404/>
+            },
+            {
+                path: "/lk/:id",
+                element: <Lk/>,
+                children: [
+                    {index: true, element: <ProfileTab/>}, // /lk/:id
+                    {path: "orders", element: <OrdersTab/>}, // /lk/:id/orders
+                    {path: "comments", element: <ReviewsTab/>}, // /lk/:id/comments
+                ]
+            },
             {path: "/orders", element: <OrdersPage/>},
-            {path: "/profile", element: <Profile/>},
+            {path: "/orders/:orderNumber", element: <OneOrderPage/>},
+            {path: "/search", element: <SearchPage/>},
             {path: "/solution", element: <Solution/>},
             {path: "/solution/:solution-slug", element: <OneSolution/>},
             {path: "/stock/:stock-slug", element: <StockPage/>},
             {path: "/videos", element: <VideosPage/>},
-            {path: "/users", element: <UsersPage/>}
+            {path: "/users", element: <UsersPage/>},
+            {path: "*", element: <Error404/>}
         ],
         errorElement: (
             <>

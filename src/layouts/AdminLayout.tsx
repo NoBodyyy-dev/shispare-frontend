@@ -2,8 +2,8 @@ import {useAuth} from "../context/AuthContext.tsx";
 import {useEffect} from "react";
 import {Outlet, useNavigate} from "react-router-dom";
 import {useAppSelector} from "../hooks/state.hook.ts";
-import {Header} from "../lib/header/Header.tsx";
 import {PushMessageList} from "../lib/message/PushMessage.tsx";
+import {AdminHeader} from "../lib/header/AdminHeader.tsx";
 
 export const AdminLayout = () => {
     const {onlineAdmins} = useAppSelector(state => state.socket);
@@ -20,7 +20,7 @@ export const AdminLayout = () => {
     return (
         <>
             <PushMessageList/>
-            <Header/>
+            <AdminHeader/>
             <main className="main">
                 <Outlet />
                 <div className="main__container">

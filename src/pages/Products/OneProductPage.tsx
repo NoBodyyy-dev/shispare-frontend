@@ -1,152 +1,161 @@
-import {useEffect, useState, FC} from "react";
-import {useAppDispatch, useAppSelector} from "../../hooks/state.hook";
-import {Breadcrumbs} from "../../lib/breadcrumbs/Breadcrumbs";
-import {getProductFunc} from "../../store/actions/product.action";
-import {useParams} from "react-router-dom";
-import {StarRating} from "../../lib/products/StarRating";
-import {QuantityButtons} from "../../lib/products/QuantityButtons.tsx";
-import {ProductInterface} from "../../store/interfaces/product.interface.ts";
-import {SeenStory} from "../../lib/seenstory/YouSeen.tsx"; // предполагаю, что есть такой action
+import { useEffect, useState, FC } from "react";
+import { useAppDispatch, useAppSelector } from "../../hooks/state.hook";
+import { Breadcrumbs } from "../../lib/breadcrumbs/Breadcrumbs";
+import { getProductFunc } from "../../store/actions/product.action";
+import { useParams } from "react-router-dom";
+import { StarRating } from "../../lib/products/StarRating";
+import { QuantityButtons } from "../../lib/products/QuantityButtons";
+import { ProductInterface } from "../../store/interfaces/product.interface";
+import { SeenStory } from "../../lib/seenstory/YouSeen";
 import styles from "../../lib/products/product.module.sass";
 
 export const OneProductPage: FC = () => {
     const dispatch = useAppDispatch();
-    const {currentProduct, isLoadingProduct} = useAppSelector((state) => state.product);
+    const { currentProduct, isLoadingProduct } = useAppSelector((state) => state.product);
 
     const params = useParams();
-    const [variantIndex, setVariantIndex] = useState<number>(0);
     const [curImage, setCurImage] = useState<string>("");
+    const [selectedArticle, setSelectedArticle] = useState<number | null>(null);
+
+    const fullSlug = params["product-slug"];
+    const productSlug = fullSlug?.split("-")[0];
 
     useEffect(() => {
-        if (params["product-slug"]) dispatch(getProductFunc(params["product-slug"]));
-    }, [dispatch, params]);
+        if (productSlug) dispatch(getProductFunc(productSlug));
+    }, [dispatch, productSlug]);
 
     useEffect(() => {
         if (currentProduct?.images?.length) setCurImage(currentProduct.images[0]);
-        if (typeof currentProduct?.variantIndex === "number") setVariantIndex(currentProduct.variantIndex);
-
         if (currentProduct && currentProduct._id) {
             try {
                 const story = localStorage.getItem("story");
                 const parsed: ProductInterface[] = story ? JSON.parse(story) : [];
-                const withoutCurrent = Array.isArray(parsed)
-                    ? parsed.filter((p: ProductInterface) => p && p._id !== currentProduct._id)
-                    : [];
-                const next = [currentProduct, ...withoutCurrent].slice(0, 4);
+                const next = [currentProduct, ...parsed.filter(p => p._id !== currentProduct._id)].slice(0, 4);
                 localStorage.setItem("story", JSON.stringify(next));
             } catch {
                 localStorage.setItem("story", JSON.stringify([currentProduct]));
             }
         }
+        if (currentProduct?.variants?.length) {
+            setSelectedArticle(currentProduct.variants[0].article);
+        }
     }, [currentProduct]);
 
-    const breadcrumbsItems = [
-        {path: "/", label: "Главная"},
-        {path: `/categories`, label: "Категории"},
-        {path: `/product/${currentProduct?.slug}`, label: currentProduct?.title},
-    ];
+    if (isLoadingProduct) return <p className="main__container">Загрузка...</p>;
+    if (!currentProduct) return <p className="main__container">Товар не найден</p>;
 
-    const currentVariant = currentProduct?.variants?.[variantIndex];
+    const variant = currentProduct.variants.find((v) => v.article === selectedArticle);
+    if (!variant) return <p className="main__container">Вариант не найден</p>;
 
     const calcDiscountPrice = (price: number, discount: number) =>
         discount > 0 ? Math.round(price - (price * discount) / 100) : price;
 
+    const breadcrumbsItems = [
+        { path: "/", label: "Главная" },
+        { path: `/categories`, label: "Категории" },
+        { path: `/categories/${currentProduct.category?.slug}/${fullSlug}`, label: currentProduct.title },
+    ];
+
     return (
         <div className="main__container">
-            <Breadcrumbs items={breadcrumbsItems} isLoading={isLoadingProduct}/>
+            <Breadcrumbs items={breadcrumbsItems} isLoading={isLoadingProduct} />
 
-            {isLoadingProduct ? (
-                "Загрузка..."
-            ) : currentProduct && currentVariant ? (
-                <>
-                    <div className={`main__block ${styles.oneProduct}`}>
-                        <div className="one-currentProduct__images flex gap-10">
-                            <div className={styles.oneimagesContainer}>
-                                {currentProduct.images.map((image, index) => (
-                                    <img
-                                        key={index}
-                                        src={image}
-                                        alt=""
-                                        onClick={() => setCurImage(image)}
+            <div className={`main__block ${styles.oneProduct}`}>
+                {/* Картинки */}
+                <div className="one-currentProduct__images flex gap-10">
+                    <div className={styles.oneimagesContainer}>
+                        {currentProduct.images.map((image, index) => (
+                            <img
+                                key={index}
+                                src={image}
+                                alt=""
+                                onClick={() => setCurImage(image)}
+                                className={curImage === image ? styles.activeThumb : ""}
+                            />
+                        ))}
+                    </div>
+                    {curImage && (
+                        <img
+                            src={curImage}
+                            alt={currentProduct.title}
+                            className={styles.oneProductSelectedImg}
+                        />
+                    )}
+                </div>
+
+                {/* Информация */}
+                <div className={styles.oneProductInfo}>
+                    <div className={`${styles.oneProductInfoBlock} mb-20 p-20`}>
+                        <h1 className="title">{currentProduct.title}</h1>
+
+                        <div className="flex-align-center-sbetw">
+                            <p className="color-gray">Артикул: {variant.article}</p>
+                            <StarRating rating={currentProduct.displayedRating} totalComments={currentProduct.totalComments} />
+                        </div>
+
+                        <p className="fz-24 color-red mb-20 mt-10">
+                            {calcDiscountPrice(variant.price, variant.discount)} ₽{" "}
+                            {variant.discount > 0 && (
+                                <span className="old-price">{variant.price} ₽</span>
+                            )}
+                        </p>
+
+                        {/* Селектор цвета, если есть несколько */}
+                        {currentProduct.variants.length > 1 && (
+                            <div className="flex gap-10 mb-15">
+                                {currentProduct.variants.map((v) => (
+                                    <div
+                                        key={v.article}
+                                        onClick={() => setSelectedArticle(v.article)}
+                                        className={`${styles.colorCircle} ${
+                                            selectedArticle === v.article ? styles.activeColor : ""
+                                        }`}
+                                        style={{ background: v.color.hex }}
+                                        title={v.color.ru}
                                     />
                                 ))}
                             </div>
-                            {curImage && (
-                                <img
-                                    src={curImage}
-                                    alt={currentProduct.title}
-                                    className={styles.oneProductSelectedImg}
-                                />
-                            )}
-                        </div>
+                        )}
 
-                        <div className={styles.oneProductInfo}>
-                            <div className={`${styles.oneProductInfoBlock} mb-20 p-20`}>
-                                <h1 className="title">{currentProduct.title}</h1>
+                        <p className="font-roboto">{currentProduct.description}</p>
+                        <p className="mt-10">Цвет: {variant.color.ru}</p>
+                        <p>
+                            Упаковка: {variant.package.count} {variant.package.unit} ({variant.package.type})
+                        </p>
+                        <p>В наличии: {variant.countInStock} шт.</p>
+                        <p>Страна производства: {currentProduct.country}</p>
+                        <p>Срок хранения: {12} мес.</p>
 
-                                <div className="flex-align-center-sbetw">
-                                    <p className="color-gray">Артикул: {currentVariant.article}</p>
-                                    <StarRating rating={currentVariant.rating || 0}/>
-                                </div>
-
-                                <p className="fz-24 color-red mb-20 mt-10">
-                                    {calcDiscountPrice(currentVariant.price, currentVariant.discount)} ₽
-                                    {currentVariant.discount > 0 && (
-                                        <span className="old-price">{currentVariant.price} ₽</span>
-                                    )}
-                                </p>
-
-                                <div className={styles.onecurrentProductInfoBlockDescription}>
-                                    <p>Описание: <span className="font-roboto">{currentProduct.description}</span></p>
-
-                                    <div className="mt-10">
-                                        Цвет:
-                                        <div
-                                            style={{
-                                                width: 14,
-                                                height: 14,
-                                                background: currentVariant.color.en,
-                                            }}
-                                            title={currentVariant.color.ru}
-                                        />
-                                    </div>
-
-                                    <p>Упаковка: {currentVariant.package.count} {currentVariant.package.unit} ({currentVariant.package.type})</p>
-                                    <p>На паллете: {currentVariant.countOnPallet} шт.</p>
-                                    <p>В наличии: {currentVariant.countInStock} шт.</p>
-                                    <p>Страна производства: {currentProduct.country}</p>
-                                    <p>Срок хранения: {currentProduct.shelfLife}</p>
-
-                                    <QuantityButtons productId={currentProduct._id}/>
-                                </div>
-                            </div>
-
-                            <div className={`${styles.oneProductInfoBlock} p-20`}>
-                                <p className="fz-18 mb-10">Характеристики</p>
-                                <ul className="pl-20">
-                                    {currentProduct.characteristics.map((ch, index) => (
-                                        <li key={index} className="font-roboto line">
-                                            {ch}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                        <div className="mt-15">
+                            <QuantityButtons product={currentProduct} article={variant.article} />
                         </div>
                     </div>
 
-                    <div className="main__block">
-                        <div className="flex gap-30">
-                            <h1 className="title">Отзывы</h1>
-                            <StarRating rating={currentVariant.rating || 0}/>
-                        </div>
+                    <div className={`${styles.oneProductInfoBlock} p-20`}>
+                        <p className="fz-18 mb-10">Характеристики</p>
+                        <ul className="pl-20">
+                            {currentProduct.characteristics!.map((ch, index) => (
+                                <li key={index} className="font-roboto line">
+                                    {ch}
+                                </li>
+                            ))}
+                        </ul>
                     </div>
-                </>
-            ) : (
-                <p>Товар не найден</p>
-            )}
+                </div>
+            </div>
+
+            <div className="main__block mt-20">
+                <div className="flex gap-30">
+                    <h1 className="title">Отзывы</h1>
+                    <StarRating
+                        rating={currentProduct.displayedRating}
+                        totalComments={currentProduct.totalComments}
+                    />
+                </div>
+            </div>
 
             <div className="main__block">
-                <SeenStory/>
+                <SeenStory />
             </div>
         </div>
     );

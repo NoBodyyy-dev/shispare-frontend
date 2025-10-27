@@ -1,4 +1,4 @@
-import React, {SetStateAction, useEffect, useMemo} from "react";
+import React, {SetStateAction, useEffect, useMemo, useState} from "react";
 import api from "../store/api.ts";
 import {ProductInterface} from "../store/interfaces/product.interface.ts";
 
@@ -43,24 +43,51 @@ export const useCheckCartData = (
     }, []);
 }
 
-type DebouncedFn = ((...args: any[]) => any) & { cancel?: () => void };
+export const getInitials = (fullName: string): string => {
+    if (!fullName) return "";
+    const parts = fullName.trim().split(/\s+/);
+    return parts.slice(0, 2).map(part => part[0]?.toUpperCase() ?? '').join('');
+}
 
-export function debounce(fn: (...args: any[]) => any, delay: number): DebouncedFn {
-    let timer: ReturnType<typeof setTimeout> | null = null;
 
-    const debounced: DebouncedFn = ((...args: any[]) => {
-        if (timer) clearTimeout(timer);
-        timer = setTimeout(() => {
-            fn(...args);
+// hooks/util.hook.ts
+export function debounce<T extends (...args: any[]) => any>(
+    func: T,
+    delay: number
+): { (): void; cancel: () => void } {
+    let timeoutId: number | null = null;
+
+    const debouncedFunction = () => {
+        if (timeoutId !== null) {
+            window.clearTimeout(timeoutId);
+        }
+        timeoutId = window.setTimeout(() => {
+            func();
         }, delay);
-    }) as DebouncedFn;
+    };
 
-    debounced.cancel = () => {
-        if (timer) {
-            clearTimeout(timer);
-            timer = null;
+    debouncedFunction.cancel = () => {
+        if (timeoutId !== null) {
+            window.clearTimeout(timeoutId);
+            timeoutId = null;
         }
     };
 
-    return debounced;
+    return debouncedFunction;
+}
+
+export function useDebounce<T>(value: T, delay: number): T {
+    const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+    useEffect(() => {
+        const timeoutId = window.setTimeout(() => {
+            setDebouncedValue(value);
+        }, delay);
+
+        return () => {
+            window.clearTimeout(timeoutId);
+        };
+    }, [value, delay]);
+
+    return debouncedValue;
 }

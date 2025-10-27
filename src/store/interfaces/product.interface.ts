@@ -1,49 +1,62 @@
-export type ProductInterface = {
-    _id: string;
-    title: string;
-    description: string;
-    slug: string;
-    article: string;
-    discount: number;
-    rating: number;
-    category: {
-        title: string;
-        slug: string;
-    };
-    images: string[];
-    characteristics: string[];
-    documents: string[];
-    totalPurchases: number;
-    country: string;
-    shelfLife: string;            // Срок хранения (общий)
-    variants: IProductVariant[];  // Варианты товара
-    variantIndex: number;         // Индекс варианта
-};
-
-export interface IProductVariant {
-    sku: string;
-    article: number;
-    price: number;
-    discount: number;
-    countInStock: number;
-    rating: number;
-    countOnPallet: number;
-    color: {
-        ru: string;
-        en: string;
-    };
-    package: {
-        type: string;
-        count: number;
-        unit: string;
-    };
-}
-
+import {CategoryData} from "./category.interface";
 
 export interface CartProductInterface {
-    product: ProductInterface;
-    quantity: number;
-    addedAt: Date;
+    _id: string;               // ID позиции в корзине
+    product: ProductInterface; // Продукт
+    article: number;      // Индекс выбранного варианта
+    quantity: number;          // Количество
+    addedAt: Date;             // Время добавления
+}
+
+export interface IColor {
+    ru: string;
+    hex: string;
+}
+
+export interface IPackage {
+    type: string;   // Тип упаковки (мешок, ведро, картридж и т.д.)
+    count: number;  // Объём / вес / количество
+    unit: string;   // Ед. измерения (кг, л, шт)
+}
+
+export interface IVariant {
+    article: number;       // Артикул
+    price: number;         // Цена (₽)
+    color: IColor;         // Цвет
+    package: IPackage;     // Упаковка
+    discount: number;      // Скидка (%)
+    countInStock: number;  // Остаток на складе
+}
+
+export interface ProductInterface {
+    _id: string;
+    title: string;
+    description?: string;
+    slug: string;
+
+    // Связанная категория
+    category: CategoryData;
+
+    // Основная информация
+    country: string;
+    images: string[];
+    documents: string[];
+    characteristics?: string[];
+
+    // Метрики
+    displayedRating: number;
+    totalComments: number;
+    totalRatings: number;
+    totalPurchases: number;
+
+    // Флаг активности
+    isActive: boolean;
+
+    // ✅ Главное изменение — массив вариантов
+    variants: IVariant[];
+
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export interface ProductState {
@@ -53,14 +66,26 @@ export interface ProductState {
     categoryProducts: ProductInterface[];
     currentProduct: ProductInterface | null;
     curCategory: string;
+
+    importExcelResult: never | null;
+
+    // Загрузки
+    isLoadingImportingExcel: boolean;
     isLoadingProducts: boolean;
     isLoadingDiscountProducts: boolean;
     isLoadingPopularProducts: boolean;
     isLoadingCategoryProducts: boolean;
     isLoadingProduct: boolean;
+    isCreatingProduct: boolean;
+    isCheckingProducts: boolean;
+
+    // Ошибки
     productsError?: string;
     discountProductsError?: string;
     popularProductsError?: string;
     categoryProductsError?: string;
     productError?: string;
+    createProductError: string;
+    checkProductsError: string;
+    importExcelError: string;
 }

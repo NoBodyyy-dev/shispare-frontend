@@ -1,5 +1,5 @@
 import {ActionReducerMapBuilder, createSlice} from "@reduxjs/toolkit";
-import {createOrderHandler, getAllOrdersHandler} from "../handlers/order.handler.ts";
+import {createOrderHandler, getUserOrdersHandler} from "../handlers/order.handler.ts";
 import {OrderState} from "../interfaces/order.interface.ts";
 
 const initialState: OrderState = {
@@ -14,18 +14,11 @@ const initialState: OrderState = {
 const socketSlice = createSlice({
     name: "order",
     initialState,
-    reducers: {
-        addOrder: (state, action) => {
-            state.orders = [...state.orders, action.payload.order];
-        },
-    },
+    reducers: {},
     extraReducers: (builder: ActionReducerMapBuilder<OrderState>) => {
-        getAllOrdersHandler(builder);
+        getUserOrdersHandler(builder);
         createOrderHandler(builder);
     }
 });
 
-export const {
-    addOrder,
-} = socketSlice.actions;
 export default socketSlice.reducer;

@@ -1,129 +1,93 @@
-import {useCallback, useRef, useEffect} from "react";
-import {useAppDispatch, useAppSelector} from "../../hooks/state.hook.ts";
-import {Button} from "../buttons/Button.tsx";
-import {
-    addToCart,
-    removeFromCart,
-    updateQuantity
-} from "../../store/actions/cart.action.ts";
-import {
-    rollbackQuantity,
-    updateQuantityLocal,
-    removeItemLocal
-} from "../../store/slices/cart.slice.ts";
-import {debounce} from "../../hooks/util.hook.ts";
-import styles from "./product.module.sass"
+import { MouseEvent, useMemo, useCallback } from "react";
+import { useAppDispatch, useAppSelector } from "../../hooks/state.hook";
+import { Button } from "../buttons/Button";
+import styles from "./product.module.sass";
+import { ProductInterface } from "../../store/interfaces/product.interface";
+import { setQuantitySmart } from "../../store/slices/cart.slice";
+import {useAuth} from "../../context/AuthContext.tsx";
 
 type Props = {
-    productId: string;
+    product: ProductInterface;
+    article: number;
 };
 
-export const QuantityButtons = ({productId}: Props) => {
+export const QuantityButtons = ({ product, article }: Props) => {
     const dispatch = useAppDispatch();
-    const {products, isLoading} = useAppSelector(state => state.cart);
+    const { isAuthenticated } = useAuth();
+    const { products, isLoading } = useAppSelector((s) => s.cart);
 
-    const debouncedUpdateRef = useRef<ReturnType<typeof debounce> | null>(null);
-    const prevQuantityRef = useRef<number>(0);
+    const cartItem = products.find(
+        (p) => p.product._id === product._id && p.article === article
+    );
+    const variant = useMemo(
+        () => product.variants?.find((v) => v.article === article),
+        [product, article]
+    );
 
-    const cartItem = products.find(item => item.product._id === productId);
-    console.log(cartItem);
+    const qty = cartItem?.quantity || 0;
+    const inStock = variant?.countInStock ?? 0;
 
-    useEffect(() => {
-        return () => {
-            if (debouncedUpdateRef.current?.cancel) {
-                debouncedUpdateRef.current.cancel();
-            }
-        };
-    }, []);
-
-    const handleAddToCart = useCallback(() => {
-        dispatch(addToCart({productId, quantity: 1}));
-    }, [dispatch, productId]);
-
-    const sendUpdateToServer = useCallback((newQuantity: number) => {
-        dispatch(updateQuantity({productId, quantity: newQuantity}))
-            .unwrap()
-            .catch((error) => {
-                console.error("Ошибка обновления количества:", error);
-                // Откатываем изменения в случае ошибки
-                dispatch(rollbackQuantity({
-                    productId,
-                    prevQuantity: prevQuantityRef.current
-                }));
+    const setQty = useCallback(
+        (newQty: number) => {
+            setQuantitySmart({
+                dispatch,
+                product,
+                article,
+                quantity: newQty,
+                isAuthenticated,
+                prevQuantity: qty,
             });
-    }, [dispatch, productId]);
+        },
+        [dispatch, product, article, qty, isAuthenticated]
+    );
 
-    const handleUpdateQuantity = useCallback((newQuantity: number) => {
-        if (!cartItem) return;
-        prevQuantityRef.current = cartItem.quantity;
-        dispatch(updateQuantityLocal({productId, quantity: newQuantity}));
-        if (debouncedUpdateRef.current?.cancel) debouncedUpdateRef.current.cancel();
+    const handleAdd = (e: MouseEvent) => {
+        e.stopPropagation();
+        if (inStock <= 0) return;
+        setQty(1);
+    };
 
-        debouncedUpdateRef.current = debounce(() => {
-            sendUpdateToServer(newQuantity);
-        }, 2000);
+    const handleInc = (e: MouseEvent) => {
+        e.stopPropagation();
+        if (qty < inStock) setQty(qty + 1);
+    };
 
-        debouncedUpdateRef.current();
-    }, [dispatch, cartItem, productId, sendUpdateToServer]);
+    const handleDec = (e: MouseEvent) => {
+        e.stopPropagation();
+        if (qty <= 1) setQty(0);
+        else setQty(qty - 1);
+    };
 
-    const handleIncrement = useCallback(() => {
-        if (!cartItem) return;
-        handleUpdateQuantity(cartItem.quantity + 1);
-    }, [cartItem, handleUpdateQuantity]);
-
-    const handleDecrement = useCallback(() => {
-        if (!cartItem) return;
-
-        if (cartItem.quantity === 1) {
-            if (debouncedUpdateRef.current?.cancel) debouncedUpdateRef.current.cancel();
-
-            dispatch(removeItemLocal({productId}));
-
-            dispatch(removeFromCart({productId}))
-                .unwrap()
-                .catch((error) => {
-                    console.error("Ошибка удаления товара:", error);
-                    // В случае ошибки - возвращаем товар
-                    dispatch(addToCart({productId, quantity: 1}));
-                });
-        } else {
-            handleUpdateQuantity(cartItem.quantity - 1);
-        }
-    }, [dispatch, cartItem, productId, handleUpdateQuantity]);
-
-    if (!cartItem?.product._id) {
+    if (!variant || inStock <= 0) {
         return (
-            <Button
-                onClick={handleAddToCart}
-                disabled={isLoading}
-                className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50"
-            >
-                {isLoading ? "Загрузка..." : "В корзину"}
+            <Button disabled className={`${styles.disabled} full-width`}>
+                Нет в наличии
             </Button>
         );
     }
 
-    const disabledDecrement = cartItem!.quantity <= 1
-    const disabledIncrement = cartItem!.quantity >= cartItem!.product.variants[cartItem!.product.variantIndex].countInStock
+    if (qty <= 0) {
+        return (
+            <Button
+                onClick={handleAdd}
+                disabled={isLoading}
+                loading={isLoading}
+                className="full-width"
+            >
+                В корзину
+            </Button>
+        );
+    }
 
     return (
-        <div className={styles.quantity}>
-            <Button
-                onClick={handleDecrement}
-                disabled={disabledDecrement}
-                className={""}
-                aria-label="Уменьшить количество"
-            >
+        <div className={`${styles.quantity} full-width gap-8 flex-align-center-sbetw`}>
+            <Button onClick={handleDec} disabled={isLoading}>
                 -
             </Button>
-
-            <p>{cartItem.quantity}</p>
-
+            <p className="fz-16">{qty}</p>
             <Button
-                onClick={handleIncrement}
-                disabled={disabledIncrement}
-                className={""}
-                aria-label="Увеличить количество"
+                onClick={handleInc}
+                disabled={isLoading || qty >= inStock}
             >
                 +
             </Button>

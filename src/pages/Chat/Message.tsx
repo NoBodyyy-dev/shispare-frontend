@@ -84,15 +84,17 @@ export const Message: React.FC<Props> = ({msg, onEdit, onReply, scrollToMessage,
         return () => window.removeEventListener("click", close);
     }, []);
 
+    useEffect(() => {
+        console.log(msg)
+    }, []);
+
     return (
         <div className={`${styles.messageBlock} ${isOwner ? styles.owner : ""}`}>
             <div ref={registerRef} className={`${styles.message} ${isOwner ? styles.owner : ""}`}
                  onContextMenu={handleContextMenu}>
                 <div className={styles.header}>
                     <span className={`${styles.sender} font-roboto`}>{msg.senderId.fullName}</span>
-                    <span className={styles.time}>
-            {formatedTime}
-          </span>
+                    <span className={styles.time}>{formatedTime}</span>
                 </div>
                 {msg.replyTo && (
                     <div
@@ -116,7 +118,6 @@ export const Message: React.FC<Props> = ({msg, onEdit, onReply, scrollToMessage,
             </div>
 
 
-            {/* === Контекстное меню === */}
             {menuVisible && menuPos && (
                 <ul
                     className={styles.contextMenu}
@@ -132,7 +133,6 @@ export const Message: React.FC<Props> = ({msg, onEdit, onReply, scrollToMessage,
                 </ul>
             )}
 
-            {/* === Инфо о прочтении === */}
             {showInfo && (
                 <div className={styles.infoModal}>
                     <div className={styles.infoContent}>

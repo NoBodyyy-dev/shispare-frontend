@@ -1,7 +1,6 @@
 import React from "react";
 import {useForm} from "react-hook-form";
 import {useAppDispatch} from "../../hooks/state.hook.ts";
-import {createPostHandler} from "../../store/handlers/blog.handler.ts";
 import {createPostFunc} from "../../store/actions/blog.action.ts";
 
 type FormValues = {

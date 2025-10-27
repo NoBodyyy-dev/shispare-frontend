@@ -1,14 +1,13 @@
-import {FC, useState, useEffect} from "react";
+import {FC, useState, useEffect, useCallback} from "react";
 import {useForm} from "react-hook-form";
 import styles from "./checkout.module.sass";
 import {CartSummary} from "./CartSummary.tsx";
 import {Breadcrumbs} from "../../lib/breadcrumbs/Breadcrumbs.tsx";
 import {MainInput} from "../../lib/input/MainInput.tsx";
-import {Button} from "../../lib/buttons/Button.tsx";
-import {useAppDispatch, useAppSelector} from "../../hooks/state.hook.ts";
-import {createOrderFunc} from "../../store/actions/order.action.ts";
+import {useAppSelector} from "../../hooks/state.hook.ts";
 import {DeliveryType, PaymentMethod} from "../../store/interfaces/order.interface.ts";
 import {useNavigate} from "react-router-dom";
+import {Spin} from "../../lib/loaders/Spin.tsx";
 
 interface AddressSuggestion {
     address: {
@@ -31,13 +30,14 @@ enum DeliveryKind {
 }
 
 enum PaymentMethodKind {
-    CARD = "card",
-    SBP = "sbp",
-    CASH = "cash",
-    CASH_ON_SITE = "cash_on_site"
+    CARD = "card",                 // Оплата картой
+    CASH = "cash",                 // Наличные при получении
+    SBP = "sbp",                   // Система быстрых платежей
+    INVOICE = "invoice",           // По счету для юр. лиц
+    PAYINSHOP = "pay_in_shop"      // Оплата в магазине
 }
 
-type CheckoutForm = {
+export type CheckoutForm = {
     deliveryKind: DeliveryType;
     phone: string;
     fullName?: string;
@@ -47,24 +47,22 @@ type CheckoutForm = {
     comment?: string;
 };
 
-const phoneRegexp = /^(\+7|8)?[\s\-]?\(?[489][0-9]{2}\)?[\s\-]?[0-9]{3}[\s\-]?[0-9]{2}[\s\-]?[0-9]{2}$/;
+const phoneRegexp = /^(\+7|8)?[\s-]?\(?[489][0-9]{2}\)?[\s-]?[0-9]{3}[\s-]?[0-9]{2}[\s-]?[0-9]{2}$/;
 
 const CHECKOUT_FORM_STORAGE_KEY = "checkout_form_data";
 
 export const CheckoutPage: FC = () => {
-    const dispatch = useAppDispatch();
     const {products} = useAppSelector(state => state.cart);
     const navigate = useNavigate();
 
     useEffect(() => {
         if (!products.length) navigate(-1)
     }, []);
-
     const [addressSuggestions, setAddressSuggestions] = useState<AddressSuggestion[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [isLoadingAddress, setIsLoadingAddress] = useState(false);
     const [addressInput, setAddressInput] = useState("");
-
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const getSavedFormData = (): Partial<CheckoutForm> => {
         try {
@@ -84,12 +82,13 @@ export const CheckoutPage: FC = () => {
         }
     };
 
-    const {register, handleSubmit, watch, setValue, reset, formState: {errors}} = useForm<CheckoutForm>({
+    const {register, handleSubmit, watch, setValue, formState: {errors, isValid}} = useForm<CheckoutForm>({
         mode: "onChange",
         defaultValues: {
             deliveryKind: DeliveryType.PICKUP,
             isSelfPickupPerson: true,
-            ...getSavedFormData() // Load saved data as default values
+            paymentMethod: PaymentMethod.CARD,
+            ...getSavedFormData()
         }
     });
 
@@ -171,10 +170,17 @@ export const CheckoutPage: FC = () => {
         console.log("Selected address:", suggestion);
     };
 
-    const onSubmit = (data: CheckoutForm) => {
-        dispatch(createOrderFunc(data));
-        reset();
-    };
+    const onSubmit = useCallback(async (data: CheckoutForm) => {
+        setIsSubmitting(true);
+        try {
+            // Отправка будет через CartSummary
+            console.log("Form data ready:", data);
+        } catch (error) {
+            console.error("Form error:", error);
+        } finally {
+            setIsSubmitting(false);
+        }
+    }, []);
 
     const breadcrumbsItems = [
         {path: "/", label: "Главная"},
@@ -259,7 +265,7 @@ export const CheckoutPage: FC = () => {
                                             onFocus={() => setShowSuggestions(addressSuggestions.length > 0)}
                                             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                                         />
-                                        {isLoadingAddress && <div className={styles.addressSpinner}></div>}
+                                        {isLoadingAddress && <Spin/>}
 
                                         {showSuggestions && addressSuggestions.length > 0 && (
                                             <div className={styles.addressSuggestions}>
@@ -304,7 +310,7 @@ export const CheckoutPage: FC = () => {
                                     <label className={styles.radioItem}>
                                         <input
                                             type="radio"
-                                            value={PaymentMethodKind.CASH_ON_SITE}
+                                            value={PaymentMethodKind.PAYINSHOP}
                                             {...register("paymentMethod", {required: "Выберите способ оплаты"})}
                                         />
                                         <span className={styles.radioIcon}>💳</span>
@@ -374,10 +380,16 @@ export const CheckoutPage: FC = () => {
                             {errors.fullName && <span className={styles.error}>{errors.fullName.message}</span>}
                         </div>
                     </div>
-                    <Button>заказать</Button>
                 </form>
 
-                <CartSummary isRedirect={false}/>
+                <CartSummary
+                    isRedirect={false}
+                    formData={formValues}
+                    formErrors={errors}
+                    isFormValid={isValid}
+                    isSubmitting={isSubmitting}
+                    onSubmit={handleSubmit(onSubmit)}
+                />
             </div>
         </div>
     );

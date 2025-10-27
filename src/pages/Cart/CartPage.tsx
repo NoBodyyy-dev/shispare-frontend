@@ -10,12 +10,6 @@ import {SeenStory} from "../../lib/seenstory/YouSeen.tsx";
 export const Cart: FC = () => {
     const {products} = useAppSelector(state => state.cart)
 
-    useEffect(() => {
-        axios.get("https://suggest-maps.yandex.ru/v1/suggest?apikey=a343e3ef-bfdd-4222-b31d-7c33ee9c2825&text=60-летия").then(r => {
-            console.log(r)
-        })
-    }, [])
-
     const breadcrumbsItems = [
         {path: "/", label: "Главная"},
         {path: "/cart", label: "Корзина"}
@@ -39,7 +33,7 @@ export const Cart: FC = () => {
                     </div>
                     <CartSummary isRedirect={true}/>
                 </div>
-                : <div className={`${styles.empty} main__block`}>
+                : <div className={`${styles.empty} main__block flex-to-center-col`}>
                     <h1 className="title center color-gray">Корзина пустая</h1>
                 </div>
             }

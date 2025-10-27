@@ -1,20 +1,21 @@
 import React, {useRef, useState, useEffect} from "react";
+import {FaPaperclip} from "react-icons/fa6";
+import {IoSend} from "react-icons/io5";
 import {useSocket} from "../../context/SocketContext";
 import {IMessage} from "../../store/interfaces/socket.interface";
 import {Message} from "./Message";
 import styles from "./chat.module.sass";
-import {MainInput} from "../../lib/input/MainInput.tsx";
 import {Button} from "../../lib/buttons/Button.tsx";
+import {MainTextarea} from "../../lib/input/MainTextarea.tsx";
 
 export const Chat: React.FC = () => {
-    const {chatMessages, sendMessage} = useSocket();
+    const {chatMessages, sendMessage, onlineAdmins} = useSocket();
     const [text, setText] = useState("");
     const [replyTo, setReplyTo] = useState<IMessage | null>(null);
 
     const messageRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
     const messagesContainerRef = useRef<HTMLDivElement | null>(null);
-    const inputRef = useRef<HTMLInputElement | null>(null); // 👈 ref для инпута
-
+    const inputRef = useRef<HTMLTextAreaElement | null>(null);
 
     const handleSend = () => {
         if (!text.trim()) return;
@@ -48,13 +49,9 @@ export const Chat: React.FC = () => {
     return (
 
         <div className="main__container">
-            <div className="flex-align-center mb-20 gap-40">
-                <h1 className="title">Чат</h1>
-                <p className="font-roboto">В сети: {0}</p>
-            </div>
-            <div className={`${styles.chatPage}`}>
-
-                <div className={styles.messagesContainer} ref={messagesContainerRef}>
+            <div className={`${styles.chatPage}`} tabIndex={-1}>
+                В сети: {onlineAdmins}
+                <div className={styles.messagesContainer} ref={messagesContainerRef} tabIndex={-1}>
                     {chatMessages.map((msg) => (
                         <Message
                             key={msg._id}
@@ -80,9 +77,12 @@ export const Chat: React.FC = () => {
                 )}
 
                 <div className={styles.inputBox}>
-                    <MainInput
+                    <Button className="fz-16 w-40"><FaPaperclip/></Button>
+
+                    <MainTextarea
+                        className="main-textarea"
+                        tabIndex={1}
                         ref={inputRef}
-                        type="text"
                         value={text}
                         placeholder="Напишите сообщение..."
                         onChange={(e) => setText(e.target.value)}
@@ -93,7 +93,8 @@ export const Chat: React.FC = () => {
                             }
                         }}
                     />
-                    <Button onClick={handleSend}>Отправить</Button>
+
+                    <Button onClick={handleSend} className="w-40"><IoSend/></Button>
                 </div>
             </div>
         </div>
