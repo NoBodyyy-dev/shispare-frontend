@@ -47,7 +47,35 @@ export const Message: React.FC<Props> = ({msg, onEdit, onReply, scrollToMessage,
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
-        setMenuPos({x: e.clientX, y: e.clientY});
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const menuWidth = 180; // примерная ширина меню
+        const menuHeight = 250; // примерная высота меню (с учетом всех пунктов)
+        
+        let x = e.clientX;
+        let y = e.clientY;
+        
+        // Проверяем, не выходит ли меню за правую границу
+        if (x + menuWidth > viewportWidth) {
+            x = viewportWidth - menuWidth - 10;
+        }
+        
+        // Проверяем, не выходит ли меню за нижнюю границу
+        if (y + menuHeight > viewportHeight) {
+            y = viewportHeight - menuHeight - 10;
+        }
+        
+        // Проверяем, не выходит ли меню за левую границу
+        if (x < 10) {
+            x = 10;
+        }
+        
+        // Проверяем, не выходит ли меню за верхнюю границу
+        if (y < 10) {
+            y = 10;
+        }
+        
+        setMenuPos({x, y});
         setMenuVisible(true);
     };
 

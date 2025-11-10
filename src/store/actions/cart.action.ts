@@ -77,3 +77,18 @@ export const clearCart = createAsyncThunk("cart/clear", async (_, thunkAPI) => {
         return thunkAPI.rejectWithValue(e);
     }
 });
+
+export const syncCart = createAsyncThunk(
+    "cart/sync",
+    async (items: Array<{ productId: string; article: number; quantity: number }>, thunkAPI) => {
+        try {
+            const { data, status } = await api.post("/cart/sync", { items }, {
+                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+            });
+            if (status !== 200) return thunkAPI.rejectWithValue(data);
+            return data.data;
+        } catch (e) {
+            return thunkAPI.rejectWithValue(e);
+        }
+    }
+);

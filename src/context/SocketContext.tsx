@@ -22,7 +22,7 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
     const {socket} = useAppSelector(state => state.socket);
     const [chatMessages, setChatMessages] = useState<IMessage[]>([]);
     const [orders, setOrders] = useState<IOrder[]>([]);
-    const [onlineAdmins, setOnlineAdmins] = useState<string[]>([]);
+    const [onlineAdmins, setOnlineAdmins] = useState<{ _id: string; fullName: string }[]>([]);
     const [typingUsers, setTypingUsers] = useState<string[]>([]);
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 
@@ -53,7 +53,7 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
             if (user?.role === 'Admin') {
                 newSocket.emit('admin:reconnect');
 
-                newSocket.on('admin:online', (data: { onlineAdmins: string[], yourId: string }) => {
+                newSocket.on('admin:online', (data: { onlineAdmins: { _id: string; fullName: string }[], yourId: string }) => {
                     setOnlineAdmins(data.onlineAdmins);
                 });
             }
@@ -107,7 +107,7 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
         });
 
         newSocket.on('chat:editMessage', (msg: IMessage) => {
-            setChatMessages(prev => prev.map(m => m._id === msg._id ? msg : m));
+            setChatMessages(prev => prev.map(m => m._id === msg._id ? {...msg, edited: true} : m));
         });
         newSocket.on('chat:deleteMessage', ({messageId}: { messageId: string }) => {
             setChatMessages(prev => prev.filter(m => m._id !== messageId));
@@ -187,7 +187,7 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
     };
 
     const editMessage = (messageId: string, content?: string, attachments?: Attachments) => {
-        socket?.emit('chat:editMessage', {messageId, content, attachments}, (res: any) => {
+        socket?.emit('chat:editMessage', {messageId, newContent: content, newAttachments: attachments}, (res: any) => {
             if (!res.success) console.error(res.message);
         });
     };

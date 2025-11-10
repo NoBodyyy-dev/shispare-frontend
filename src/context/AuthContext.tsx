@@ -2,6 +2,7 @@ import {createContext, useContext, ReactNode, useEffect, useRef, useState} from 
 import {useAppDispatch, useAppSelector} from '../hooks/state.hook.ts';
 import {UserInterface} from "../store/interfaces/user.interface.ts";
 import {getMeFunc} from "../store/actions/user.action.ts";
+import {syncCart} from "../store/actions/cart.action.ts";
 
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -29,6 +30,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             try {
                 setIsLoading(true);
                 await dispatch(getMeFunc()).unwrap();
+                
+                // Синхронизируем корзину из localStorage после успешной авторизации
+                const localCart = localStorage.getItem("cart");
+                if (localCart) {
+                    try {
+                        const cartItems = JSON.parse(localCart);
+                        if (Array.isArray(cartItems) && cartItems.length > 0) {
+                            const items = cartItems
+                                .map((item: any) => ({
+                                    productId: item.product?._id || item.productId,
+                                    article: item.article,
+                                    quantity: item.quantity || 1,
+                                }))
+                                .filter((item: any) => item.productId && item.article);
+                            
+                            if (items.length > 0) {
+                                await dispatch(syncCart(items)).unwrap();
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Ошибка синхронизации корзины:", e);
+                    }
+                }
             } finally {
                 setIsLoading(false);
             }

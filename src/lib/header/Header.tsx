@@ -1,5 +1,5 @@
 import {Link} from "react-router-dom";
-import {memo, useEffect, useState} from "react";
+import {memo} from "react";
 import {SearchInput} from "../input/SearchInput";
 import {HeaderCatalog} from "./HeaderCatalog.tsx";
 import {Button} from "../buttons/Button";
@@ -22,18 +22,9 @@ const userPaths: NavPath[] = [
     {name: "Видео по установке", path: "/videos"},
 ];
 
-const adminPaths: NavPath[] = [
-    {name: "Заказы", path: "/orders"},
-    {name: "Чат", path: "/chat"},
-    {name: "Блог", path: "/blog"},
-    {name: "Пользователи", path: "/users"},
-    {name: "Администраторы", path: "/admins"},
-]
-
 export const Header = memo(() => {
-    const {user, isAuthenticated, isLoading} = useAuth()
+    const {isAuthenticated, isLoading} = useAuth()
     const {totalProducts} = useAppSelector((state) => state.cart)
-    const [paths, setPaths] = useState<NavPath[]>([]);
 
     return (
         <header className="header">

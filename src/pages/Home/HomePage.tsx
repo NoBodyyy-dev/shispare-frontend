@@ -1,15 +1,11 @@
 import {FC, useEffect} from "react";
 import {getPopularProductsFunc, getProductsWithDiscountFunc} from "../../store/actions/product.action.ts";
-import {getAllPostsFunc} from "../../store/actions/blog.action.ts"
 import {useAppDispatch, useAppSelector} from "../../hooks/state.hook.ts";
-import {Link} from "react-router-dom";
 import {Product} from "../../lib/products/Product.tsx";
 import SkeletonProductCard from "../../lib/skeletons/ProductSkeleton.tsx";
 import StockSwiper from "./StockSwiper.tsx";
 import MainMap from "../../lib/Map/Map.tsx";
 import {Feedback} from "./Feedback.tsx";
-import {Post} from "../Blog/Post.tsx";
-import {Button} from "../../lib/buttons/Button.tsx";
 import {BlogContainer} from "./BlogContainer.tsx";
 
 
@@ -21,7 +17,6 @@ export const Home: FC = () => {
         popularProducts,
         discountProducts,
     } = useAppSelector((state) => state.product);
-    const {posts} = useAppSelector(state => state.blog)
 
     useEffect(() => {
         if (!popularProducts.length) {

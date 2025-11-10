@@ -7,6 +7,7 @@ import {MainInput} from "../../lib/input/MainInput.tsx";
 import styles from "./auth.module.sass";
 import {useNavigate} from "react-router-dom";
 import {useAuth} from "../../context/AuthContext.tsx";
+import {syncCart} from "../../store/actions/cart.action.ts";
 
 export const CodeVerification = () => {
     const dispatch = useAppDispatch();
@@ -118,6 +119,29 @@ export const CodeVerification = () => {
         try {
             await dispatch(verifyCodeFunc({code: fullCode})).unwrap();
             dispatch(addMessage({text: "Код подтвержден", type: "success"}));
+            
+            // Синхронизируем корзину из localStorage после успешной верификации
+            const localCart = localStorage.getItem("cart");
+            if (localCart) {
+                try {
+                    const cartItems = JSON.parse(localCart);
+                    if (Array.isArray(cartItems) && cartItems.length > 0) {
+                        const items = cartItems
+                            .map((item: any) => ({
+                                productId: item.product?._id || item.productId,
+                                article: item.article,
+                                quantity: item.quantity || 1,
+                            }))
+                            .filter((item: any) => item.productId && item.article);
+                        
+                        if (items.length > 0) {
+                            await dispatch(syncCart(items)).unwrap();
+                        }
+                    }
+                } catch (e) {
+                    console.error("Ошибка синхронизации корзины:", e);
+                }
+            }
         } catch (err: any) {
             dispatch(addMessage({text: err?.message || "Ошибка подтверждения кода", type: "error"}));
         } finally {

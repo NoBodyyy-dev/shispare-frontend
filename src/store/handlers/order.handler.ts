@@ -1,6 +1,7 @@
 import {createOrderFunc, getUserOrdersFunc} from "../actions/order.action.ts";
 import {ActionReducerMapBuilder} from "@reduxjs/toolkit";
 import {OrderState} from "../interfaces/order.interface.ts";
+import {clearCartLocal} from "../slices/cart.slice.ts";
 
 export const getUserOrdersHandler = (builder: ActionReducerMapBuilder<OrderState>) => {
     builder
@@ -25,6 +26,19 @@ export const createOrderHandler = (builder: ActionReducerMapBuilder<OrderState>)
         .addCase(createOrderFunc.fulfilled, (state: OrderState, action) => {
             console.log(">>>", action.payload)
             state.isLoadingCreateOrder = false;
-            window.location.href = action.payload.order.paymentUrl
+            
+            // Очищаем корзину после успешного создания заказа
+            const dispatch = (window as any).__store__?.dispatch;
+            if (dispatch) {
+                dispatch(clearCartLocal());
+            }
+            
+            if (action.payload.order.paymentUrl) {
+                window.location.href = action.payload.order.paymentUrl;
+            }
+        })
+        .addCase(createOrderFunc.rejected, (state: OrderState, action) => {
+            state.isLoadingCreateOrder = false;
+            state.errorCreateOrder = action.error.message || "Ошибка создания заказа";
         })
 }

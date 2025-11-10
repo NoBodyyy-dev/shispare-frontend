@@ -17,6 +17,7 @@ const productSlice = createSlice({
     reducers: {},
     extraReducers: (builder: ActionReducerMapBuilder<StockState>) => {
         handler.getAllStocksHandler(builder);
+        handler.getStockBySlugHandler(builder);
     },
 });
 

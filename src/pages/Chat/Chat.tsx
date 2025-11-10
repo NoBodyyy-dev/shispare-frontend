@@ -13,6 +13,7 @@ export const Chat: React.FC = () => {
     const [text, setText] = useState("");
     const [replyTo, setReplyTo] = useState<IMessage | null>(null);
     const [editingMessage, setEditingMessage] = useState<IMessage | null>(null);
+    const [showOnlineModal, setShowOnlineModal] = useState(false);
 
     const messageRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
     const messagesContainerRef = useRef<HTMLDivElement | null>(null);
@@ -22,12 +23,12 @@ export const Chat: React.FC = () => {
         if (!text.trim()) return;
         if (editingMessage) {
             editMessage(editingMessage._id, text);
+            setEditingMessage(null);
         } else {
             sendMessage(text, undefined, replyTo?._id);
+            setReplyTo(null);
         }
         setText("");
-        setReplyTo(null);
-        setEditingMessage(null);
 
         inputRef.current?.focus();
 
@@ -58,7 +59,14 @@ export const Chat: React.FC = () => {
         <div className="main__container">
             <div className={`${styles.chatPage}`} tabIndex={-1}>
                 <div className={styles.chatHeader}>
-                    В сети: {onlineAdmins}
+                    <div className={styles.onlineInfo}>
+                        <span 
+                            className={styles.onlineLink}
+                            onClick={() => setShowOnlineModal(true)}
+                        >
+                            В сети: {onlineAdmins.length}
+                        </span>
+                    </div>
                     {typingUsers && typingUsers.length > 0 && (
                         <div className={styles.typingIndicator}>
                             {typingUsers.join(', ')} {typingUsers.length > 1 ? 'печатают...' : 'печатает...'}
@@ -95,6 +103,22 @@ export const Chat: React.FC = () => {
                     </div>
                 )}
 
+                {editingMessage && (
+                    <div className={styles.replyPreview}>
+                        <span className={styles.replyLabel}>Редактирование:</span>
+                        <span className={styles.replyText}>{editingMessage.content}</span>
+                        <button
+                            className={styles.cancelReply}
+                            onClick={() => {
+                                setEditingMessage(null);
+                                setText("");
+                            }}
+                        >
+                            ✖
+                        </button>
+                    </div>
+                )}
+
                 <div className={styles.inputBox}>
                     <Button className="fz-16 w-40"><FaPaperclip/></Button>
 
@@ -121,6 +145,34 @@ export const Chat: React.FC = () => {
                     <Button onClick={handleSend} className=""><IoSend/></Button>
                 </div>
             </div>
+            
+            {showOnlineModal && (
+                <div className={styles.onlineModal} onClick={() => setShowOnlineModal(false)}>
+                    <div className={styles.onlineModalContent} onClick={(e) => e.stopPropagation()}>
+                        <div className={styles.onlineModalHeader}>
+                            <h3>Онлайн администраторы</h3>
+                            <button 
+                                className={styles.closeButton}
+                                onClick={() => setShowOnlineModal(false)}
+                            >
+                                ✖
+                            </button>
+                        </div>
+                        <div className={styles.onlineModalList}>
+                            {onlineAdmins.length > 0 ? (
+                                onlineAdmins.map((admin) => (
+                                    <div key={admin._id} className={styles.onlineAdminItem}>
+                                        <span className={styles.onlineIndicator}>🟢</span>
+                                        <span>{admin.fullName}</span>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className={styles.noAdmins}>Нет администраторов онлайн</div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

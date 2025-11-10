@@ -189,3 +189,106 @@
   width: 100%
   color: rgba(255, 255, 255, 0.7)
   margin: 10px 0
+  cursor: pointer
+
+.chatHeader
+  padding: 10px 15px
+  background: #f5f5f5
+  border-bottom: 1px solid #ddd
+  display: flex
+  align-items: center
+  justify-content: space-between
+  gap: 15px
+
+.onlineInfo
+  display: flex
+  align-items: center
+
+.onlineLink
+  cursor: pointer
+  color: #007bff
+  font-weight: 500
+  transition: color 0.2s
+
+  &:hover
+    color: #0056b3
+    text-decoration: underline
+
+.onlineModal
+  position: fixed
+  top: 0
+  left: 0
+  right: 0
+  bottom: 0
+  background: rgba(0, 0, 0, 0.5)
+  display: flex
+  align-items: center
+  justify-content: center
+  z-index: 2000
+
+.onlineModalContent
+  background: #fff
+  border-radius: 12px
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15)
+  min-width: 320px
+  max-width: 500px
+  max-height: 80vh
+  overflow: hidden
+  display: flex
+  flex-direction: column
+
+.onlineModalHeader
+  padding: 20px
+  border-bottom: 1px solid #eee
+  display: flex
+  align-items: center
+  justify-content: space-between
+
+  h3
+    margin: 0
+    font-size: 18px
+    font-weight: 600
+    color: #333
+
+.closeButton
+  background: transparent
+  border: none
+  font-size: 24px
+  cursor: pointer
+  color: #666
+  padding: 0
+  width: 30px
+  height: 30px
+  display: flex
+  align-items: center
+  justify-content: center
+  border-radius: 50%
+  transition: background 0.2s
+
+  &:hover
+    background: #f0f0f0
+    color: #333
+
+.onlineModalList
+  padding: 15px 20px
+  max-height: 400px
+  overflow-y: auto
+
+.onlineAdminItem
+  display: flex
+  align-items: center
+  gap: 10px
+  padding: 12px 0
+  border-bottom: 1px solid #f0f0f0
+
+  &:last-child
+    border-bottom: none
+
+.onlineIndicator
+  font-size: 12px
+
+.noAdmins
+  text-align: center
+  padding: 20px
+  color: #999
+  font-style: italic

@@ -71,11 +71,16 @@ export interface Attachments {
     filename: string;
 }
 
+export interface OnlineAdmin {
+    _id: string;
+    fullName: string;
+}
+
 export interface SocketContextType {
     socket: Socket | null;
 
     // ==== чат ===
-    onlineAdmins: string[];
+    onlineAdmins: OnlineAdmin[];
     chatMessages: IMessage[];
     typingUsers: string[];
     sendMessage: (content: string, attachments?: Attachments, replyTo?: string) => void;
