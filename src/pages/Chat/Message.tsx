@@ -1,9 +1,9 @@
 import React, {useEffect, useRef, useState} from "react";
 import {useSocket} from "../../context/SocketContext";
-import styles from "./chat.module.sass";
 import {IMessage} from "../../store/interfaces/socket.interface";
 import {useAuth} from "../../context/AuthContext";
 import {useLocaleTime} from "../../hooks/util.hook.ts";
+import styles from "./chat.module.sass";
 
 interface Props {
     msg: IMessage;
@@ -14,7 +14,7 @@ interface Props {
 }
 
 export const Message: React.FC<Props> = ({msg, onEdit, onReply, scrollToMessage, registerRef}) => {
-    const {markSeen} = useSocket();
+    const {markSeen, deleteMessage} = useSocket();
     const {user} = useAuth();
     const ref = useRef<HTMLDivElement | null>(null);
 
@@ -62,7 +62,12 @@ export const Message: React.FC<Props> = ({msg, onEdit, onReply, scrollToMessage,
     };
 
     const handleDelete = () => {
-
+        if (!confirm('Удалить сообщение?')) {
+            setMenuVisible(false);
+            return;
+        }
+        deleteMessage?.(msg._id);
+        setMenuVisible(false);
     }
 
     const handleReply = () => {
@@ -94,7 +99,7 @@ export const Message: React.FC<Props> = ({msg, onEdit, onReply, scrollToMessage,
                  onContextMenu={handleContextMenu}>
                 <div className={styles.header}>
                     <span className={`${styles.sender} font-roboto`}>{msg.senderId.fullName}</span>
-                    <span className={styles.time}>{formatedTime}</span>
+                    <span className={styles.time}>{formatedTime}{msg.edited ? " · изменено" : ""}</span>
                 </div>
                 {msg.replyTo && (
                     <div

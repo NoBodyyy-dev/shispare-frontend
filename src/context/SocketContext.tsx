@@ -23,7 +23,12 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
     const [chatMessages, setChatMessages] = useState<IMessage[]>([]);
     const [orders, setOrders] = useState<IOrder[]>([]);
     const [onlineAdmins, setOnlineAdmins] = useState<string[]>([]);
+    const [typingUsers, setTypingUsers] = useState<string[]>([]);
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+
+    const emitTyping = (isTyping: boolean) => {
+        socket?.emit('chat:typing', {isTyping});
+    };
 
     useEffect(() => {
         if (!isAuthenticated || !token) {
@@ -89,6 +94,18 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
                 dispatch(addMessage(msg.content!));
         });
 
+        newSocket.on('chat:typing', (data: { userId: string; fullName?: string; isTyping: boolean }) => {
+            const name = data.fullName || data.userId;
+            setTypingUsers(prev => {
+                if (data.isTyping) {
+                    if (prev.includes(name)) return prev;
+                    return [...prev, name];
+                } else {
+                    return prev.filter(id => id !== name);
+                }
+            });
+        });
+
         newSocket.on('chat:editMessage', (msg: IMessage) => {
             setChatMessages(prev => prev.map(m => m._id === msg._id ? msg : m));
         });
@@ -115,6 +132,7 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
 
 
         dispatch(setSocket(newSocket));
+
 
         return () => {
             newSocket.off('admin:online');
@@ -188,6 +206,7 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
         onlineAdmins,
         socket,
         chatMessages,
+        typingUsers,
         orders,
         getOrders,
         updateOrderStatus,
@@ -198,6 +217,7 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
         sendMessage,
         editMessage,
         deleteMessage,
+        emitTyping,
         markSeen
     };
 

@@ -38,6 +38,38 @@
   flex: 1
   padding-right: 15px
 
+.pushLeftIcon
+  display: flex
+  align-items: center
+  justify-content: center
+  width: 36px
+  height: 36px
+  margin-right: 12px
+  font-size: 18px
+  opacity: 0.95
+  flex-shrink: 0
+
+.pushProgress
+  position: absolute
+  left: 0
+  bottom: 0
+  height: 4px
+  width: 100%
+  background: rgba(255,255,255,0.15)
+  &::after
+    content: ''
+    position: absolute
+    left: 0
+    top: 0
+    bottom: 0
+    width: 100%
+    background: rgba(255,255,255,0.9)
+    transform-origin: left
+    animation-name: progressBar
+    animation-timing-function: linear
+    animation-fill-mode: forwards
+
+
 .pushX
   cursor: pointer
   font-size: 20px
@@ -82,3 +114,9 @@
   to
     opacity: 0
     transform: translateX(100px)
+
+@keyframes progressBar
+  from
+    transform: scaleX(1)
+  to
+    transform: scaleX(0)

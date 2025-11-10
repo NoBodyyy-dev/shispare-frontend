@@ -22,60 +22,108 @@ import {CheckoutPage} from "../pages/Cart/CheckoutPage";
 import {OrdersPage} from "../pages/Orders/OrdersPage.tsx";
 import {OneOrderPage} from "../pages/Orders/OneOrderPage.tsx";
 import {Error404} from "../pages/Error/Error404.tsx";
+import {Error500} from "../pages/Error/Error500.tsx";
+import {Error403} from "../pages/Error/Error403.tsx";
 import {ReviewsTab} from "../pages/LK/ReviewTab.tsx";
 import {OrdersTab} from "../pages/LK/OrdersTab.tsx";
 import {ProfileTab} from "../pages/LK/ProfileTab.tsx";
 import {SearchPage} from "../pages/Products/SearchPage.tsx";
 import {AdminProductsAccordionPage} from "../pages/Admin/AdminProductsAccordionPage.tsx";
-// import CodeVerification from "../pages/Auth/CodeVerification.tsx";
+import {ProtectedRoute} from "./Protected.route.tsx";
+import {AdminRoute} from "./Admin.route.tsx";
+import {CodeVerification} from "../pages/Auth/CodeVerification.tsx";
 
 const router = createBrowserRouter([
     {
         path: "/",
-        element: <Layout/>,
+        element: (
+            <Layout/>
+        ),
         children: [
-            {path: "/admin", element: <AdminProductsAccordionPage />},
+            {
+                path: "/admin",
+                element: (
+                    <AdminRoute>
+                        <AdminProductsAccordionPage/>
+                    </AdminRoute>
+                )
+            },
+            {
+                path: "/users",
+                element: (
+                    <AdminRoute>
+                        <UsersPage/>
+                    </AdminRoute>
+                )
+            },
+
             {path: "/", element: <Home/>},
-            {path: "/auth", element: <AuthPage/>},
             {path: "/blog", element: <Blog/>},
             {path: "/blog/:slug", element: <OneBlog/>},
             {path: "/about", element: <About/>},
             {path: "/cart", element: <Cart/>},
-            {path: "/cart/checkout", element: <CheckoutPage/>},
-            {path: "/chat", element: <Chat/>},
             {path: "/contacts", element: <Contacts/>},
             {path: "/delivery-payment", element: <DeliveryPayment/>},
             {path: "/categories", element: <Categories/>},
             {path: "/categories/:category-slug", element: <Products/>},
             {
-                path: "/categories/:category-slug/:product-slug",
+                path: "/categories/:category-slug/:article",
                 element: <OneProductPage/>,
-                errorElement: <Error404/>
+                // errorElement: <Error404/>
             },
-            {
-                path: "/lk/:id",
-                element: <Lk/>,
-                children: [
-                    {index: true, element: <ProfileTab/>}, // /lk/:id
-                    {path: "orders", element: <OrdersTab/>}, // /lk/:id/orders
-                    {path: "comments", element: <ReviewsTab/>}, // /lk/:id/comments
-                ]
-            },
-            {path: "/orders", element: <OrdersPage/>},
-            {path: "/orders/:orderNumber", element: <OneOrderPage/>},
             {path: "/search", element: <SearchPage/>},
             {path: "/solution", element: <Solution/>},
             {path: "/solution/:solution-slug", element: <OneSolution/>},
             {path: "/stock/:stock-slug", element: <StockPage/>},
             {path: "/videos", element: <VideosPage/>},
-            {path: "/users", element: <UsersPage/>},
+
+            {path: "/auth", element: <AuthPage/>},
+            {path: "/auth/confirm", element: <CodeVerification/>},
+
+            {
+                path: "/cart/checkout",
+                element: (
+                    <ProtectedRoute>
+                        <CheckoutPage/>
+                    </ProtectedRoute>
+                )
+            },
+            {
+                path: "/chat",
+                element: (
+                        <Chat/>
+                )
+            },
+            {
+                path: "/orders",
+                element: (
+                        <OrdersPage/>
+                )
+            },
+            {
+                path: "/orders/:orderNumber",
+                element: (
+                        <OneOrderPage/>
+                )
+            },
+            {
+                path: "/lk/:id",
+                element: (
+                        <Lk/>
+                ),
+                children: [
+                    {index: true, element: <ProfileTab/>},
+                    {path: "orders", element: <OrdersTab/>},
+                    {path: "comments", element: <ReviewsTab/>},
+                ]
+            },
+
+            {path: "/403", element: <Error403/>},
+            {path: "/404", element: <Error404/>},
+            {path: "/500", element: <Error500/>},
             {path: "*", element: <Error404/>}
         ],
-        errorElement: (
-            <>
-                <h1>Error</h1>
-            </>
-        ),
+        errorElement: <Error500/>,
     },
 ]);
 

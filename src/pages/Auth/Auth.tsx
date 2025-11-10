@@ -5,7 +5,7 @@ import {Button} from "../../lib/buttons/Button.tsx";
 import {useAppDispatch, useAppSelector} from "../../hooks/state.hook.ts";
 import {authenticateFunc, registerFunc} from "../../store/actions/user.action.ts";
 import {RegisterForm} from "./RegisterForm.tsx";
-import {addMessage} from "../../store/slices/push.slice.ts";
+import {useNavigate} from "react-router-dom";
 
 const validateEmail = (email: string): boolean => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -23,7 +23,8 @@ const validatePassword = (password: string): { isValid: boolean; errors: string[
 
 export const Auth = () => {
     const dispatch = useAppDispatch();
-    const {isAuthenticated, errorAuthenticated, isLoadingAuthenticated} = useAppSelector(state => state.user);
+    const navigate = useNavigate();
+    const {isAuthenticated, isLoadingAuthenticated} = useAppSelector(state => state.user);
     const [isAuth, setIsAuth] = useState<boolean>(true);
     const [errors, setErrors] = useState<Record<string, string[]>>({});
 
@@ -42,74 +43,52 @@ export const Auth = () => {
         confirmPassword: "",
     });
 
-    const showError = useCallback((message: string) => {
-        dispatch(addMessage(message));
-    }, [dispatch]);
-
     const validateForm = useCallback((): boolean => {
         const newErrors: Record<string, string[]> = {};
-        let hasErrors = false;
 
         if (isAuth) {
             if (!authData.email) {
                 newErrors.email = ["Email обязателен"];
-                hasErrors = true;
             } else if (!validateEmail(authData.email)) {
                 newErrors.email = ["Некорректный email"];
-                hasErrors = true;
             }
 
             if (!authData.password) {
                 newErrors.password = ["Пароль обязателен"];
-                hasErrors = true;
             }
         } else {
             if (!registerData.email) {
                 newErrors.email = ["Email обязателен"];
-                hasErrors = true;
             } else if (!validateEmail(registerData.email)) {
                 newErrors.email = ["Некорректный email"];
-                hasErrors = true;
             }
 
             const passwordValidation = validatePassword(registerData.password);
             if (!registerData.password) {
                 newErrors.password = ["Пароль обязателен"];
-                hasErrors = true;
             } else if (!passwordValidation.isValid) {
                 newErrors.password = passwordValidation.errors;
-                hasErrors = true;
             }
 
             if (registerData.password !== registerData.confirmPassword) {
                 newErrors.confirmPassword = ["Пароли не совпадают"];
-                hasErrors = true;
             }
 
             if (registerData.type === "IND") {
                 if (!registerData.fullName || registerData.fullName.trim().split(' ').length < 2) {
                     newErrors.fullName = ["Укажите полное ФИО"];
-                    hasErrors = true;
                 }
             } else {
                 if (!registerData.legalId || !/^\d{10,15}$/.test(registerData.legalId)) {
                     newErrors.legalId = ["Укажите корректный ИНН/ОГРН"];
-                    hasErrors = true;
                 }
             }
         }
 
         setErrors(newErrors);
 
-        if (hasErrors) {
-            Object.values(newErrors).forEach((error) => {
-                showError(`${error}`)
-            })
-            return false;
-        }
-
         return true;
-    }, [isAuth, authData, registerData, showError]);
+    }, [isAuth, authData, registerData]);
 
     const handleSubmit = useCallback(async (e: FormEvent) => {
         e.preventDefault();
@@ -119,11 +98,11 @@ export const Auth = () => {
         try {
             if (isAuth) await dispatch(authenticateFunc(authData));
             else await dispatch(registerFunc(registerData));
+            navigate("/auth/confirm")
         } catch (error) {
             console.log(error)
-            showError(error instanceof Error ? error.message : "Произошла ошибка");
         }
-    }, [isAuth, authData, registerData, dispatch, validateForm, showError]);
+    }, [isAuth, authData, registerData, dispatch, validateForm]);
 
     const toggleAuthMode = useCallback(() => {
         setIsAuth(prev => !prev);
@@ -134,12 +113,6 @@ export const Auth = () => {
         if (isAuthenticated) setAuthData({email: "", password: ""});
     }, [isAuthenticated]);
 
-    useEffect(() => {
-        if (errorAuthenticated) {
-            showError(errorAuthenticated)
-        }
-    }, [errorAuthenticated]);
-
     return (
         <div className={`${styles.auth} p-20`}>
             <div className={styles.authContainer}>
@@ -148,11 +121,13 @@ export const Auth = () => {
                         <AuthForm
                             data={authData}
                             setData={setAuthData}
+                            errors={errors}
                         />
                     ) : (
                         <RegisterForm
                             data={registerData}
                             setData={setRegisterData}
+                            errors={errors}
                         />
                     )}
 

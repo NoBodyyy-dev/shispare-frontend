@@ -10,6 +10,7 @@ import MainMap from "../../lib/Map/Map.tsx";
 import {Feedback} from "./Feedback.tsx";
 import {Post} from "../Blog/Post.tsx";
 import {Button} from "../../lib/buttons/Button.tsx";
+import {BlogContainer} from "./BlogContainer.tsx";
 
 
 export const Home: FC = () => {
@@ -26,7 +27,6 @@ export const Home: FC = () => {
         if (!popularProducts.length) {
             dispatch(getPopularProductsFunc());
             dispatch(getProductsWithDiscountFunc());
-            dispatch(getAllPostsFunc());
         }
     }, [dispatch]);
 
@@ -65,19 +65,7 @@ export const Home: FC = () => {
                             })}
                     </div>
                 </div>
-                <div className="main__block home__block">
-                    <h1 className="title mb-25">Блог</h1>
-                    <div className="home__blog mb-20">
-                        {posts.map((post) => {
-                            return <Post key={post._id} {...post} />
-                        })}
-                    </div>
-                    <div className="full-width flex-to-center">
-                        <Link to="/blog">
-                            <Button>Читать еще</Button>
-                        </Link>
-                    </div>
-                </div>
+                <BlogContainer/>
                 <div className="main__block home__block">
                     <h1 className="title mb-25">Адрес</h1>
                     <MainMap geomX={38.859358} geomY={45.047813} showInfo={true}/>

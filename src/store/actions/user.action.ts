@@ -104,3 +104,15 @@ export const getProfileUserFunc = createAsyncThunk(
         }
     }
 )
+
+export const checkVerifyFunc = createAsyncThunk(
+    "/user/checkVerify", async (_, {rejectWithValue}) => {
+        try {
+            const response = await api.post("/auth/check-verify")
+            if (response.status !== 200) return rejectWithValue(response.data);
+            return response.data;
+        } catch (e) {
+            return rejectWithValue(e);
+        }
+    }
+)

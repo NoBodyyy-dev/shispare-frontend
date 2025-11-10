@@ -2,6 +2,8 @@ import React, { useEffect, useState, ChangeEvent } from "react";
 import {
     getProductsByCategoryFunc,
     createProductFunc,
+    updateProductFunc,
+    deleteProductFunc,
 } from "../../store/actions/product.action";
 import { getAllCategoriesFunc } from "../../store/actions/category.action";
 import { ProductTable } from "./ProductTable";
@@ -25,6 +27,7 @@ export const AdminProductsAccordionPage: React.FC = () => {
     const [categoryProducts, setCategoryProducts] = useState<Record<string, any[]>>({});
     const [loadingCategory, setLoadingCategory] = useState<string | null>(null);
     const [openModal, setOpenModal] = useState(false);
+    const [openEditModal, setOpenEditModal] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [uploadResponse, setUploadResponse] = useState<any>(null);
 
@@ -40,6 +43,7 @@ export const AdminProductsAccordionPage: React.FC = () => {
         article: "",
         package: "",
     });
+    const [editingProduct, setEditingProduct] = useState<any | null>(null);
 
     useEffect(() => {
         if (!isAuthenticated || user?.role === "User") navigate("/");
@@ -156,6 +160,48 @@ export const AdminProductsAccordionPage: React.FC = () => {
         }
     };
 
+    const handleUpdateProduct = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingProduct) return;
+        try {
+            const payload: any = {
+                productID: editingProduct._id,
+                title: formData.title,
+                description: formData.description,
+                country: formData.country,
+                isActive: formData.isActive,
+                // update first variant basic fields
+                variants: [
+                    {
+                        article: formData.article,
+                        price: formData.price,
+                        discount: formData.discount,
+                        countInStock: formData.countInStock,
+                        package: { type: formData.package },
+                    },
+                ],
+            };
+
+            const result = await dispatch(updateProductFunc(payload)).unwrap();
+
+            // replace product in local categoryProducts
+            setCategoryProducts((prev) => {
+                const catSlug = editingProduct.category?.slug || formData.categorySlug;
+                const arr = prev[catSlug] || [];
+                return {
+                    ...prev,
+                    [catSlug]: arr.map((p) => (p._id === result._id ? result : p)),
+                };
+            });
+
+            setOpenEditModal(false);
+            setEditingProduct(null);
+        } catch (err) {
+            console.error(err);
+            alert('Ошибка при обновлении товара');
+        }
+    };
+
     return (
         <div className="main__container">
             <div className="flex align-center justify-between mb-20">
@@ -224,7 +270,40 @@ export const AdminProductsAccordionPage: React.FC = () => {
                                     {isLoading ? (
                                         <p className={styles.loading}>Загрузка товаров...</p>
                                     ) : (
-                                        <ProductTable products={productsForCat} />
+                                        <ProductTable
+                                            products={productsForCat}
+                                            onEdit={(p) => {
+                                                // open edit modal
+                                                setEditingProduct(p);
+                                                setOpenEditModal(true);
+                                                setFormData({
+                                                    title: p.title || "",
+                                                    description: p.description || "",
+                                                    categorySlug: p.category?.slug || cat.slug,
+                                                    categoryTitle: p.category?.title || cat.title,
+                                                    price: p.variants?.[0]?.price || "",
+                                                    country: p.country || "",
+                                                    countInStock: p.variants?.[0]?.countInStock || "",
+                                                    discount: p.variants?.[0]?.discount || "",
+                                                    article: p.variants?.[0]?.article || "",
+                                                    package: p.variants?.[0]?.package?.type || "",
+                                                    isActive: p.isActive,
+                                                });
+                                            }}
+                                            onDelete={async (id) => {
+                                                if (!confirm('Удалить товар?')) return;
+                                                try {
+                                                    await dispatch(deleteProductFunc(id)).unwrap();
+                                                    setCategoryProducts((prev) => ({
+                                                        ...prev,
+                                                        [cat.slug]: (prev[cat.slug] || []).filter((pp) => pp._id !== id),
+                                                    }));
+                                                } catch (err) {
+                                                    console.error(err);
+                                                    alert('Ошибка при удалении товара');
+                                                }
+                                            }}
+                                        />
                                     )}
                                 </div>
                             )}
@@ -318,6 +397,73 @@ export const AdminProductsAccordionPage: React.FC = () => {
 
                     <button type="submit" className={styles.submitBtn}>
                         💾 Создать
+                    </button>
+                </form>
+            </Modal>
+
+            {/* ─────────────── РЕДАКТИРОВАНИЕ ТОВАРА ─────────────── */}
+            <Modal modal={openEditModal} setModal={setOpenEditModal}>
+                <form onSubmit={handleUpdateProduct} className="flex-col">
+                    <h2>Редактировать товар ({formData.categoryTitle})</h2>
+
+                    <label>Название</label>
+                    <MainInput
+                        value={formData.title}
+                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        required
+                    />
+
+                    <label>Описание</label>
+                    <MainTextarea
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    />
+
+                    <label>Цена (₽)</label>
+                    <MainInput
+                        type="number"
+                        value={formData.price}
+                        onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                        required
+                    />
+
+                    <label>Количество на складе</label>
+                    <MainInput
+                        type="number"
+                        value={formData.countInStock}
+                        onChange={(e) => setFormData({ ...formData, countInStock: Number(e.target.value) })}
+                    />
+
+                    <label>Скидка (%)</label>
+                    <MainInput
+                        type="number"
+                        value={formData.discount}
+                        onChange={(e) => setFormData({ ...formData, discount: Number(e.target.value) })}
+                    />
+
+                    <label>Артикул</label>
+                    <MainInput
+                        value={formData.article}
+                        onChange={(e) => setFormData({ ...formData, article: e.target.value })}
+                    />
+
+                    <label>Страна</label>
+                    <MainInput value={formData.country} onChange={(e) => setFormData({ ...formData, country: e.target.value })} />
+
+                    <label>Тип упаковки</label>
+                    <MainInput value={formData.package} onChange={(e) => setFormData({ ...formData, package: e.target.value })} />
+
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={!!formData.isActive}
+                            onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                        />{' '}
+                        Активен
+                    </label>
+
+                    <button type="submit" className={styles.submitBtn}>
+                        💾 Сохранить
                     </button>
                 </form>
             </Modal>

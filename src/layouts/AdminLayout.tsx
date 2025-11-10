@@ -1,12 +1,11 @@
 import {useAuth} from "../context/AuthContext.tsx";
 import {useEffect} from "react";
 import {Outlet, useNavigate} from "react-router-dom";
-import {useAppSelector} from "../hooks/state.hook.ts";
 import {PushMessageList} from "../lib/message/PushMessage.tsx";
 import {AdminHeader} from "../lib/header/AdminHeader.tsx";
+import styles from "./adminLayout.module.sass";
 
 export const AdminLayout = () => {
-    const {onlineAdmins} = useAppSelector(state => state.socket);
     const {user} = useAuth();
     const navigate = useNavigate();
 
@@ -14,21 +13,18 @@ export const AdminLayout = () => {
         if (user?.role !== "Admin") {
             navigate(-1);
             return;
-        };
+        }
     }, [user?.role]);
 
     return (
-        <>
+        <div className={styles.adminLayout}>
             <PushMessageList/>
             <AdminHeader/>
-            <main className="main">
-                <Outlet />
-                <div className="main__container">
-                    {onlineAdmins.map((p) => {
-                        return <p key={p}>{p}</p>
-                    })}
+            <main className={styles.adminMain}>
+                <div className={styles.adminContent}>
+                    <Outlet/>
                 </div>
             </main>
-        </>
+        </div>
     );
 };

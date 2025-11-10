@@ -1,7 +1,7 @@
-import {Link} from "react-router-dom";
-import {useAuth} from "../../context/AuthContext.tsx";
-import {useEffect, useState} from "react";
-import {getInitials} from "../../hooks/util.hook.ts";
+import styles from "./adminHeader.module.sass";
+import {Link, useLocation} from "react-router-dom";
+import {LogoutButton} from "../buttons/LogoutButton.tsx";
+import {UserLink} from "./UserLink.tsx";
 
 interface NavPath {
     name: string;
@@ -17,41 +17,33 @@ const adminPaths: NavPath[] = [
 ]
 
 export const AdminHeader = () => {
-    const {user, isLoading} = useAuth()
-    const [iconName, setIconName] = useState("");
+    const location = useLocation();
 
-    useEffect(() => {
-        const initials = getInitials(user?.fullName || "")
+    return (
+        <aside className={styles.aside}>
+            <div className={styles.container}>
+                <div className={styles.header}>
+                    <UserLink/>
+                </div>
 
-        setIconName(getInitials(initials));
-    }, [user]);
-
-    return <header className="header">
-        <div className="header__container">
-            <div className="header__top flex-align-center-sbetw mb-5">
-                <Link to="/admin" aria-label="На главную">
-                    <img src="/logo.png" alt="shispare" className="header-logo"/>
-                </Link>
-                <nav>
-                    <ul className="flex gap-10">
-                        {adminPaths.map(({name, path}) => (
-                            <li key={path} className="">
-                                <Link to={path}>{name}</Link>
-                            </li>
-                        ))}
-                    </ul>
+                <nav className={styles.nav}>
+                    {adminPaths.map(path => (
+                        <Link
+                            key={path.path}
+                            to={path.path}
+                            className={`${styles.navLink} ${
+                                location.pathname === path.path ? styles.active : ""
+                            }`}
+                        >
+                            {path.name}
+                        </Link>
+                    ))}
                 </nav>
-                <div className="header__buttons flex gap-20">
-                    {isLoading ? (
-                        <div className="header__buttons-button skeleton-loader"></div>
-                    ) : <Link to={`/lk/${user?._id}`} aria-label="Личный кабинет">
-                        <div className="header__buttons-button user flex-to-center-col" title={user?.fullName}>
-                            {iconName}
-                        </div>
-                    </Link>
-                    }
+
+                <div className={styles.footer}>
+                    <LogoutButton/>
                 </div>
             </div>
-        </div>
-    </header>
-}
+        </aside>
+    );
+};

@@ -84,6 +84,8 @@ export const getProductHandler = (
             state.productError = action.error.message;
         })
         .addCase(actions.getProductFunc.fulfilled, (state, action) => {
+            console.log(">>>>", action.payload);
+            console.log("-----", action.payload.product)
             state.isLoadingProduct = false;
             state.currentProduct = action.payload.product as ProductInterface;
         });

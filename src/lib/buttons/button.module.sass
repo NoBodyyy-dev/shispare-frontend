@@ -9,15 +9,20 @@
   justify-content: center
 
 .button
+  width: 100%
+  height: 40px
+  background: v.$mainBlue
+  color: #fff
+  border: none
+  outline: none
+  min-width: 80px
+  border-radius: 5px
+  cursor: pointer
   position: relative
   display: inline-flex
   align-items: center
   justify-content: center
-  border: none
-  outline: none
-  border-radius: 5px
   font-weight: 500
-  cursor: pointer
   transition: all 0.2s ease
   gap: 8px
   user-select: none
@@ -26,76 +31,12 @@
     opacity: 0.6
     cursor: not-allowed
 
-  // Variants
-  &.variant-primary
-    background: v.$mainBlue
-    color: #fff
+.relative
+  position: relative
+  width: 100%
 
-    &:hover:not(:disabled)
-      background: darken(v.$mainBlue, 10%)
-
-  &.variant-secondary
-    background: v.$textGray
-    color: v.$mainBlue
-
-    &:hover:not(:disabled)
-      background: darken(v.$textGray, 10%)
-
-  &.variant-outline
-    background: transparent
-    color: v.$mainBlue
-    border: 1px solid v.$mainBlue
-
-    &:hover:not(:disabled)
-      background: rgba(v.$mainBlue, 0.1)
-
-  &.variant-text
-    background: transparent
-    color: v.$mainBlue
-    padding: 0
-    min-width: auto
-
-    &:hover:not(:disabled)
-      text-decoration: underline
-
-  // Sizes
-  &.size-small
-    height: 32px
-    padding: 0 12px
-    font-size: 13px
-
-  &.size-medium
-    height: 40px
-    padding: 0 16px
-    font-size: 14px
-
-  &.size-large
-    height: 48px
-    padding: 0 24px
-    font-size: 16px
-
-  // Full width
-  &.fullWidth
-    width: 100%
-
-  // Loading state
-  &.loading
-    .loader
-      display: inline-flex
-      gap: 4px
-
-    .loaderDot
-      width: 6px
-      height: 6px
-      border-radius: 50%
-      background: currentColor
-      animation: pulse 1.4s infinite ease-in-out
-
-      &:nth-child(2)
-        animation-delay: 0.2s
-
-      &:nth-child(3)
-        animation-delay: 0.4s
+.logoutButton
+  background: v.$mainRed !important
 
 @keyframes pulse
   0%, 60%, 100%

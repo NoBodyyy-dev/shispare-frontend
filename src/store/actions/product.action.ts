@@ -20,9 +20,6 @@ export const createProductFunc = createAsyncThunk(
     }
 );
 
-//
-// 🔹 Импорт Excel
-//
 export const importProductsExcelFunc = createAsyncThunk(
     "product/importExcel",
     async (formData: FormData, thunkAPI) => {
@@ -44,9 +41,6 @@ export const importProductsExcelFunc = createAsyncThunk(
     }
 );
 
-//
-// 🔹 Получить товары по категории
-//
 export const getProductsByCategoryFunc = createAsyncThunk(
     "product/getByCategory",
     async (slug: string, thunkAPI) => {
@@ -62,9 +56,6 @@ export const getProductsByCategoryFunc = createAsyncThunk(
     }
 );
 
-//
-// 🔹 Получить популярные товары
-//
 export const getPopularProductsFunc = createAsyncThunk(
     "product/getPopular",
     async (_, thunkAPI) => {
@@ -79,9 +70,6 @@ export const getPopularProductsFunc = createAsyncThunk(
     }
 );
 
-//
-// 🔹 Получить товары со скидкой
-//
 export const getProductsWithDiscountFunc = createAsyncThunk(
     "product/getWithDiscount",
     async (_, thunkAPI) => {
@@ -118,11 +106,11 @@ export const getProductsByBestRatingFunc = createAsyncThunk(
 //
 export const getProductFunc = createAsyncThunk(
     "product/getOne",
-    async (slug: string, thunkAPI) => {
+    async (article: number, thunkAPI) => {
         try {
-            const response = await api.get(`/product/slug/${slug}`);
-            if (response.status !== 200)
-                return thunkAPI.rejectWithValue(response.data);
+            const response = await api.get(`/product/get-one/${article}`);
+            if (response.status !== 200) return thunkAPI.rejectWithValue(response.data);
+            console.log(response.data);
             return response.data;
         } catch (e) {
             return thunkAPI.rejectWithValue(e);

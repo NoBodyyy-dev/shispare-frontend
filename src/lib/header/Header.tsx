@@ -6,6 +6,7 @@ import {Button} from "../buttons/Button";
 import {useAppSelector} from "../../hooks/state.hook";
 import {FaCartShopping} from "react-icons/fa6";
 import {useAuth} from "../../context/AuthContext.tsx";
+import {UserLink} from "./UserLink.tsx";
 
 interface NavPath {
     name: string;
@@ -32,21 +33,7 @@ const adminPaths: NavPath[] = [
 export const Header = memo(() => {
     const {user, isAuthenticated, isLoading} = useAuth()
     const {totalProducts} = useAppSelector((state) => state.cart)
-    const [iconName, setIconName] = useState("");
     const [paths, setPaths] = useState<NavPath[]>([]);
-
-    useEffect(() => {
-        const getInitials = (fullName?: string): string => {
-            if (!fullName) return "";
-            const parts = fullName.trim().split(/\s+/);
-            return parts.slice(0, 2).map(part => part[0]?.toUpperCase() ?? '').join('');
-        };
-
-        setIconName(getInitials(user?.fullName));
-
-        const isAdmin = user?.role === "Admin";
-        setPaths(isAdmin ? adminPaths : userPaths);
-    }, [user]);
 
     return (
         <header className="header">
@@ -63,11 +50,7 @@ export const Header = memo(() => {
                         {isLoading ? (
                             <div className="header__buttons-button skeleton-loader"></div>
                         ) : isAuthenticated ? (
-                            <Link to={`/lk/${user?._id}`} aria-label="Личный кабинет">
-                                <div className="header__buttons-button user flex-to-center-col" title={user?.fullName}>
-                                    {iconName}
-                                </div>
-                            </Link>
+                            <UserLink/>
                         ) : (
                             <Link to="/auth">
                                 <Button aria-label="Войти в систему">Войти</Button>
@@ -75,7 +58,7 @@ export const Header = memo(() => {
                         )}
                         <Link to="/cart" aria-label="Корзина">
                             <div className="header__buttons-button cart flex-to-center-col" title="Корзина">
-                                <FaCartShopping className="fz-18" />
+                                <FaCartShopping className="fz-18"/>
                                 {totalProducts > 0 && (
                                     <div className="absolute flex-to-center-col fz-12">{totalProducts}</div>
                                 )}
@@ -85,7 +68,7 @@ export const Header = memo(() => {
                 </div>
                 <nav>
                     <ul className="flex gap-10">
-                        {paths.map(({name, path}) => (
+                        {userPaths.map(({name, path}) => (
                             <li key={path} className="">
                                 <Link to={path}>{name}</Link>
                             </li>

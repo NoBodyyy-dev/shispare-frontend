@@ -10,15 +10,16 @@ type Props = {
 };
 
 export const Product: React.FC<Props> = React.memo(({ productData }) => {
+    console.log(productData);
     const navigate = useNavigate();
 
-    const handleClickCard = () => {
-        navigate(`/categories/${productData.category.slug}/${productData.slug}`);
-    };
 
     const variant = productData.variants?.[0];
     if (!variant) return null;
 
+    const handleClickCard = () => {
+        navigate(`/categories/${productData.category.slug}/${variant.article}`);
+    };
     const image = productData.images?.[0] || "./no-image.svg";
     const finalPrice =
         variant.price - (variant.price * (variant.discount || 0)) / 100;
@@ -31,12 +32,7 @@ export const Product: React.FC<Props> = React.memo(({ productData }) => {
 
             <div className={styles.info}>
                 <p className="fz-14">
-                    {productData.title}{" "}
-                    <span className="fz-12 color-gray">
-                        ({variant.color.ru} • {variant.package.type}{" "}
-                        {variant.package.count}
-                        {variant.package.unit})
-                    </span>
+                    {productData.title}
                 </p>
 
                 <div className={styles.priceBlock}>

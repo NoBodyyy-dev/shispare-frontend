@@ -5,7 +5,7 @@ import { getCart, addToCart, updateQuantity, removeFromCart, clearCart } from ".
 import { debounce } from "../../hooks/util.hook";
 
 const CART_KEY = "cart";
-const DEBOUNCE_DELAY = 2000;
+const DEBOUNCE_DELAY = 1000;
 
 // ─────────────────────────────
 // localStorage helpers
@@ -140,7 +140,6 @@ export const setQuantitySmart = (() => {
         isAuthenticated: boolean;
         prevQuantity: number;
     }) => {
-        // мгновенное обновление UI
         dispatch(setQuantityLocal({ product, article, quantity }));
 
         // гость → только localStorage

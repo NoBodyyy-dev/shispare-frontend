@@ -11,8 +11,6 @@ export const MainTextarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttribut
         useEffect(() => {
             const textarea = (ref as RefObject<HTMLTextAreaElement>)?.current;
             if (!textarea) return;
-
-            // Сброс высоты перед вычислением
             textarea.style.height = 'auto';
 
             const lineHeight = parseFloat(getComputedStyle(textarea).lineHeight) || 20;
@@ -24,7 +22,6 @@ export const MainTextarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttribut
             textarea.style.height = `${newHeight}px`;
             textarea.style.overflowY = scrollHeight > maxHeight ? 'auto' : 'hidden';
 
-            // Добавляем / убираем класс при переполнении
             if (scrollHeight > maxHeight) {
                 textarea.classList.add(styles.scroll);
             } else {

@@ -3,6 +3,7 @@ import styles from "./message.module.sass";
 import { useAppDispatch, useAppSelector } from "../../hooks/state.hook.ts";
 import { removeMessage } from "../../store/slices/push.slice.ts";
 import { useEffect, useRef } from 'react';
+import { FaCheckCircle, FaInfoCircle, FaExclamationTriangle, FaTimesCircle } from 'react-icons/fa';
 
 type MessageType = 'error' | 'success' | 'warning' | 'info';
 
@@ -24,6 +25,7 @@ export const PushMessageList = () => {
     const dispatch = useAppDispatch();
     const { messages } = useAppSelector((state) => state.push);
     const timersRef = useRef<Record<string, number>>({});
+    const duration = 5000; // ms
 
     useEffect(() => {
         return () => {
@@ -37,7 +39,7 @@ export const PushMessageList = () => {
                 timersRef.current[msg.id] = window.setTimeout(() => {
                     dispatch(removeMessage(msg.id));
                     delete timersRef.current[msg.id];
-                }, 5000);
+                }, duration);
             }
         });
 
@@ -56,16 +58,24 @@ export const PushMessageList = () => {
                 {messages.map((msg) => (
                     <motion.div
                         key={msg.id}
-                        initial={{opacity: 0, y: 20, scale: 0.95}}
-                        animate={{opacity: 1, y: 0, scale: 1}}
-                        exit={{opacity: 0, x: 100}}
-                        transition={{duration: 0.3}}
+                        initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, x: 100 }}
+                        transition={{ duration: 0.3 }}
                         className={`${styles.pushMessage} ${getMessageStyle(msg.type || 'info')} mb-5`}
                         layout
                     >
+                        <div className={styles.pushLeftIcon}>
+                            {msg.type === 'success' && <FaCheckCircle />}
+                            {msg.type === 'info' && <FaInfoCircle />}
+                            {msg.type === 'warning' && <FaExclamationTriangle />}
+                            {msg.type === 'error' && <FaTimesCircle />}
+                        </div>
+
                         <div className={styles.pushContent}>
                             {msg.text}
                         </div>
+
                         <div
                             className={styles.pushX}
                             onClick={() => {
@@ -77,6 +87,12 @@ export const PushMessageList = () => {
                         >
                             ×
                         </div>
+
+                        <div
+                            className={styles.pushProgress}
+                            style={{ animationDuration: `${duration}ms` }}
+                            aria-hidden
+                        />
                     </motion.div>
                 ))}
             </AnimatePresence>

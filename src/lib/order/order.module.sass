@@ -1,0 +1,98 @@
+@use "../../styles/variables" as v
+
+.orderCard
+  border: 1px solid #e6e6e6
+  padding: 12px
+  border-radius: 8px
+  cursor: pointer
+  background: #fff
+  transition: box-shadow .12s ease, transform .08s ease
+
+  &:hover
+    box-shadow: 0 6px 18px rgba(0,0,0,0.06)
+    transform: translateY(-2px)
+
+  .rowTop
+    display: flex
+    justify-content: space-between
+    margin-bottom: 8px
+
+  .id
+    font-weight: 600
+    color: #333
+
+  .date
+    color: #888
+    font-size: 13px
+
+  .rowBottom
+    display: flex
+    justify-content: space-between
+    align-items: center
+
+  .amount
+    font-weight: 700
+    color: v.$mainBlue
+
+  .status
+    padding: 6px 10px
+    border-radius: 14px
+    font-size: 12px
+    text-transform: capitalize
+
+  .status-pending
+    background: #fff2e6
+    color: #c47a1a
+
+  .status-confirmed
+    background: #e8f6ff
+    color: #1a73e8
+
+  .status-shipped
+    background: #eefaf1
+    color: #2b8a3e
+
+  .status-delivered
+    background: #eefaf1
+    color: #2b8a3e
+
+  .status-cancelled
+    background: #fcebea
+    color: #c62828
+
+
+.details
+  min-width: 480px
+
+.meta
+  display: flex
+  gap: 16px
+  margin-bottom: 12px
+
+.items
+  border-top: 1px dashed #eee
+  padding-top: 8px
+
+.itemRow
+  display: flex
+  justify-content: space-between
+  padding: 8px 0
+  border-bottom: 1px solid #fafafa
+
+.itemName
+  color: #333
+
+.itemQty
+  color: #666
+
+.itemPrice
+  font-weight: 600
+
+.delivery, .payment
+  margin-top: 8px
+  color: #444
+
+.actions
+  display: flex
+  justify-content: flex-end
+  margin-top: 16px

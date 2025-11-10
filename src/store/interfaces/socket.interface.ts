@@ -77,9 +77,11 @@ export interface SocketContextType {
     // ==== чат ===
     onlineAdmins: string[];
     chatMessages: IMessage[];
+    typingUsers: string[];
     sendMessage: (content: string, attachments?: Attachments, replyTo?: string) => void;
     editMessage: (messageId: string, content?: string, attachments?: Attachments) => void;
     deleteMessage: (messageId: string) => void;
+    emitTyping: (isTyping: boolean) => void;
 
     // ==== заказы ====
     orders: IOrder[];
