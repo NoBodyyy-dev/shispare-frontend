@@ -19,7 +19,11 @@ export const getAllPostsHandler = (builder: ActionReducerMapBuilder<BlogState>) 
         })
         .addCase(getAllPostsFunc.fulfilled, (state: BlogState, action) => {
             state.isLoadingPosts = false;
-            state.posts = [...action.payload.posts];
+            state.posts = Array.isArray(action.payload?.posts) 
+                ? [...action.payload.posts] 
+                : Array.isArray(action.payload) 
+                    ? [...action.payload] 
+                    : [];
         })
 }
 
@@ -35,7 +39,7 @@ export const getCurrentPostHandler = (builder: ActionReducerMapBuilder<BlogState
         .addCase(getCurrentPostFunc.fulfilled, (state: BlogState, action) => {
             state.isLoadingCurrentPost = false;
             state.errorCurrentPost = "";
-            state.currentPost = action.payload.posts;
+            state.currentPost = action.payload?.post || action.payload?.posts || action.payload || null;
         })
 }
 

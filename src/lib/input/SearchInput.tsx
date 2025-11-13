@@ -16,7 +16,7 @@ interface SearchSuggestion {
     title: string;
     slug: string;
     images: string[];
-    category: CategoryData;
+    category: CategoryData | null;
     variants: IProductVariant[];
     variantIndex: number;
 }
@@ -42,9 +42,14 @@ export const SearchInput = () => {
                 const {data} = await api.get(
                     `/product/search/suggestions?q=${encodeURIComponent(debouncedQuery)}&limit=5`
                 )
-                setSuggestions(data)
+                if (data.success && data.suggestions) {
+                    setSuggestions(data.suggestions)
+                } else {
+                    setSuggestions([])
+                }
             } catch (error) {
                 console.error('Ошибка получения подсказок:', error)
+                setSuggestions([])
             } finally {
                 setIsLoading(false)
             }
@@ -70,22 +75,6 @@ export const SearchInput = () => {
         }
     }
 
-    const handleSuggestionClick = (suggestion: SearchSuggestion) => {
-        setQuery(suggestion.title)
-        setShowSuggestions(false)
-        navigate(`/product/${suggestion.slug}`)
-    }
-
-    const highlightMatch = (text: string, search: string) => {
-        if (!search) return text
-
-        const regex = new RegExp(`(${search})`, 'gi')
-        const parts = text.split(regex)
-
-        return parts.map((part, index) =>
-            regex.test(part) ? <mark key={index}>{part}</mark> : part
-        )
-    }
 
     return (
         <div className={`${styles.header} flex ${styles.searchContainer}`} ref={suggestionsRef}>
@@ -102,7 +91,7 @@ export const SearchInput = () => {
                     onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                 />
 
-                {showSuggestions && (query.length > 0 || suggestions.length > 0) && (
+                {showSuggestions && query.length >= 2 && (
                     <div className={styles.suggestionsDropdown}>
                         {isLoading && (
                             <div className={styles.suggestionItem}>
@@ -110,28 +99,33 @@ export const SearchInput = () => {
                             </div>
                         )}
 
-                        {!isLoading && suggestions.length === 0 && query.length >= 2 && (
+                        {!isLoading && suggestions.length === 0 && (
                             <div className={styles.suggestionItem}>
                                 <div className={styles.noResults}>Ничего не найдено</div>
                             </div>
                         )}
 
-                        {!isLoading && suggestions.map((suggestion) => (
-                            <ProductSuggestions
-                                key={suggestion._id}
-                                {...suggestion}
-                            />
-                        ))}
-
                         {!isLoading && suggestions.length > 0 && (
-                            <div className={styles.suggestionFooter}>
-                                <Button
-                                    onClick={handleSearch}
-                                    className={styles.seeAllResults}
-                                >
-                                    Посмотреть все результаты
-                                </Button>
-                            </div>
+                            <>
+                                {suggestions.map((suggestion) => (
+                                    <ProductSuggestions
+                                        key={suggestion._id}
+                                        {...suggestion}
+                                        onSelect={() => setShowSuggestions(false)}
+                                    />
+                                ))}
+                                <div className={styles.suggestionFooter}>
+                                    <Button
+                                        onClick={() => {
+                                            setShowSuggestions(false);
+                                            handleSearch();
+                                        }}
+                                        className={styles.seeAllResults}
+                                    >
+                                        Посмотреть все результаты
+                                    </Button>
+                                </div>
+                            </>
                         )}
                     </div>
                 )}

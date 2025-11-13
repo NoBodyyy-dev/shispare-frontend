@@ -116,3 +116,19 @@ export const checkVerifyFunc = createAsyncThunk(
         }
     }
 )
+
+export const banUserFunc = createAsyncThunk(
+    "/user/banUser", async (payload: {userId: string; banned: boolean}, {rejectWithValue}) => {
+        try {
+            const response = await api.put(`/user/ban/${payload.userId}`, {banned: payload.banned}, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                }
+            });
+            if (response.status !== 200) return rejectWithValue(response.data);
+            return response.data;
+        } catch (e) {
+            return rejectWithValue(e);
+        }
+    }
+)

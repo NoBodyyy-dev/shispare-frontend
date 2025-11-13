@@ -12,11 +12,11 @@ export const UserLink = () => {
         </div>
     </Link>
 
-    return <Link to={`/lk/${user?._id}`} aria-label="Личный кабинет">
+    return <Link to={`/lk/${user?._id}`} aria-label="Личный кабинет" className="flex-align-center gap-5">
         <div className="header__buttons-button user flex-to-center-col" title={user?.fullName}>
             {iconName}
         </div>
-        <span>{user?.fullName}</span>
+        {user?.fullName}
     </Link>
 
 }

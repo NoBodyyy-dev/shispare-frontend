@@ -6,10 +6,13 @@ import api from "../api.ts";
 //
 export const createProductFunc = createAsyncThunk(
     "product/create",
-    async (payload, thunkAPI) => {
+    async (payload: FormData, thunkAPI) => {
         try {
             const response = await api.post(`/product/create`, payload, {
-                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+                headers: { 
+                    Authorization: `Bearer ${localStorage.getItem("token")}`,
+                    "Content-Type": "multipart/form-data",
+                },
             });
             if (response.status !== 200 && response.status !== 201)
                 return thunkAPI.rejectWithValue(response.data);

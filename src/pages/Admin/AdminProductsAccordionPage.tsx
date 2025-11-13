@@ -42,6 +42,12 @@ export const AdminProductsAccordionPage: React.FC = () => {
         discount: "",
         article: "",
         package: "",
+        colorRu: "",
+        colorHex: "#000000",
+        packageType: "",
+        packageCount: "",
+        packageUnit: "",
+        images: [] as File[],
     });
     const [editingProduct, setEditingProduct] = useState<any | null>(null);
 
@@ -138,6 +144,12 @@ export const AdminProductsAccordionPage: React.FC = () => {
             discount: "",
             article: "",
             package: "",
+            colorRu: "",
+            colorHex: "#000000",
+            packageType: "",
+            packageCount: "",
+            packageUnit: "",
+            images: [],
         });
         setOpenModal(true);
     };
@@ -145,15 +157,55 @@ export const AdminProductsAccordionPage: React.FC = () => {
     const handleCreateProduct = async (e: React.FormEvent) => {
         e.preventDefault();
         try {
-            const result = await dispatch(createProductFunc(formData)).unwrap();
+            const formDataToSend = new FormData();
+            formDataToSend.append("title", formData.title);
+            formDataToSend.append("description", formData.description || "");
+            formDataToSend.append("categorySlug", formData.categorySlug);
+            formDataToSend.append("country", formData.country || "");
+            formDataToSend.append("article", formData.article || "");
+            formDataToSend.append("price", formData.price || "");
+            formDataToSend.append("discount", formData.discount || "0");
+            formDataToSend.append("countInStock", formData.countInStock || "0");
+            formDataToSend.append("color", JSON.stringify({ ru: formData.colorRu || "Без цвета", hex: formData.colorHex || "#000000" }));
+            formDataToSend.append("package", JSON.stringify({ 
+                type: formData.packageType || "шт", 
+                count: Number(formData.packageCount) || 1, 
+                unit: formData.packageUnit || "шт" 
+            }));
+            
+            if (formData.images && Array.isArray(formData.images)) {
+                formData.images.forEach((file: File) => {
+                    formDataToSend.append("images", file);
+                });
+            }
+
+            const result = await dispatch(createProductFunc(formDataToSend)).unwrap();
             setCategoryProducts((prev) => ({
                 ...prev,
                 [formData.categorySlug]: [
                     ...(prev[formData.categorySlug] || []),
-                    result,
+                    result.product,
                 ],
             }));
             setOpenModal(false);
+            setFormData({
+                title: "",
+                description: "",
+                categorySlug: "",
+                categoryTitle: "",
+                price: "",
+                country: "",
+                countInStock: "",
+                discount: "",
+                article: "",
+                package: "",
+                colorRu: "",
+                colorHex: "#000000",
+                packageType: "",
+                packageCount: "",
+                packageUnit: "",
+                images: [],
+            });
         } catch (err) {
             console.error(err);
             alert("Ошибка при создании товара");
@@ -288,6 +340,7 @@ export const AdminProductsAccordionPage: React.FC = () => {
                                                     article: p.variants?.[0]?.article || "",
                                                     package: p.variants?.[0]?.package?.type || "",
                                                     isActive: p.isActive,
+                                                    images: [] as File[], // Добавляем images для безопасности
                                                 });
                                             }}
                                             onDelete={async (id) => {
@@ -387,13 +440,68 @@ export const AdminProductsAccordionPage: React.FC = () => {
                         }
                     />
 
-                    <label>Тип упаковки</label>к
+                    <label>Цвет (название)</label>
                     <MainInput
-                        value={formData.package}
+                        value={formData.colorRu}
                         onChange={(e) =>
-                            setFormData({ ...formData, package: e.target.value })
+                            setFormData({ ...formData, colorRu: e.target.value })
+                        }
+                        placeholder="Например: Красный"
+                    />
+
+                    <label>Цвет (HEX)</label>
+                    <MainInput
+                        type="color"
+                        value={formData.colorHex}
+                        onChange={(e) =>
+                            setFormData({ ...formData, colorHex: e.target.value })
                         }
                     />
+
+                    <label>Тип упаковки</label>
+                    <MainInput
+                        value={formData.packageType}
+                        onChange={(e) =>
+                            setFormData({ ...formData, packageType: e.target.value })
+                        }
+                        placeholder="Например: мешок, ведро"
+                    />
+
+                    <label>Количество/Объем</label>
+                    <MainInput
+                        type="number"
+                        value={formData.packageCount}
+                        onChange={(e) =>
+                            setFormData({ ...formData, packageCount: e.target.value })
+                        }
+                        placeholder="Например: 25"
+                    />
+
+                    <label>Единица измерения</label>
+                    <MainInput
+                        value={formData.packageUnit}
+                        onChange={(e) =>
+                            setFormData({ ...formData, packageUnit: e.target.value })
+                        }
+                        placeholder="Например: кг, л, шт"
+                    />
+
+                    <label>Изображения</label>
+                    <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={(e) => {
+                            const files = Array.from(e.target.files || []);
+                            setFormData({ ...formData, images: files });
+                        }}
+                        className={styles.fileInput}
+                    />
+                    {formData.images && formData.images.length > 0 && (
+                        <div style={{ marginTop: "10px", fontSize: "14px", color: "#666" }}>
+                            Выбрано файлов: {formData.images.length}
+                        </div>
+                    )}
 
                     <button type="submit" className={styles.submitBtn}>
                         💾 Создать

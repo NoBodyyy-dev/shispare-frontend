@@ -17,9 +17,7 @@ const userPaths: NavPath[] = [
     {name: "О компании", path: "/about"},
     {name: "Блог", path: "/blog"},
     {name: "Оплата и доставка", path: "/delivery-payment"},
-    {name: "Решение для дома", path: "/solution"},
     {name: "Контакты", path: "/contacts"},
-    {name: "Видео по установке", path: "/videos"},
 ];
 
 export const Header = memo(() => {

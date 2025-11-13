@@ -7,6 +7,7 @@ import StockSwiper from "./StockSwiper.tsx";
 import MainMap from "../../lib/Map/Map.tsx";
 import {Feedback} from "./Feedback.tsx";
 import {BlogContainer} from "./BlogContainer.tsx";
+import {SEO} from "../../lib/seo/SEO.tsx";
 
 
 export const Home: FC = () => {
@@ -26,28 +27,34 @@ export const Home: FC = () => {
     }, [dispatch]);
 
     return (
-        <div className="main__container home">
+        <>
+            <SEO
+                title="Главная"
+                description="Широкий ассортимент строительных материалов от ведущих производителей. Качественные товары для строительства и ремонта с доставкой по России."
+                keywords="строительные материалы, материалы для ремонта, интернет-магазин строительных материалов, доставка по России"
+                url="/"
+                type="website"
+            />
+            <div className="main__container home">
             <div className="home__container">
                 <div className="main__block home__block stock">
                     <StockSwiper/>
                 </div>
 
-                <div className="main__block home__block">
-                    <h1 className="title mb-25">Товары по скидке</h1>
-                    <div className="products__container">
-                        {isLoadingDiscountProducts ? (
-                            [...Array(4)].map((_, index) => {
-                                return <SkeletonProductCard key={`skeleton-${index}`}/>;
-                            })
-                        ) : discountProducts.length ? (
-                            discountProducts.map((product) => {
+                {isLoadingDiscountProducts ? (
+                    [...Array(4)].map((_, index) => {
+                        return <SkeletonProductCard key={`skeleton-${index}`}/>;
+                    })
+                ) : discountProducts.length ? (
+                    <div className="main__block home__block">
+                        <h1 className="title mb-25">Товары по скидке</h1>
+                        <div className="products__container">
+                            {discountProducts.map((product) => {
                                 return <Product key={product._id} productData={product}/>;
-                            })
-                        ) : (
-                            <h1 className="title">Нет товаров со скидками</h1>
-                        )}
+                            })}
+                        </div>
                     </div>
-                </div>
+                ) : <></>}
                 <div className="main__block home__block">
                     <h1 className="title mb-25">Популярное</h1>
                     <div className="home__products products__container">
@@ -55,9 +62,11 @@ export const Home: FC = () => {
                             ? [...Array(4)].map((_, index) => {
                                 return <SkeletonProductCard key={`skel-prod-${index}`}/>;
                             })
-                            : popularProducts.map((product) => {
-                                return <Product key={product._id} productData={product}/>;
-                            })}
+                            : (popularProducts && Array.isArray(popularProducts) && popularProducts.length > 0)
+                                ? popularProducts.map((product) => {
+                                    return <Product key={product._id} productData={product}/>;
+                                })
+                                : <p className="text-center color-gray">Популярные товары не найдены</p>}
                     </div>
                 </div>
                 <BlogContainer/>
@@ -71,5 +80,6 @@ export const Home: FC = () => {
                 </div>
             </div>
         </div>
+        </>
     );
 }

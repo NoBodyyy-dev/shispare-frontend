@@ -7,15 +7,15 @@ import SkeletonMap from "../skeletons/MapSkeleton";
 type Props = {
     geomX: number;
     geomY: number;
-    showInfo: boolean;
+    showInfo?: boolean;
 };
 
-export default function MainMap(props: Props) {
+export default function MainMap({ geomX, geomY, showInfo = false }: Props) {
     const [isLoading, setIsLoading] = useState(true);
     const [isError, setIsError] = useState(false);
 
     const mapState = {
-        center: [props.geomY, props.geomX],
+        center: [geomY, geomX],
         zoom: 17,
     };
 
@@ -74,7 +74,7 @@ export default function MainMap(props: Props) {
                         onLoad={handleMapLoad}
                         onError={handleMapError}
                     >
-                        {props.showInfo
+                        {showInfo
                             && <div className="mapDescription">
                                 <div className={"mapDescriptionBlock p-12 mb-10"}>
                                     <p className="mb-20">Способы связи</p>
@@ -93,7 +93,7 @@ export default function MainMap(props: Props) {
                             </div>
                         }
                         <Placemark
-                            geometry={[props.geomY, props.geomX]}
+                            geometry={[geomY, geomX]}
                             options={{...iconOptions}}
                         />
                     </Map>

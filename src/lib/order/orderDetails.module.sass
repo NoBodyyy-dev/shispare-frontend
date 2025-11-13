@@ -1,0 +1,272 @@
+@use "../../styles/variables" as v
+
+.orderDetails
+  background: #fff
+  border-radius: 12px
+  padding: 30px
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05)
+
+.header
+  display: flex
+  justify-content: space-between
+  align-items: center
+  margin-bottom: 30px
+  padding-bottom: 20px
+  border-bottom: 2px solid #eee
+
+.title
+  font-size: 28px
+  font-weight: 600
+  color: #333
+  margin: 0
+
+.statusBadge
+  padding: 8px 16px
+  border-radius: 20px
+  font-size: 14px
+  font-weight: 600
+  text-transform: uppercase
+  letter-spacing: 0.5px
+
+.statusWaiting
+  background: #e8eaf6
+  color: #3f51b5
+
+.statusPending
+  background: #fff3e0
+  color: #f57c00
+
+.statusProcessing
+  background: #e3f2fd
+  color: #1976d2
+
+.statusConfirmed
+  background: #e8f5e9
+  color: #388e3c
+
+.statusShipped
+  background: #e1f5fe
+  color: #0288d1
+
+.statusDelivered
+  background: #c8e6c9
+  color: #2e7d32
+
+.statusCancelled
+  background: #ffebee
+  color: #c62828
+
+.statusRefunded
+  background: #f3e5f5
+  color: #7b1fa2
+
+.grid
+  display: grid
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr))
+  gap: 20px
+  margin-bottom: 30px
+
+.section
+  background: #f8f9fa
+  border-radius: 8px
+  padding: 20px
+  border: 1px solid #eee
+
+.sectionTitle
+  font-size: 18px
+  font-weight: 600
+  color: #333
+  margin: 0 0 15px 0
+  padding-bottom: 10px
+  border-bottom: 1px solid #ddd
+
+.infoGrid
+  display: flex
+  flex-direction: column
+  gap: 10px
+
+.infoRow
+  display: flex
+  justify-content: space-between
+  align-items: flex-start
+  padding: 8px 0
+  border-bottom: 1px dashed #e0e0e0
+
+  &:last-child
+    border-bottom: none
+
+.label
+  font-weight: 500
+  color: #666
+  font-size: 14px
+  min-width: 120px
+
+.value
+  color: #333
+  font-size: 14px
+  text-align: right
+  word-break: break-word
+  flex: 1
+
+  &.paid
+    color: #2ecc71
+    font-weight: 600
+
+  &.unpaid
+    color: v.$mainRed
+    font-weight: 600
+
+.cancellationReason
+  color: #e74c3c
+  font-style: italic
+  padding: 8px
+  background: #fcebea
+  border-radius: 4px
+  border-left: 3px solid #e74c3c
+
+.link
+  color: v.$mainBlue
+  text-decoration: none
+  transition: color 0.2s
+
+  &:hover
+    text-decoration: underline
+
+.itemsList
+  display: flex
+  flex-direction: column
+  gap: 15px
+
+.itemCard
+  display: flex
+  align-items: center
+  gap: 15px
+  padding: 15px
+  background: #fff
+  border: 1px solid #e0e0e0
+  border-radius: 8px
+  transition: box-shadow 0.2s
+
+  &:hover
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1)
+
+.itemImageLink
+  flex-shrink: 0
+  width: 80px
+  height: 80px
+  border-radius: 6px
+  overflow: hidden
+  border: 1px solid #eee
+
+.itemImage
+  width: 100%
+  height: 100%
+  object-fit: cover
+
+.itemDetails
+  flex-grow: 1
+  display: flex
+  flex-direction: column
+  gap: 8px
+
+.itemName
+  font-size: 16px
+  font-weight: 500
+  color: #2C2C2C
+  text-decoration: none
+  transition: color 0.2s
+
+  &:hover
+    color: v.$mainBlue
+
+.itemMeta
+  display: flex
+  flex-wrap: wrap
+  gap: 8px
+  font-size: 12px
+
+.itemBadge
+  display: inline-flex
+  align-items: center
+  gap: 4px
+  padding: 4px 8px
+  background: #f5f5f5
+  border-radius: 4px
+  color: #666
+
+.colorDot
+  width: 12px
+  height: 12px
+  border-radius: 50%
+  border: 1px solid rgba(0,0,0,0.1)
+  display: inline-block
+
+.itemDiscount
+  font-size: 13px
+  color: v.$mainRed
+  font-weight: 500
+
+.itemQuantity
+  flex-shrink: 0
+  font-size: 15px
+  color: v.$textGray
+  font-weight: 500
+  min-width: 50px
+  text-align: center
+
+.itemPrice
+  flex-shrink: 0
+  font-size: 16px
+  font-weight: 600
+  color: #2C2C2C
+  min-width: 100px
+  text-align: right
+
+.summary
+  display: flex
+  flex-direction: column
+  gap: 10px
+  padding-top: 15px
+  border-top: 2px solid #eee
+
+.summaryRow
+  display: flex
+  justify-content: space-between
+  font-size: 16px
+  padding: 8px 0
+
+  &.total
+    font-size: 20px
+    font-weight: 700
+    color: v.$mainBlue
+    margin-top: 10px
+    padding-top: 15px
+    border-top: 2px solid v.$mainBlue
+
+.summaryLabel
+  color: #666
+
+.summaryValue
+  font-weight: 600
+  color: #333
+
+  &.discount
+    color: v.$mainRed
+
+@media (max-width: 768px)
+  .grid
+    grid-template-columns: 1fr
+
+  .itemCard
+    flex-wrap: wrap
+
+  .itemImageLink
+    width: 60px
+    height: 60px
+
+  .itemDetails
+    flex-basis: 100%
+
+  .itemQuantity, .itemPrice
+    flex-basis: auto
+

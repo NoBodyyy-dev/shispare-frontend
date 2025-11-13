@@ -1,9 +1,17 @@
+export interface ISEO {
+    metaTitle?: string;
+    metaDescription?: string;
+    metaKeywords?: string;
+    ogImage?: string;
+}
+
 export type PostInterface = {
     _id: string;
     title: string;
     content: string;
     image: string;
     slug: string;
+    seo?: ISEO;
     createdAt: Date,
     updatedAt: Date
 }

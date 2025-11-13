@@ -69,7 +69,11 @@ export const createCommentFunc = createAsyncThunk(
         try {
             const response = await api.post(
                 "/comment/create",
-                payload,
+                {
+                    product: payload.product,
+                    content: payload.text, // Backend expects 'content', not 'text'
+                    rating: payload.rating
+                },
                 { headers: { Authorization: `Bearer ${localStorage.getItem("token")}` } }
             );
             if (response.status !== 201) return rejectWithValue(response.data);

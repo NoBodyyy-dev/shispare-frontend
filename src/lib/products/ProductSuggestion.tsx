@@ -9,21 +9,29 @@ type Props = {
     title: string;
     slug: string;
     images: string[];
-    category: CategoryData;
+    category: CategoryData | null;
     variants: IProductVariant[];
     variantIndex: number;
+    onSelect?: () => void;
 }
 
 export const ProductSuggestions = (props: Props) => {
-    const { _id, title, slug, images, category, variants, variantIndex } = props;
+    const { _id, title, slug, images, category, variants, variantIndex, onSelect } = props;
     const navigate = useNavigate();
-    const variant = variants[variantIndex];
+    const variant = variants && variants.length > 0 ? variants[variantIndex || 0] : null;
 
     const handleClick = () => {
-        navigate(`/category/${category.slug}/${slug}`);
+        if (category && variant && category.slug) {
+            if (onSelect) {
+                onSelect();
+            }
+            navigate(`/categories/${category.slug}/${variant.article}`);
+        }
     }
 
-    const displayText = `${title} (${variant.color.ru}, ${variant.package.type}, ${variant.package.unit})`;
+    const displayText = variant 
+        ? `${title} (${variant.color.ru}, ${variant.package.type}, ${variant.package.unit})`
+        : title;
 
     return (
         <div className={styles.suggestionItem} onClick={handleClick}>
@@ -36,7 +44,9 @@ export const ProductSuggestions = (props: Props) => {
             )}
             <div className={styles.suggestionContent}>
                 <div className={styles.suggestionTitle}>{displayText}</div>
-                <div className={styles.suggestionCategory}>{category.title}</div>
+                {category && (
+                    <div className={styles.suggestionCategory}>{category.title || category.name}</div>
+                )}
             </div>
         </div>
     );

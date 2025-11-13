@@ -1,6 +1,7 @@
 import {Button} from "../buttons/Button.tsx";
 import {useAuth} from "../../context/AuthContext.tsx";
 import {Dispatch, memo, SetStateAction} from "react";
+import styles from "./title.module.sass"
 
 type Props = {
     title: string,
@@ -14,7 +15,7 @@ export const TitleWithCreateButton = memo((props: Props) => {
         return <div className="flex-align-start-sbetw">
             <h1 className="title mb-20">{props.title}</h1>
             <Button
-                className="fz-20"
+                className={`${styles.titleButton} fz-20`}
                 onClick={() => props.openModal(true)}
             >+</Button>
         </div>

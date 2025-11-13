@@ -1,8 +1,10 @@
 import React, { useCallback } from "react";
 import { CartProductInterface } from "../../store/interfaces/product.interface";
 import { removeFromCart } from "../../store/actions/cart.action";
+import { removeItemUI } from "../../store/slices/cart.slice";
 import { useAppDispatch } from "../../hooks/state.hook";
 import { QuantityButtons } from "./QuantityButtons";
+import { useAuth } from "../../context/AuthContext";
 import styles from "./product.module.sass";
 
 type Props = {
@@ -11,6 +13,7 @@ type Props = {
 
 export const CartItem: React.FC<Props> = ({ item }) => {
     const dispatch = useAppDispatch();
+    const { isAuthenticated } = useAuth();
     const { product, article } = item;
     const variant = product.variants.find((v) => v.article === article)!;
     const hasDiscount = variant.discount > 0;
@@ -20,8 +23,14 @@ export const CartItem: React.FC<Props> = ({ item }) => {
         : variant.price;
 
     const handleRemove = useCallback(() => {
-        dispatch(removeFromCart({ productId: product._id, article }));
-    }, [dispatch, product._id, article]);
+        // Оптимистичное обновление UI
+        dispatch(removeItemUI({ productId: product._id, article, isAuthenticated }));
+        
+        // Для авторизованных пользователей отправляем запрос на сервер
+        if (isAuthenticated) {
+            dispatch(removeFromCart({ productId: product._id, article }));
+        }
+    }, [dispatch, product._id, article, isAuthenticated]);
 
     return (
         <div className={styles.cartItem}>

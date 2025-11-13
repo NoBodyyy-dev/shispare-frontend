@@ -33,7 +33,8 @@ export const getProductsWithDiscountHandler = (
         })
         .addCase(actions.getProductsWithDiscountFunc.fulfilled, (state, action) => {
             state.isLoadingDiscountProducts = false;
-            state.discountProducts = action.payload.products as ProductInterface[];
+            const products = action.payload?.products || action.payload;
+            state.discountProducts = Array.isArray(products) ? products as ProductInterface[] : [];
         });
 };
 
@@ -50,7 +51,8 @@ export const getPopularProductsHandler = (
         })
         .addCase(actions.getPopularProductsFunc.fulfilled, (state, action) => {
             state.isLoadingPopularProducts = false;
-            state.popularProducts = action.payload.products as ProductInterface[];
+            const products = action.payload?.products || action.payload;
+            state.popularProducts = Array.isArray(products) ? products as ProductInterface[] : [];
         });
 };
 
@@ -64,11 +66,14 @@ export const getProductsByCategoriesHandler = (
         .addCase(actions.getProductsByCategoryFunc.rejected, (state, action) => {
             state.isLoadingProducts = false;
             state.productsError = action.error.message;
+            // При ошибке убеждаемся, что products остается массивом
+            state.products = [];
         })
         .addCase(actions.getProductsByCategoryFunc.fulfilled, (state, action) => {
             state.isLoadingProducts = false;
-            state.products = action.payload.products as ProductInterface[];
-            state.curCategory = action.payload.products[0]?.category?.title || "";
+            console.log("handler ---", action.payload);
+            state.products = action.payload.products.products as ProductInterface[];
+            state.curCategory = action.payload.products.products[0]?.category?.title || "";
         });
 };
 

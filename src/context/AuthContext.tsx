@@ -8,21 +8,25 @@ interface AuthContextType {
     isAuthenticated: boolean;
     token: string | null;
     user?: UserInterface;
-    isLoading: boolean; // Добавляем состояние загрузки
+    isLoading: boolean;
+    isInitialized: boolean; // Добавляем флаг инициализации
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { token, isAuthenticated, curUser } = useAppSelector(state => state.user);
-    const [isLoading, setIsLoading] = useState(true); // Состояние загрузки
+    const [isLoading, setIsLoading] = useState(true);
+    const [isInitialized, setIsInitialized] = useState(false); // Флаг завершения инициализации
     const dispatch = useAppDispatch();
     const intervalRef = useRef<number>();
 
     useEffect(() => {
-        console.log("Penis")
+        console.log("AuthProvider initialization");
+
         if (!token) {
             setIsLoading(false);
+            setIsInitialized(true); // Отмечаем что инициализация завершена
             return;
         }
 
@@ -30,8 +34,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             try {
                 setIsLoading(true);
                 await dispatch(getMeFunc()).unwrap();
-                
-                // Синхронизируем корзину из localStorage после успешной авторизации
+
                 const localCart = localStorage.getItem("cart");
                 if (localCart) {
                     try {
@@ -44,7 +47,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                                     quantity: item.quantity || 1,
                                 }))
                                 .filter((item: any) => item.productId && item.article);
-                            
+
                             if (items.length > 0) {
                                 await dispatch(syncCart(items)).unwrap();
                             }
@@ -55,6 +58,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 }
             } finally {
                 setIsLoading(false);
+                setIsInitialized(true); // Отмечаем что инициализация завершена
             }
         };
 
@@ -77,7 +81,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             isAuthenticated,
             token,
             user: curUser,
-            isLoading // Добавляем в контекст
+            isLoading,
+            isInitialized // Добавляем в контекст
         }}>
             {children}
         </AuthContext.Provider>

@@ -4,6 +4,9 @@ import {IMessage} from "../../store/interfaces/socket.interface";
 import {useAuth} from "../../context/AuthContext";
 import {useLocaleTime} from "../../hooks/util.hook.ts";
 import styles from "./chat.module.sass";
+import {IoMdInformationCircleOutline} from "react-icons/io";
+import {BsReply} from "react-icons/bs";
+import {MdContentCopy, MdDeleteOutline, MdOutlineModeEdit} from "react-icons/md";
 
 interface Props {
     msg: IMessage;
@@ -143,6 +146,57 @@ export const Message: React.FC<Props> = ({msg, onEdit, onReply, scrollToMessage,
 
                 <div className={`${styles.content} font-roboto`}>{msg.content}</div>
 
+                {msg.attachments && msg.attachments.length > 0 && (
+                    <div className={styles.attachments}>
+                        {msg.attachments.map((attachment, index) => {
+                            // Функция для декодирования имени файла с кириллицей
+                            const decodeFilename = (filename: string): string => {
+                                try {
+                                    if (/[^\x00-\x7F]/.test(filename)) {
+                                        return filename;
+                                    }
+                                    try {
+                                        const decoded = decodeURIComponent(escape(filename));
+                                        if (decoded !== filename && /[\u0400-\u04FF]/.test(decoded)) {
+                                            return decoded;
+                                        }
+                                    } catch (e) {
+                                        // Игнорируем ошибки декодирования
+                                    }
+                                } catch (e) {
+                                    // Игнорируем ошибки
+                                }
+                                return filename;
+                            };
+                            const decodedFilename = decodeFilename(attachment.filename);
+                            
+                            return (
+                                <div key={index} className={styles.attachment}>
+                                    {attachment.type === 'image' ? (
+                                        <a href={attachment.url} target="_blank" rel="noopener noreferrer">
+                                            <img src={attachment.url} alt={decodedFilename} className={styles.attachmentImage} />
+                                        </a>
+                                    ) : attachment.type === 'video' ? (
+                                        <video controls className={styles.attachmentVideo}>
+                                            <source src={attachment.url} />
+                                            Ваш браузер не поддерживает видео.
+                                        </video>
+                                    ) : (
+                                        <a
+                                            href={attachment.url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className={styles.attachmentLink}
+                                        >
+                                            📎 {decodedFilename}
+                                        </a>
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+
                 {msg.readBy && msg.readBy.length > 0 && (
                     <div className={styles.readBy}>
                         ✅ Прочитали: {msg.readBy.map((r) => r.user.fullName).join(", ")}
@@ -156,13 +210,13 @@ export const Message: React.FC<Props> = ({msg, onEdit, onReply, scrollToMessage,
                     className={styles.contextMenu}
                     style={{top: menuPos.y, left: menuPos.x}}
                 >
-                    <li onClick={handleCopy}>📋 Копировать</li>
+                    <li onClick={handleCopy}><MdContentCopy /> Копировать</li>
                     {user?._id === msg.senderId._id && <>
-                        <li onClick={handleEdit}>✏️ Изменить</li>
-                        <li onClick={handleDelete}>Удалить</li>
+                        <li onClick={handleEdit}><MdOutlineModeEdit /> Изменить</li>
+                        <li onClick={handleDelete}><MdDeleteOutline /> Удалить</li>
                     </>}
-                    <li onClick={handleReply}>↩️ Ответить</li>
-                    <li onClick={handleInfo}>👀 Инфо о прочтении</li>
+                    <li onClick={handleReply}><BsReply /> Ответить</li>
+                    <li onClick={handleInfo}><IoMdInformationCircleOutline /> Инфо о прочтении</li>
                 </ul>
             )}
 

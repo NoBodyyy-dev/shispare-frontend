@@ -13,13 +13,21 @@ export const SearchPage: FC = () => {
 
     useEffect(() => {
         const fetchProducts = async () => {
-            if (!query.trim()) return;
+            if (!query.trim()) {
+                setProducts([]);
+                return;
+            }
             setLoading(true);
             try {
-                const {data} = await api.get(`/api/products/search?q=${encodeURIComponent(query)}`);
-                setProducts(data);
+                const {data} = await api.get(`/product/search?q=${encodeURIComponent(query)}`);
+                if (data.success && data.products) {
+                    setProducts(data.products);
+                } else {
+                    setProducts([]);
+                }
             } catch (error) {
                 console.error("Ошибка поиска:", error);
+                setProducts([]);
             } finally {
                 setLoading(false);
             }
@@ -29,8 +37,8 @@ export const SearchPage: FC = () => {
     }, [query]);
 
     return (
-        <div className={styles.searchPage}>
-            <h2 className={styles.title}>Результаты поиска: "{query}"</h2>
+        <div className="main__container">
+            <h2 className="title mb-20">Результаты поиска: "{query}"</h2>
 
             {loading && <p>Загрузка...</p>}
 
@@ -38,7 +46,7 @@ export const SearchPage: FC = () => {
                 <p className={styles.noResults}>Ничего не найдено</p>
             )}
 
-            <div className={styles.resultsGrid}>
+            <div className={styles.searchContainer}>
                 {products.map((product) => (
                     <Product key={product._id} productData={product}/>
                 ))}

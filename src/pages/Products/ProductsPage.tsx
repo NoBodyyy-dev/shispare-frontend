@@ -38,9 +38,11 @@ export const Products = () => {
             <div className="products__container">
                 {isLoadingProducts
                     ? [...Array(8)].map((_, index) => <SkeletonProductCard key={index}/>)
-                    : products.map((product) => {
-                        return <Product key={product._id} productData={product}/>;
-                    })}
+                    : Array.isArray(products) && products.length > 0
+                        ? products.map((product) => {
+                            return <Product key={product._id} productData={product}/>;
+                        })
+                        : <div className="empty-state">Товары не найдены</div>}
             </div>
             {
                 openModal

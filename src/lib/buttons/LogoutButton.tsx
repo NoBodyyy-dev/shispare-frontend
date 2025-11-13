@@ -4,7 +4,6 @@ import {IoIosLogOut} from "react-icons/io";
 import {Button} from "./Button.tsx";
 import {useAppDispatch, useAppSelector} from "../../hooks/state.hook.ts";
 import {logoutFunc} from "../../store/actions/user.action.ts";
-import styles from "./button.module.sass"
 
 export const LogoutButton = () => {
     const dispatch = useAppDispatch();
@@ -19,7 +18,7 @@ export const LogoutButton = () => {
 
     return <Button
         onClick={handleLogout}
-        className={`${styles.logoutButton} full-width`}
+        className="full-width"
         loading={isLoadingLogout}
     >
         <div className="flex-align-center">

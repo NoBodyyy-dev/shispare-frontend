@@ -120,7 +120,6 @@ export const CodeVerification = () => {
             await dispatch(verifyCodeFunc({code: fullCode})).unwrap();
             dispatch(addMessage({text: "Код подтвержден", type: "success"}));
             
-            // Синхронизируем корзину из localStorage после успешной верификации
             const localCart = localStorage.getItem("cart");
             if (localCart) {
                 try {
@@ -196,7 +195,7 @@ export const CodeVerification = () => {
                 <div className={styles.verifyActions}>
                     <Button
                         type="button"
-                        className={`${styles.btnLink} ${!canResend ? styles.disabled : ""}`}
+                        className={`${styles.btnLink} ${!canResend ? styles.disabled : ""} full-width`}
                         onClick={handleResend}
                         disabled={!canResend || isLoadingVerify}
                     >

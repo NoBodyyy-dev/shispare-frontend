@@ -13,8 +13,8 @@ export const OrderItem = memo(({order, search}: Props) => {
     const {updateOrderStatus} = useSocket();
     const [disabled, setDisabled] = useState(false);
 
-    const handleChangeStatus = (status: OrderStatus) => {
-        updateOrderStatus(order._id, status);
+    const handleChangeStatus = (status: OrderStatus, cancellationReason?: string, deliveryDate?: string) => {
+        updateOrderStatus(order._id, status, cancellationReason, deliveryDate);
         setDisabled(true);
     };
 

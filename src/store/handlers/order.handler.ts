@@ -1,7 +1,8 @@
-import {createOrderFunc, getUserOrdersFunc} from "../actions/order.action.ts";
+import {createOrderFunc, getOneOrderFunc, getOrderByNumberFunc, getUserOrdersFunc} from "../actions/order.action.ts";
 import {ActionReducerMapBuilder} from "@reduxjs/toolkit";
 import {OrderState} from "../interfaces/order.interface.ts";
 import {clearCartLocal} from "../slices/cart.slice.ts";
+import {getCart} from "../actions/cart.action.ts";
 
 export const getUserOrdersHandler = (builder: ActionReducerMapBuilder<OrderState>) => {
     builder
@@ -27,18 +28,63 @@ export const createOrderHandler = (builder: ActionReducerMapBuilder<OrderState>)
             console.log(">>>", action.payload)
             state.isLoadingCreateOrder = false;
             
-            // Очищаем корзину после успешного создания заказа
-            const dispatch = (window as any).__store__?.dispatch;
-            if (dispatch) {
-                dispatch(clearCartLocal());
-            }
-            
-            if (action.payload.order.paymentUrl) {
-                window.location.href = action.payload.order.paymentUrl;
-            }
+            setTimeout(() => {
+                const dispatch = (window as any).__store__?.dispatch;
+                const getState = (window as any).__store__?.getState;
+                if (dispatch && getState) {
+                    // Получаем статус авторизации из store (теперь это безопасно, т.к. reducer уже завершился)
+                    const isAuthenticated = getState()?.user?.isAuthenticated || false;
+                    dispatch(clearCartLocal({ isAuthenticated }));
+                    // Перезагружаем корзину с сервера, чтобы убедиться, что она очищена (только для авторизованных)
+                    if (isAuthenticated) {
+                        setTimeout(() => {
+                            dispatch(getCart());
+                        }, 500);
+                    }
+                }
+                
+                // Редирект на страницу оплаты, если есть paymentUrl
+                if (action.payload.paymentUrl) {
+                    window.location.href = action.payload.paymentUrl;
+                }
+            }, 0);
         })
         .addCase(createOrderFunc.rejected, (state: OrderState, action) => {
             state.isLoadingCreateOrder = false;
             state.errorCreateOrder = action.error.message || "Ошибка создания заказа";
+        })
+}
+
+export const getOrderByNumberHandler = (builder: ActionReducerMapBuilder<OrderState>) => {
+    builder
+        .addCase(getOrderByNumberFunc.pending, (state: OrderState) => {
+            state.isLoadingOrder = true;
+            state.errorOrder = "";
+        })
+        .addCase(getOrderByNumberFunc.fulfilled, (state: OrderState, action) => {
+            state.currentOrder = action.payload.order;
+            state.isLoadingOrder = false;
+        })
+        .addCase(getOrderByNumberFunc.rejected, (state: OrderState, action) => {
+            state.isLoadingOrder = false;
+            state.errorOrder = action.error.message || "Ошибка загрузки заказа";
+            state.currentOrder = null;
+        })
+}
+
+export const getOneOrderHandler = (builder: ActionReducerMapBuilder<OrderState>) => {
+    builder
+        .addCase(getOneOrderFunc.pending, (state: OrderState) => {
+            state.isLoadingOrder = true;
+            state.errorOrder = "";
+        })
+        .addCase(getOneOrderFunc.fulfilled, (state: OrderState, action) => {
+            state.currentOrder = action.payload.order;
+            state.isLoadingOrder = false;
+        })
+        .addCase(getOneOrderFunc.rejected, (state: OrderState, action) => {
+            state.isLoadingOrder = false;
+            state.errorOrder = action.error.message || "Ошибка загрузки заказа";
+            state.currentOrder = null;
         })
 }

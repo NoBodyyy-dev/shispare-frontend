@@ -1,7 +1,7 @@
 import {ActionReducerMapBuilder, createSlice} from "@reduxjs/toolkit";
 import {UserState} from "../interfaces/user.interface.ts";
 import {
-    authenticateHandler, getAllUsersHandler,
+    authenticateHandler, banUserHandler, getAllUsersHandler,
     getMeHandler, getProfileUserHandler,
     logoutHandler,
     registerHandler,
@@ -49,6 +49,7 @@ const userSlice = createSlice({
         logoutHandler(builder);
         getAllUsersHandler(builder);
         getProfileUserHandler(builder);
+        banUserHandler(builder);
     },
 });
 

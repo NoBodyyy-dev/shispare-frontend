@@ -13,7 +13,11 @@ export const getAllStocksHandler = (builder: ActionReducerMapBuilder<StockState>
         })
         .addCase(action.getAllStocks.fulfilled, (state: StockState, action) => {
             state.isLoadingStocks = false;
-            state.stocks = [...action.payload.stocks];
+            state.stocks = Array.isArray(action.payload?.stocks) 
+                ? [...action.payload.stocks] 
+                : Array.isArray(action.payload) 
+                    ? [...action.payload] 
+                    : [];
         })
 }
 

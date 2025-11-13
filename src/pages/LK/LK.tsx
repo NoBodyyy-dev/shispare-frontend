@@ -33,9 +33,6 @@ export const Lk = () => {
     return (
         <div className="main__container">
             <div className={`${styles.container} main__block gap-20`}>
-                <main className={styles.content}>
-                    <Outlet/>
-                </main>
                 <aside className={`${styles.sidebar} p-20`}>
                     <h2 className="subtitle mb-20">Личный кабинет</h2>
                     <nav className={styles.nav}>
@@ -77,6 +74,9 @@ export const Lk = () => {
                         </Button>
                     )}
                 </aside>
+                <main className={styles.content}>
+                    <Outlet/>
+                </main>
             </div>
 
         </div>

@@ -2,6 +2,7 @@ import {ActionReducerMapBuilder} from "@reduxjs/toolkit";
 import {UserState} from "../interfaces/user.interface.ts";
 import {
     authenticateFunc,
+    banUserFunc,
     getAllUsersFunc,
     getMeFunc, getProfileUserFunc,
     logoutFunc,
@@ -119,6 +120,29 @@ export const getProfileUserHandler = (builder: ActionReducerMapBuilder<UserState
         .addCase(getProfileUserFunc.fulfilled, (state: UserState, action) => {
             state.isLoadingProfileUser = false;
             state.profileUser = action.payload.user;
+        })
+}
+
+export const banUserHandler = (builder: ActionReducerMapBuilder<UserState>) => {
+    builder
+        .addCase(banUserFunc.pending, (state: UserState) => {
+            // Можно добавить состояние загрузки, если нужно
+        })
+        .addCase(banUserFunc.rejected, (state: UserState, action) => {
+            // Обработка ошибки
+            console.error('Ошибка бана пользователя:', action.error);
+        })
+        .addCase(banUserFunc.fulfilled, (state: UserState, action) => {
+            const userId = action.payload.user._id || action.payload.user.id;
+            // Обновляем пользователя в профиле
+            if (state.profileUser && (state.profileUser._id === userId || state.profileUser._id?.toString() === userId?.toString())) {
+                state.profileUser.banned = action.payload.user.banned;
+            }
+            // Обновляем в списке пользователей
+            const userIndex = state.users.findIndex(u => u._id === userId || u._id?.toString() === userId?.toString());
+            if (userIndex !== -1) {
+                state.users[userIndex].banned = action.payload.user.banned;
+            }
         })
 }
 

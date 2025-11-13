@@ -1,6 +1,20 @@
 import {createAsyncThunk} from "@reduxjs/toolkit";
-import api from "../api.ts";
 import {DeliveryType, PaymentMethod} from "../interfaces/order.interface.ts";
+import api from "../api.ts";
+
+export const getOneOrderFunc = createAsyncThunk(
+    "order/getOneOrder", async ({orderNumber}: {orderNumber: number | string}, {rejectWithValue}) => {
+        try {
+            const response = await api.get(`/order/${orderNumber}`, {
+                headers: {Authorization: `Bearer ${localStorage.getItem("token")}`}
+            })
+            if (response.status !== 200) return rejectWithValue(response.data);
+            return response.data;
+        } catch (e: any) {
+            return rejectWithValue(e.response?.data || {message: "Ошибка при загрузке заказа"});
+        }
+    }
+)
 
 export const getUserOrdersFunc = createAsyncThunk(
     "order/getAllOrdersFunc", async ({userId}: {userId: string}, {rejectWithValue}) => {
@@ -12,6 +26,20 @@ export const getUserOrdersFunc = createAsyncThunk(
             return response.data;
         } catch (e) {
             rejectWithValue(e);
+        }
+    }
+)
+
+export const getOrderByNumberFunc = createAsyncThunk(
+    "order/getOrderByNumber", async (orderNumber: string, {rejectWithValue}) => {
+        try {
+            const response = await api.get(`/order/get-order/${orderNumber}`, {
+                headers: {Authorization: `Bearer ${localStorage.getItem("token")}`}
+            });
+            if (response.status !== 200) return rejectWithValue(response.data);
+            return response.data;
+        } catch (e) {
+            return rejectWithValue(e);
         }
     }
 )

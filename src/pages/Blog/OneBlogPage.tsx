@@ -4,6 +4,7 @@ import {useAppDispatch, useAppSelector} from "../../hooks/state.hook.ts";
 import {useParams} from "react-router-dom";
 import {getCurrentPostFunc} from "../../store/actions/blog.action.ts";
 import {Breadcrumbs} from "../../lib/breadcrumbs/Breadcrumbs.tsx";
+import {SEO} from "../../lib/seo/SEO.tsx";
 import styles from "./blog.module.sass"
 import {Modal} from "../../lib/modal/Modal.tsx";
 
@@ -29,9 +30,26 @@ export const OneBlog: React.FC = () => {
 
     const finalText = currentPost!.content.split("\n")
 
+    // SEO данные
+    const seoTitle = currentPost!.seo?.metaTitle || currentPost!.title;
+    const seoDescription = currentPost!.seo?.metaDescription || currentPost!.content.substring(0, 160).replace(/\n/g, " ") || `Читайте статью "${currentPost!.title}" в блоге Shispare`;
+    const seoKeywords = currentPost!.seo?.metaKeywords || `${currentPost!.title}, блог, строительные материалы`;
+    const seoImage = currentPost!.seo?.ogImage || currentPost!.image;
+    const seoUrl = `/blog/${currentPost!.slug}`;
+
     return (
-        <div className="main__container">
-            <Breadcrumbs items={breadcrumbsItems} isLoading={isLoadingCurrentPost}/>
+        <>
+            <SEO
+                title={seoTitle}
+                description={seoDescription}
+                keywords={seoKeywords}
+                image={seoImage}
+                url={seoUrl}
+                type="article"
+                canonical={seoUrl}
+            />
+            <div className="main__container">
+                <Breadcrumbs items={breadcrumbsItems} isLoading={isLoadingCurrentPost}/>
             <TitleWithCreateButton title={"Статья"} openModal={setOpenModal}/>
             <article className={styles.article}>
                 <h2 className="subtitle mb-15">{currentPost!.title}</h2>
@@ -54,5 +72,6 @@ export const OneBlog: React.FC = () => {
                 <>Пенис</>
             </Modal>
         </div>
+        </>
     );
 };

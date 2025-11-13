@@ -1,55 +1,99 @@
-import React from "react";
-import {useForm} from "react-hook-form";
+import React, {useState} from "react";
 import {useAppDispatch} from "../../hooks/state.hook.ts";
 import {createPostFunc} from "../../store/actions/blog.action.ts";
-
-type FormValues = {
-    title: string;
-    content: string;
-    image: FileList;
-};
-
+import {MainInput} from "../../lib/input/MainInput.tsx";
+import {MainTextarea} from "../../lib/input/MainTextarea.tsx";
+import styles from "./createPostForm.module.sass";
+import {Button} from "../../lib/buttons/Button.tsx";
 
 export const CreatePostForm: React.FC = () => {
     const dispatch = useAppDispatch();
-    const {register, handleSubmit, reset} = useForm<FormValues>();
+    const [title, setTitle] = useState("");
+    const [content, setContent] = useState("");
+    const [image, setImage] = useState<File | null>(null);
+    const [preview, setPreview] = useState<string | null>(null);
 
-    const onSubmit = async (data: FormValues) => {
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            setImage(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setPreview(reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!title || !content || !image) {
+            alert("Заполните все поля");
+            return;
+        }
+
+        const fileList = {
+            0: image,
+            length: 1,
+            item: () => image,
+            [Symbol.iterator]: function* () {
+                yield image;
+            }
+        } as FileList;
+
         dispatch(createPostFunc({
-            title: data.title,
-            content: data.content,
-            image: data.image,
+            title,
+            content,
+            image: fileList,
         }));
-        reset();
+
+        setTitle("");
+        setContent("");
+        setImage(null);
+        setPreview(null);
     };
 
     return (
-        <div className="max-w-lg mx-auto p-4 bg-white shadow-md rounded-2xl">
-            <h2 className="text-xl font-bold mb-4">Создать пост</h2>
-            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
-                <input
-                    type="text"
-                    placeholder="Заголовок"
-                    {...register("title", {required: true})}
-                    className="border p-2 rounded-lg"
-                />
-                <textarea
-                    placeholder="Контент"
-                    {...register("content", {required: true})}
-                    className="border p-2 rounded-lg min-h-[100px]"
-                />
-                <input
-                    type="file"
-                    accept="image/*"
-                    {...register("image", {required: true})}
-                    className="border p-2 rounded-lg"
-                />
-                <button
-                    type="submit"
-                    className="bg-blue-600 text-white py-2 px-4 rounded-xl hover:bg-blue-700 transition"
-                >
-                    Создать пост
-                </button>
+        <div className={styles.formContainer}>
+            <h2 className={styles.title}>Создать пост</h2>
+            <form onSubmit={handleSubmit} className={styles.form}>
+                <div className={styles.formGroup}>
+                    <label className={styles.label}>Заголовок</label>
+                    <MainInput
+                        value={title}
+                        onChange={(e) => setTitle(e.target.value)}
+                        placeholder="Введите заголовок поста"
+                        required
+                    />
+                </div>
+
+                <div className={styles.formGroup}>
+                    <label className={styles.label}>Содержание</label>
+                    <MainTextarea
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
+                        placeholder="Введите текст поста"
+                        required
+                    />
+                </div>
+
+                <div className={styles.formGroup}>
+                    <label className={styles.label}>Изображение</label>
+                    <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className={styles.fileInput}
+                        required
+                    />
+                    {preview && (
+                        <div className={styles.preview}>
+                            <img src={preview} alt="Preview" className={styles.previewImage} />
+                        </div>
+                    )}
+                </div>
+
+                <Button className="full-width">Создать пост</Button>
             </form>
         </div>
     );

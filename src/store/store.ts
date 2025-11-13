@@ -10,6 +10,7 @@ import pushSlice from "./slices/push.slice.ts";
 import socketSlice from "./slices/socket.slice.ts";
 import orderSlice from "./slices/order.slice.ts";
 import commentSlice from "./slices/comment.slice.ts";
+import requestSlice from "./slices/request.slice.ts";
 
 export const store = configureStore({
     middleware: (getDefaultMiddleware) => getDefaultMiddleware({
@@ -26,6 +27,7 @@ export const store = configureStore({
         push: pushSlice,
         order: orderSlice,
         comment: commentSlice,
+        request: requestSlice,
     }
 });
 

@@ -7,20 +7,27 @@ import {useParams} from "react-router-dom";
 
 export const OrdersTab = () => {
     const dispatch = useAppDispatch();
-    const {orders} = useAppSelector(state => state.order);
+    const {orders, isLoadingOrders} = useAppSelector(state => state.order);
     const {id: paramsId} = useParams();
 
     useEffect(() => {
-        if (!orders.length) {
-            dispatch(getUserOrdersFunc({userId: paramsId!}));
-            console.log("Hahahahh")
+        if (paramsId) {
+            dispatch(getUserOrdersFunc({userId: paramsId}));
         }
-    }, [orders.length]);
+    }, [paramsId]);
+
+    if (isLoadingOrders) {
+        return (
+            <section className={styles.ordersSection}>
+                <div className={styles.loader}>Загрузка заказов...</div>
+            </section>
+        );
+    }
 
     return (
         <section className={styles.ordersSection}>
             <h1 className="title">История заказов</h1>
-            {orders?.length ? (
+            {orders && orders.length > 0 ? (
                 <div className={styles.ordersGridCards}>
                     {orders.map(order => (
                         <OrderCard key={order._id} order={order} />

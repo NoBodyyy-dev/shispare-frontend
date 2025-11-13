@@ -32,8 +32,17 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
 
     useEffect(() => {
         if (!isAuthenticated || !token) {
-            if (socket) socket.disconnect();
+            if (socket) {
+                socket.off();
+                socket.disconnect();
+            }
             return;
+        }
+
+        // Отключаем старый socket перед созданием нового
+        if (socket) {
+            socket.off();
+            socket.disconnect();
         }
 
         const newSocket: Socket = io(API_URL, {
@@ -43,7 +52,7 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
             reconnectionAttempts: Infinity,
         });
 
-        newSocket.on("connect", () => {
+        const handleConnect = () => {
             console.log("Socket connected");
 
             newSocket.emit('join:user', (res: { success: boolean; error?: string }) => {
@@ -52,49 +61,50 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
 
             if (user?.role === 'Admin') {
                 newSocket.emit('admin:reconnect');
-
-                newSocket.on('admin:online', (data: { onlineAdmins: { _id: string; fullName: string }[], yourId: string }) => {
-                    setOnlineAdmins(data.onlineAdmins);
-                });
             }
-        });
+        };
 
-        newSocket.on("reconnect", (attempt) => {
+        const handleReconnect = (attempt: number) => {
             console.log(`Reconnected (attempt ${attempt})`);
             if (user?.role === 'Admin') newSocket.emit('admin:reconnect');
-        });
+        };
 
-        newSocket.on("admin:getOrders", (res: { orders: IOrder[], success: boolean }) => {
+        const handleAdminOnline = (data: { onlineAdmins: { _id: string; fullName: string }[], yourId: string }) => {
+            setOnlineAdmins(data.onlineAdmins);
+        };
+
+        const handleAdminGetOrders = (res: { orders: IOrder[], success: boolean }) => {
             console.log(res);
             if (res.success) {
                 setOrders(res.orders);
             }
-        })
-        newSocket.on("admin:newOrder", (res: { order: IOrder, success: boolean }) => {
+        };
+
+        const handleAdminNewOrder = (res: { order: IOrder, success: boolean }) => {
             console.log(res);
             if (res.success) {
-                setOrders([...orders, res.order]);
+                setOrders(prev => [...prev, res.order]);
             }
-        })
-        newSocket.on('admin:orderUpdated', (order: IOrder) => {
+        };
+
+        const handleAdminOrderUpdated = (order: IOrder) => {
             setOrders(prev => prev.map(o => o._id === order._id ? order : o));
-        });
+        };
 
-        newSocket.emit("chat:get", (res: { success: boolean; messages?: IMessage[]; message?: string }) => {
-            if (res.success && res.messages) {
-                setChatMessages(res.messages);
-            } else {
-                console.error(res.message);
-            }
-        });
-
-        newSocket.on("chat:newMessage", (msg: IMessage) => {
-            setChatMessages(prev => [...prev, msg]);
-            if (msg.senderId._id !== user?._id)
+        const handleChatNewMessage = (msg: IMessage) => {
+            setChatMessages(prev => {
+                // Проверяем, нет ли уже такого сообщения (защита от дубликатов)
+                if (prev.some(m => m._id === msg._id)) {
+                    return prev;
+                }
+                return [...prev, msg];
+            });
+            if (msg.senderId._id !== user?._id) {
                 dispatch(addMessage(msg.content!));
-        });
+            }
+        };
 
-        newSocket.on('chat:typing', (data: { userId: string; fullName?: string; isTyping: boolean }) => {
+        const handleChatTyping = (data: { userId: string; fullName?: string; isTyping: boolean }) => {
             const name = data.fullName || data.userId;
             setTypingUsers(prev => {
                 if (data.isTyping) {
@@ -104,15 +114,17 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
                     return prev.filter(id => id !== name);
                 }
             });
-        });
+        };
 
-        newSocket.on('chat:editMessage', (msg: IMessage) => {
+        const handleChatEditMessage = (msg: IMessage) => {
             setChatMessages(prev => prev.map(m => m._id === msg._id ? {...msg, edited: true} : m));
-        });
-        newSocket.on('chat:deleteMessage', ({messageId}: { messageId: string }) => {
+        };
+
+        const handleChatDeleteMessage = ({messageId}: { messageId: string }) => {
             setChatMessages(prev => prev.filter(m => m._id !== messageId));
-        });
-        newSocket.on("chat:markSeen", ({messageId, user}: { messageId: string; user: UserInterface }) => {
+        };
+
+        const handleChatMarkSeen = ({messageId, user}: { messageId: string; user: UserInterface }) => {
             setChatMessages(prev =>
                 prev.map(m =>
                     m._id === messageId
@@ -128,20 +140,52 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
                         : m
                 )
             );
+        };
+
+        // Подписываемся на события
+        newSocket.on("connect", handleConnect);
+        newSocket.on("reconnect", handleReconnect);
+        
+        if (user?.role === 'Admin') {
+            newSocket.on('admin:online', handleAdminOnline);
+        }
+        
+        newSocket.on("admin:getOrders", handleAdminGetOrders);
+        newSocket.on("admin:newOrder", handleAdminNewOrder);
+        newSocket.on('admin:orderUpdated', handleAdminOrderUpdated);
+
+        newSocket.emit("chat:get", (res: { success: boolean; messages?: IMessage[]; message?: string }) => {
+            if (res.success && res.messages) {
+                setChatMessages(res.messages);
+            } else {
+                console.error(res.message);
+            }
         });
 
+        newSocket.on("chat:newMessage", handleChatNewMessage);
+        newSocket.on('chat:typing', handleChatTyping);
+        newSocket.on('chat:editMessage', handleChatEditMessage);
+        newSocket.on('chat:deleteMessage', handleChatDeleteMessage);
+        newSocket.on("chat:markSeen", handleChatMarkSeen);
 
         dispatch(setSocket(newSocket));
 
-
+        // Cleanup функция - отписываемся от всех событий
         return () => {
-            newSocket.off('admin:online');
-            newSocket.off('chat:newMessage');
-            newSocket.off('chat:editMessage');
-            newSocket.off('chat:deleteMessage');
+            newSocket.off("connect", handleConnect);
+            newSocket.off("reconnect", handleReconnect);
+            newSocket.off('admin:online', handleAdminOnline);
+            newSocket.off("admin:getOrders", handleAdminGetOrders);
+            newSocket.off("admin:newOrder", handleAdminNewOrder);
+            newSocket.off('admin:orderUpdated', handleAdminOrderUpdated);
+            newSocket.off("chat:newMessage", handleChatNewMessage);
+            newSocket.off('chat:typing', handleChatTyping);
+            newSocket.off('chat:editMessage', handleChatEditMessage);
+            newSocket.off('chat:deleteMessage', handleChatDeleteMessage);
+            newSocket.off("chat:markSeen", handleChatMarkSeen);
             newSocket.disconnect();
         };
-    }, [isAuthenticated]);
+    }, [isAuthenticated, token, user?._id]);
 
     const getOrders = () => {
         socket?.emit('admin:getOrders', (res: { success: boolean; orders?: IOrder[]; message?: string }) => {
@@ -151,14 +195,16 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
         });
     };
 
-    const updateOrderStatus = (orderId: string, status: string) => {
-        socket?.emit('admin:updateOrderStatus', {orderId, status}, (res: {
+    const updateOrderStatus = (orderId: string, status: string, cancellationReason?: string, deliveryDate?: string) => {
+        socket?.emit('admin:updateOrderStatus', {orderId, status, cancellationReason, deliveryDate}, (res: {
             success: boolean;
             order?: IOrder;
             message?: string
         }) => {
             if (!res.success) console.error(res.message);
-            setOrders(prev => prev.map(o => o._id === orderId ? res.order! : o));
+            if (res.order) {
+                setOrders(prev => prev.map(o => o._id === orderId ? res.order! : o));
+            }
         });
     };
 
@@ -178,7 +224,7 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
         socket?.emit('ping', callback);
     };
 
-    const sendMessage = (content: string, attachments?: Attachments, replyTo?: string) => {
+    const sendMessage = (content: string, attachments?: Attachments[], replyTo?: string) => {
         console.log(">>>", socket);
         socket?.emit('chat:sendMessage', {content, attachments, replyTo}, (res: any) => {
             console.log("Test")
@@ -186,7 +232,7 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
         });
     };
 
-    const editMessage = (messageId: string, content?: string, attachments?: Attachments) => {
+    const editMessage = (messageId: string, content?: string, attachments?: Attachments[]) => {
         socket?.emit('chat:editMessage', {messageId, newContent: content, newAttachments: attachments}, (res: any) => {
             if (!res.success) console.error(res.message);
         });

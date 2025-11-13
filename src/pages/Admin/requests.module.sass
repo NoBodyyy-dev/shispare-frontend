@@ -1,0 +1,218 @@
+@use "../../styles/variables" as v
+
+.title
+  font-size: 28px
+  font-weight: 600
+  color: #333
+  margin-bottom: 30px
+
+.loader
+  text-align: center
+  padding: 40px
+  color: #666
+  font-size: 16px
+
+.tabs
+  display: flex
+  gap: 10px
+  margin-bottom: 30px
+  border-bottom: 2px solid #eee
+
+.tab
+  padding: 12px 24px
+  font-size: 16px
+  font-weight: 500
+  color: #666
+  cursor: pointer
+  border-bottom: 2px solid transparent
+  margin-bottom: -2px
+  transition: color 0.2s
+
+  &:hover
+    color: v.$mainBlue
+
+  &.active
+    color: v.$mainBlue
+    border-bottom-color: v.$mainBlue
+
+.requestsList
+  display: flex
+  flex-direction: column
+  gap: 20px
+
+.requestCard
+  background: #fff
+  border-radius: 12px
+  padding: 24px
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05)
+  border: 1px solid #eee
+  transition: box-shadow 0.2s
+
+  &:hover
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1)
+
+  &.answered
+    background: #f8f9fa
+    border-color: #e0e0e0
+
+.requestHeader
+  display: flex
+  justify-content: space-between
+  align-items: flex-start
+  margin-bottom: 16px
+  padding-bottom: 16px
+  border-bottom: 1px solid #eee
+
+.requestName
+  font-size: 18px
+  font-weight: 600
+  color: #333
+  margin: 0 0 4px 0
+
+.requestEmail
+  font-size: 14px
+  color: #666
+  margin: 0
+
+.requestDate
+  font-size: 13px
+  color: #999
+  white-space: nowrap
+
+.requestQuestion
+  margin-bottom: 16px
+
+  strong
+    display: block
+    font-size: 14px
+    color: #666
+    margin-bottom: 8px
+
+  p
+    font-size: 15px
+    color: #333
+    line-height: 1.6
+    margin: 0
+    white-space: pre-wrap
+
+.requestAnswer
+  margin-top: 16px
+  padding-top: 16px
+  border-top: 1px solid #eee
+
+  strong
+    display: block
+    font-size: 14px
+    color: #2ecc71
+    margin-bottom: 8px
+
+  p
+    font-size: 15px
+    color: #333
+    line-height: 1.6
+    margin: 0
+    white-space: pre-wrap
+
+.answeredInfo
+  margin-top: 12px
+  font-size: 12px
+  color: #999
+  font-style: italic
+
+.answerButton
+  margin-top: 16px
+
+.answeredSection
+  margin-top: 40px
+  padding-top: 40px
+  border-top: 2px solid #eee
+
+.sectionTitle
+  font-size: 22px
+  font-weight: 600
+  color: #333
+  margin-bottom: 20px
+
+.empty
+  text-align: center
+  padding: 60px 20px
+  color: #999
+  font-size: 16px
+  background: #fff
+  border-radius: 12px
+  border: 1px dashed #ddd
+
+.modalContent
+  padding: 30px
+  min-width: 500px
+  max-width: 700px
+
+.modalTitle
+  font-size: 24px
+  font-weight: 600
+  color: #333
+  margin: 0 0 24px 0
+
+.modalInfo
+  margin-bottom: 24px
+  padding: 20px
+  background: #f8f9fa
+  border-radius: 8px
+
+  p
+    margin: 0 0 12px 0
+    font-size: 14px
+    color: #666
+
+    strong
+      color: #333
+
+  p:last-child
+    margin-bottom: 0
+
+.questionBox
+  margin-top: 8px
+  padding: 12px
+  background: #fff
+  border-radius: 6px
+  border: 1px solid #ddd
+  font-size: 14px
+  color: #333
+  line-height: 1.6
+  white-space: pre-wrap
+
+.answerSection
+  margin-bottom: 24px
+
+.label
+  display: block
+  font-size: 14px
+  font-weight: 500
+  color: #333
+  margin-bottom: 8px
+
+.answerTextarea
+  width: 100% !important
+  min-height: 150px !important
+
+.modalActions
+  display: flex
+  justify-content: flex-end
+  gap: 12px
+  padding-top: 20px
+  border-top: 1px solid #eee
+
+.cancelButton
+  background: #f5f5f5
+  color: #333
+
+  &:hover
+    background: #e8e8e8
+
+.submitButton
+  background: v.$mainBlue
+  color: #fff
+
+  &:hover
+    background: darken(v.$mainBlue, 10%)
+

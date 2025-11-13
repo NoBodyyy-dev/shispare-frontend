@@ -69,15 +69,33 @@ const upsertItem = (
     }
 };
 
-const initialState: CartState = {
-    products: loadLocal(),
-    totalAmount: 0,
-    discountAmount: 0,
-    totalProducts: 0,
-    finalAmount: 0,
-    isLoading: false,
-    error: "",
+// Инициализируем корзину из localStorage только для неавторизованных пользователей
+// Для авторизованных корзина будет загружена с сервера
+const getInitialState = (): CartState => {
+    const localProducts = loadLocal();
+    // Пересчитываем итоги для локальной корзины
+    let total = 0;
+    let count = 0;
+    for (const item of localProducts) {
+        const variant = item.product?.variants?.find(v => v.article === item.article);
+        if (variant) {
+            total += variant.price * item.quantity;
+            count += item.quantity;
+        }
+    }
+    
+    return {
+        products: localProducts,
+        totalAmount: total,
+        discountAmount: 0,
+        totalProducts: count,
+        finalAmount: total,
+        isLoading: false,
+        error: "",
+    };
 };
+
+const initialState: CartState = getInitialState();
 
 const cartSlice = createSlice({
     name: "cart",
@@ -89,17 +107,101 @@ const cartSlice = createSlice({
                 product: ProductInterface;
                 article: number;
                 quantity: number;
+                isAuthenticated?: boolean;
             }>
         ) => {
-            const { product, article, quantity } = action.payload;
+            const { product, article, quantity, isAuthenticated = false } = action.payload;
             upsertItem(state.products, product, article, Math.max(0, quantity));
             recalcTotals(state);
-            saveLocal(state.products);
+            // Сохраняем в localStorage только для неавторизованных пользователей
+            if (!isAuthenticated) {
+                saveLocal(state.products);
+            }
         },
-        clearCartLocal: (state) => {
+        addItemUI: (
+            state,
+            action: PayloadAction<{
+                product: ProductInterface;
+                article: number;
+                quantity: number;
+                isAuthenticated?: boolean;
+            }>
+        ) => {
+            const { product, article, quantity, isAuthenticated = false } = action.payload;
+            const idx = state.products.findIndex(
+                i => i.product._id === product._id && i.article === article
+            );
+            
+            if (idx >= 0) {
+                state.products[idx].quantity += quantity;
+            } else {
+                state.products.push({
+                    _id: crypto.randomUUID?.() || `${product._id}-${article}-${Date.now()}`,
+                    product,
+                    article,
+                    quantity,
+                    addedAt: new Date(),
+                });
+            }
+            recalcTotals(state);
+            // Сохраняем в localStorage только для неавторизованных пользователей
+            if (!isAuthenticated) {
+                saveLocal(state.products);
+            }
+        },
+        updateQuantityUI: (
+            state,
+            action: PayloadAction<{
+                productId: string;
+                article: number;
+                quantity: number;
+                isAuthenticated?: boolean;
+            }>
+        ) => {
+            const { productId, article, quantity, isAuthenticated = false } = action.payload;
+            const idx = state.products.findIndex(
+                i => i.product._id === productId && i.article === article
+            );
+            
+            if (idx >= 0) {
+                if (quantity <= 0) {
+                    state.products.splice(idx, 1);
+                } else {
+                    state.products[idx].quantity = quantity;
+                }
+            }
+            recalcTotals(state);
+            // Сохраняем в localStorage только для неавторизованных пользователей
+            if (!isAuthenticated) {
+                saveLocal(state.products);
+            }
+        },
+        removeItemUI: (
+            state,
+            action: PayloadAction<{
+                productId: string;
+                article: number;
+                isAuthenticated?: boolean;
+            }>
+        ) => {
+            const { productId, article, isAuthenticated = false } = action.payload;
+            state.products = state.products.filter(
+                i => !(i.product._id === productId && i.article === article)
+            );
+            recalcTotals(state);
+            // Сохраняем в localStorage только для неавторизованных пользователей
+            if (!isAuthenticated) {
+                saveLocal(state.products);
+            }
+        },
+        clearCartLocal: (state, action: PayloadAction<{ isAuthenticated?: boolean } | undefined>) => {
+            const isAuthenticated = action?.payload?.isAuthenticated || false;
             state.products = [];
             recalcTotals(state);
-            saveLocal([]);
+            // Сохраняем в localStorage только для неавторизованных пользователей
+            if (!isAuthenticated) {
+                saveLocal([]);
+            }
         },
     },
     extraReducers: (builder) => {
@@ -126,7 +228,10 @@ const cartSlice = createSlice({
                 state.discountAmount = action.payload?.discountAmount || 0;
                 state.finalAmount = action.payload?.finalAmount || 0;
                 state.totalProducts = action.payload?.totalProducts || 0;
-                saveLocal(state.products);
+                // Для авторизованных пользователей НЕ сохраняем в localStorage
+                // localStorage используется только для неавторизованных
+                // Очищаем localStorage при загрузке корзины с сервера
+                localStorage.removeItem(CART_KEY);
             })
             .addCase(getCart.rejected, (state, action) => {
                 state.isLoading = false;
@@ -157,11 +262,14 @@ const cartSlice = createSlice({
                 state.discountAmount = action.payload?.discountAmount || 0;
                 state.finalAmount = action.payload?.finalAmount || 0;
                 state.totalProducts = action.payload?.totalProducts || 0;
-                saveLocal(state.products);
+                // Для авторизованных пользователей НЕ сохраняем в localStorage
+                // Данные уже на сервере
             })
             .addCase(addToCart.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = action.error.message || "Ошибка добавления товара";
+                // При ошибке сервера корзина уже обновлена оптимистично через UI обработчики
+                // Сервер вернет актуальное состояние при следующем getCart
             })
             .addCase(updateQuantity.pending, (state) => {
                 state.isLoading = true;
@@ -190,11 +298,14 @@ const cartSlice = createSlice({
                 state.discountAmount = action.payload?.discountAmount || 0;
                 state.finalAmount = action.payload?.finalAmount || 0;
                 state.totalProducts = action.payload?.totalProducts || 0;
-                saveLocal(state.products);
+                // Для авторизованных пользователей НЕ сохраняем в localStorage
+                // Данные уже на сервере
             })
             .addCase(updateQuantity.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = action.error.message || "Ошибка обновления количества";
+                // При ошибке сервера корзина уже обновлена оптимистично через UI обработчики
+                // Откат выполняется в setQuantitySmart через rollback
             })
             .addCase(removeFromCart.pending, (state) => {
                 state.isLoading = true;
@@ -216,11 +327,15 @@ const cartSlice = createSlice({
                 state.discountAmount = action.payload?.discountAmount || 0;
                 state.finalAmount = action.payload?.finalAmount || 0;
                 state.totalProducts = action.payload?.totalProducts || 0;
-                saveLocal(state.products);
+                // Для авторизованных пользователей НЕ сохраняем в localStorage
+                // Данные уже на сервере
             })
             .addCase(removeFromCart.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = action.error.message || "Ошибка удаления товара";
+                // При ошибке сервера корзина уже обновлена оптимистично через UI обработчики
+                // Нужно вернуть товар обратно в корзину
+                // Это можно сделать через перезагрузку корзины с сервера
             })
             .addCase(clearCart.fulfilled, (state) => {
                 state.isLoading = false;
@@ -229,7 +344,8 @@ const cartSlice = createSlice({
                 state.discountAmount = 0;
                 state.finalAmount = 0;
                 state.totalProducts = 0;
-                saveLocal([]);
+                // Для авторизованных пользователей НЕ сохраняем в localStorage
+                // Данные уже на сервере
             })
             .addCase(clearCart.rejected, (state, action) => {
                 state.isLoading = false;
@@ -253,7 +369,8 @@ const cartSlice = createSlice({
                 state.discountAmount = action.payload?.discountAmount || 0;
                 state.finalAmount = action.payload?.finalAmount || 0;
                 state.totalProducts = action.payload?.totalProducts || 0;
-                saveLocal(state.products);
+                // После синхронизации очищаем localStorage, так как теперь данные на сервере
+                localStorage.removeItem(CART_KEY);
             })
             .addCase(syncCart.rejected, (state, action) => {
                 state.isLoading = false;
@@ -262,7 +379,7 @@ const cartSlice = createSlice({
     },
 });
 
-export const { setQuantityLocal, clearCartLocal } = cartSlice.actions;
+export const { setQuantityLocal, addItemUI, updateQuantityUI, removeItemUI, clearCartLocal } = cartSlice.actions;
 export default cartSlice.reducer;
 
 import { AppDispatch } from "../store"; // тип вашего dispatch
@@ -292,10 +409,27 @@ export const setQuantitySmart = (() => {
         isAuthenticated: boolean;
         prevQuantity: number;
     }) => {
-        // Обновляем локально сразу для мгновенного отклика UI
-        dispatch(setQuantityLocal({ product, article, quantity }));
+        // Получаем текущее состояние корзины для проверки наличия товара
+        const store = (window as any).__store__;
+        const getState = store?.getState;
+        const currentState = getState?.();
+        const cartItem = currentState?.cart?.products?.find(
+            (p: CartProductInterface) => p.product._id === product._id && p.article === article
+        );
+        const isInCart = !!cartItem;
 
-        // гость → только localStorage
+        // Оптимистичное обновление UI - обновляем сразу для мгновенного отклика
+        if (quantity <= 0) {
+            dispatch(removeItemUI({ productId: product._id, article, isAuthenticated }));
+        } else if (isInCart) {
+            // Товар уже в корзине - обновляем количество
+            dispatch(updateQuantityUI({ productId: product._id, article, quantity, isAuthenticated }));
+        } else {
+            // Товара нет в корзине - добавляем
+            dispatch(addItemUI({ product, article, quantity, isAuthenticated }));
+        }
+
+        // гость → только localStorage, не отправляем на сервер
         if (!isAuthenticated) return;
 
         // debounce key
@@ -310,9 +444,7 @@ export const setQuantitySmart = (() => {
         // Это значение будет использовано в debounced функции
         const quantityToSend = quantity;
         
-        // Получаем store для доступа к актуальному состоянию
-        const store = (window as any).__store__;
-        const getState = store?.getState;
+        // Используем уже полученные store и getState из начала функции
 
         const action = debounce(async () => {
             try {
@@ -353,7 +485,25 @@ export const setQuantitySmart = (() => {
                 // rollback - возвращаемся к последнему успешно отправленному количеству
                 const lastSentQuantity = getLastSentQuantity();
                 const rollbackQty = lastSentQuantity.get(key) ?? prevQuantity;
-                dispatch(setQuantityLocal({ product, article, quantity: rollbackQty }));
+                
+                // Проверяем, был ли товар в корзине до ошибки
+                const stateBeforeError = getState?.();
+                const wasInCartBefore = stateBeforeError?.cart?.products?.find(
+                    (p: CartProductInterface) => p.product._id === product._id && p.article === article
+                );
+                
+                // Откатываем UI к предыдущему состоянию
+                if (rollbackQty <= 0) {
+                    if (wasInCartBefore) {
+                        dispatch(removeItemUI({ productId: product._id, article, isAuthenticated }));
+                    }
+                } else {
+                    if (wasInCartBefore) {
+                        dispatch(updateQuantityUI({ productId: product._id, article, quantity: rollbackQty, isAuthenticated }));
+                    } else {
+                        dispatch(addItemUI({ product, article, quantity: rollbackQty, isAuthenticated }));
+                    }
+                }
                 console.error("Ошибка обновления корзины:", error);
             }
         }, DEBOUNCE_DELAY);

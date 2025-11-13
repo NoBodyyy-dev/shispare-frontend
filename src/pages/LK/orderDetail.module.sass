@@ -1,0 +1,184 @@
+@use "../../styles/variables" as v
+
+.container
+  width: 100%
+
+.backLink
+  display: inline-block
+  margin-bottom: 20px
+  color: v.$mainBlue
+  text-decoration: none
+  font-size: 16px
+  transition: color 0.2s
+
+  &:hover
+    color: darken(v.$mainBlue, 10%)
+    text-decoration: underline
+
+.header
+  display: flex
+  justify-content: space-between
+  align-items: center
+  margin-bottom: 30px
+  flex-wrap: wrap
+  gap: 16px
+
+.title
+  font-size: 28px
+  font-weight: 600
+  color: #333
+  margin: 0
+
+.status
+  padding: 8px 16px
+  border-radius: 20px
+  font-size: 14px
+  font-weight: 500
+  text-transform: capitalize
+
+  &.status-pending
+    background: #fff2e6
+    color: #c47a1a
+
+  &.status-processing
+    background: #e8f6ff
+    color: #1a73e8
+
+  &.status-confirmed
+    background: #e8f6ff
+    color: #1a73e8
+
+  &.status-shipped
+    background: #eefaf1
+    color: #2b8a3e
+
+  &.status-delivered
+    background: #eefaf1
+    color: #2b8a3e
+
+  &.status-cancelled
+    background: #fcebea
+    color: #c62828
+
+  &.status-refunded
+    background: #fcebea
+    color: #c62828
+
+.content
+  display: grid
+  grid-template-columns: 1fr 400px
+  gap: 30px
+
+  @media (max-width: 1024px)
+    grid-template-columns: 1fr
+
+.mainSection
+  display: flex
+  flex-direction: column
+  gap: 20px
+
+.section
+  background: #fff
+  border-radius: 12px
+  padding: 24px
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05)
+
+.sectionTitle
+  font-size: 20px
+  font-weight: 600
+  color: #333
+  margin: 0 0 20px 0
+  padding-bottom: 12px
+  border-bottom: 2px solid #f0f0f0
+
+.productsList
+  display: flex
+  flex-direction: column
+  gap: 16px
+
+.noItems
+  text-align: center
+  padding: 40px
+  color: #999
+  font-size: 16px
+
+.sidebar
+  display: flex
+  flex-direction: column
+  gap: 20px
+
+.infoGrid
+  display: flex
+  flex-direction: column
+  gap: 16px
+
+.infoRow
+  display: flex
+  flex-direction: column
+  gap: 4px
+
+.infoLabel
+  font-size: 14px
+  color: #666
+  font-weight: 500
+
+.infoValue
+  font-size: 16px
+  color: #333
+
+  &.paid
+    color: #2ecc71
+    font-weight: 600
+
+  &.unpaid
+    color: #e74c3c
+    font-weight: 600
+
+.link
+  color: v.$mainBlue
+  text-decoration: none
+  transition: color 0.2s
+
+  &:hover
+    color: darken(v.$mainBlue, 10%)
+    text-decoration: underline
+
+.summary
+  display: flex
+  flex-direction: column
+  gap: 12px
+
+.summaryRow
+  display: flex
+  justify-content: space-between
+  align-items: center
+  font-size: 16px
+  color: #333
+
+  &.total
+    padding-top: 12px
+    border-top: 2px solid #f0f0f0
+    font-size: 20px
+    font-weight: 600
+    color: #333
+
+.discount
+  color: #2ecc71
+
+.loader, .error
+  text-align: center
+  padding: 40px
+  font-size: 18px
+  color: #666
+
+.error
+  color: #e74c3c
+
+.cancellationReason
+  color: #e74c3c
+  font-style: italic
+  padding: 8px
+  background: #fcebea
+  border-radius: 4px
+  border-left: 3px solid #e74c3c
+

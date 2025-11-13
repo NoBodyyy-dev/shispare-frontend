@@ -7,6 +7,7 @@ import {Post} from "./Post.tsx";
 import {Modal} from "../../lib/modal/Modal.tsx";
 import {TitleWithCreateButton} from "../../lib/title/TitleWithCreateButton.tsx";
 import {Breadcrumbs} from "../../lib/breadcrumbs/Breadcrumbs.tsx";
+import {SEO} from "../../lib/seo/SEO.tsx";
 
 export const Blog: FC = () => {
     const breadcrumbsItems = [
@@ -29,8 +30,16 @@ export const Blog: FC = () => {
     }, []);
 
     return (
-        <div className="main__container">
-            <Breadcrumbs items={breadcrumbsItems} isLoading={false}/>
+        <>
+            <SEO
+                title="Блог"
+                description="Полезные статьи о строительных материалах, технологиях и новинках в сфере строительства и ремонта"
+                keywords="блог, строительные материалы, статьи, новости строительства"
+                url="/blog"
+                type="website"
+            />
+            <div className="main__container">
+                <Breadcrumbs items={breadcrumbsItems} isLoading={false}/>
             <div className="main__block">
                 <TitleWithCreateButton title="Блог" openModal={setOpenModal} />
                 <div className={styles.container}>
@@ -44,6 +53,7 @@ export const Blog: FC = () => {
                 <CreatePostForm/>
             </Modal>
         </div>
+        </>
     )
 }
 

@@ -1,12 +1,15 @@
 import {useState, useMemo} from 'react';
-import styles from './DeliveryPayment.module.sass';
 import {Accordion} from '../../lib/accordion/Accordion';
 import {Breadcrumbs} from '../../lib/breadcrumbs/Breadcrumbs';
+import styles from './DeliveryPayment.module.sass';
+import {DeliveryCard} from "./DeliveryCard.tsx";
+import {FaFileInvoiceDollar} from "react-icons/fa6";
+import {PiMoneyWavyFill} from "react-icons/pi";
+import {IoCard} from "react-icons/io5";
 
 const DELIVERY_OPTIONS = [
     {
         type: "Самовывоз",
-        icon: "/delivery/pickup.svg",
         description: "Заберите товар самостоятельно из нашего склада",
         details: [
             "Сделайте онлайн-заказ и получите подтверждение от сотрудника",
@@ -17,7 +20,6 @@ const DELIVERY_OPTIONS = [
     },
     {
         type: "Бесплатная доставка",
-        icon: "/delivery/free.svg",
         description: "По Краснодару при заказе от 70 000 ₽",
         details: [
             "Доставка до подъезда (тариф 'На улицу')",
@@ -28,7 +30,6 @@ const DELIVERY_OPTIONS = [
     },
     {
         type: "Платная доставка",
-        icon: "/delivery/paid.svg",
         description: "В другие регионы и при заказе до 70 000 ₽",
         details: [
             "Стоимость рассчитывается индивидуально",
@@ -43,17 +44,17 @@ const PAYMENT_METHODS = [
     {
         title: "Безналичный расчет",
         description: "Оплата по счет-договору",
-        icon: "/payment/invoice.svg"
+        icon: <FaFileInvoiceDollar />
     },
     {
         title: "Наличными",
         description: "При получении в Краснодаре",
-        icon: "/payment/cash.svg"
+        icon: <PiMoneyWavyFill />
     },
     {
         title: "Банковской картой",
         description: "VISA, MasterCard, МИР",
-        icon: "/payment/card.svg"
+        icon: <IoCard />
     },
     {
         title: "Система быстрых платежей",
@@ -88,15 +89,20 @@ export const DeliveryPayment = () => {
             title: "Условия доставки",
             content: (
                 <ol className={styles.termsList}>
-                    <li>Доставка осуществляется до подъезда, дачи или коттеджа при наличии подъездных путей для
+                    <li className="line">Доставка осуществляется до подъезда, дачи или коттеджа при наличии подъездных
+                        путей для
                         грузовиков.
                     </li>
-                    <li>Время доставки согласовывается при оформлении заказа. За 60 минут до прибытия вы получите
+                    <li className="line">Время доставки согласовывается при оформлении заказа. За 60 минут до прибытия
+                        вы получите
                         уведомление.
                     </li>
-                    <li>Время ожидания покупателя - 30 минут. После этого доставка отменяется.</li>
-                    <li>При получении вы можете проверить товар. Претензии фиксируются в акте приёма-передачи.</li>
-                    <li>Подъём товара осуществляется, если покупатель берет на себя ответственность за возможные
+                    <li className="line">Время ожидания покупателя - 30 минут. После этого доставка отменяется.</li>
+                    <li className="line">При получении вы можете проверить товар. Претензии фиксируются в акте
+                        приёма-передачи.
+                    </li>
+                    <li className="line">Подъём товара осуществляется, если покупатель берет на себя ответственность за
+                        возможные
                         повреждения.
                     </li>
                 </ol>
@@ -108,10 +114,10 @@ export const DeliveryPayment = () => {
                 <div className={styles.policyContent}>
                     <p>Процедура возврата регламентируется статьей 26.1 ФЗ «О защите прав потребителей»:</p>
                     <ul>
-                        <li>Отказ от товара возможен в течение 7 дней после получения</li>
-                        <li>Товар должен сохранить товарный вид и потребительские свойства</li>
-                        <li>Не подлежат возврату товары с индивидуальными свойствами</li>
-                        <li>Деньги возвращаются в течение 10 дней за вычетом расходов на доставку</li>
+                        <li className="line">Отказ от товара возможен в течение 7 дней после получения</li>
+                        <li className="line">Товар должен сохранить товарный вид и потребительские свойства</li>
+                        <li className="line">Не подлежат возврату товары с индивидуальными свойствами</li>
+                        <li className="line">Деньги возвращаются в течение 10 дней за вычетом расходов на доставку</li>
                     </ul>
                 </div>
             )
@@ -123,12 +129,14 @@ export const DeliveryPayment = () => {
                     <p>Право потребителя на расторжение договора регламентируется статьей 32 ФЗ «О защите прав
                         потребителей»:</p>
                     <ul>
-                        <li>Расторжение договора возможно в любое время с оплатой фактически оказанных услуг</li>
-                        <li>При обнаружении недостатков вы вправе потребовать:
+                        <li className="line">Расторжение договора возможно в любое время с оплатой фактически оказанных
+                            услуг
+                        </li>
+                        <li className="line">При обнаружении недостатков вы вправе потребовать:
                             <ul>
-                                <li>Безвозмездного устранения недостатков</li>
-                                <li>Уменьшения цены услуги</li>
-                                <li>Возмещения расходов на устранение недостатков</li>
+                                <li className="line">Безвозмездного устранения недостатков</li>
+                                <li className="line">Уменьшения цены услуги</li>
+                                <li className="line">Возмещения расходов на устранение недостатков</li>
                             </ul>
                         </li>
                         <li>Требования можно предъявлять в течение гарантийного срока или 2 лет</li>
@@ -203,37 +211,10 @@ export const DeliveryPayment = () => {
     );
 };
 
-// Вспомогательные компоненты
-const DeliveryCard = ({type, icon, description, details}: typeof DELIVERY_OPTIONS[0]) => (
-    <article className={styles.deliveryCard}>
-        <div className={styles.cardHeader}>
-            <img
-                src={icon}
-                alt=""
-                aria-hidden="true"
-                className={styles.cardIcon}
-                loading="lazy"
-            />
-            <h3 className={styles.cardTitle}>{type}</h3>
-        </div>
-        <p className={styles.cardDescription}>{description}</p>
-        <ul className={styles.cardDetails}>
-            {details.map((detail, i) => (
-                <li key={i}>{detail}</li>
-            ))}
-        </ul>
-    </article>
-);
 
 const PaymentCard = ({title, description, icon}: typeof PAYMENT_METHODS[0]) => (
     <article className={styles.paymentCard}>
-        <img
-            src={icon}
-            alt=""
-            aria-hidden="true"
-            className={styles.paymentIcon}
-            loading="lazy"
-        />
+        {icon}
         <div>
             <h3 className={styles.paymentTitle}>{title}</h3>
             <p className={styles.paymentDescription}>{description}</p>

@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /lk/
+Disallow: /auth/
+Disallow: /cart/checkout
+Disallow: /orders/
+Disallow: /chat
+
+# Sitemap
+Sitemap: https://shispare.ru/sitemap.xml
+

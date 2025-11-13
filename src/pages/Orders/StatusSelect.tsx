@@ -6,11 +6,12 @@ import {Modal} from "../../lib/modal/Modal.tsx";
 
 type Props = {
     current: OrderStatus;
-    onChange: (status: OrderStatus) => void;
+    onChange: (status: OrderStatus, cancellationReason?: string, deliveryDate?: string) => void;
     disabled?: boolean;
 };
 
 const STATUS_OPTIONS: { label: string; value: OrderStatus }[] = [
+    {label: "Ожидает оплаты", value: OrderStatus.WAITING_FOR_PAYMENT},
     {label: "В ожидании", value: OrderStatus.PENDING},
     {label: "Подтвержден", value: OrderStatus.CONFIRMED},
     {label: "Отправлен", value: OrderStatus.SHIPPED},
@@ -20,6 +21,7 @@ const STATUS_OPTIONS: { label: string; value: OrderStatus }[] = [
 ];
 
 const NEXT_STATUSES: Record<OrderStatus, OrderStatus[] | null> = {
+    [OrderStatus.WAITING_FOR_PAYMENT]: null, // Статус меняется автоматически после оплаты
     [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELLED],
     [OrderStatus.CONFIRMED]: [OrderStatus.SHIPPED],
     [OrderStatus.SHIPPED]: [OrderStatus.DELIVERED, OrderStatus.REFUNDED],
@@ -37,7 +39,6 @@ export const StatusSelect = ({current, onChange, disabled}: Props) => {
     const [showConfirmedModal, setShowConfirmedModal] = useState(false);
     const [showCancelledModal, setShowCancelledModal] = useState(false);
     const [deliveryDate, setDeliveryDate] = useState("");
-    const [deliveryTime, setDeliveryTime] = useState("");
     const [cancellationReason, setCancellationReason] = useState("");
 
     const availableNextStatuses = NEXT_STATUSES[current];
@@ -55,17 +56,20 @@ export const StatusSelect = ({current, onChange, disabled}: Props) => {
     };
 
     const handleConfirmDelivery = () => {
-        if (selectedStatus) {
-            onChange(selectedStatus);
+        if (selectedStatus && deliveryDate) {
+            onChange(selectedStatus, undefined, deliveryDate);
             setShowConfirmedModal(false);
+            setDeliveryDate("");
+            setSelectedStatus(null);
         }
     };
 
     const handleConfirmCancellation = () => {
         if (selectedStatus && cancellationReason.trim()) {
-            onChange(selectedStatus);
+            onChange(selectedStatus, cancellationReason);
             setShowCancelledModal(false);
-            console.log("Cancellation reason:", cancellationReason);
+            setCancellationReason("");
+            setSelectedStatus(null);
         }
     };
 
@@ -106,27 +110,22 @@ export const StatusSelect = ({current, onChange, disabled}: Props) => {
                             value={deliveryDate}
                             onChange={(e) => setDeliveryDate(e.target.value)}
                             className={styles.input}
-                        />
-                    </div>
-                    <div className={styles.formGroup}>
-                        <label>Время доставки:</label>
-                        <input
-                            type="time"
-                            value={deliveryTime}
-                            onChange={(e) => setDeliveryTime(e.target.value)}
-                            className={styles.input}
+                            min={new Date().toISOString().split('T')[0]}
                         />
                     </div>
                     <div className={styles.modalActions}>
                         <button
-                            onClick={() => setShowConfirmedModal(false)}
+                            onClick={() => {
+                                setShowConfirmedModal(false);
+                                setDeliveryDate("");
+                            }}
                             className={styles.secondaryButton}
                         >
                             Отмена
                         </button>
                         <button
                             onClick={handleConfirmDelivery}
-                            disabled={!deliveryDate || !deliveryTime}
+                            disabled={!deliveryDate}
                             className={styles.primaryButton}
                         >
                             Подтвердить
@@ -139,6 +138,7 @@ export const StatusSelect = ({current, onChange, disabled}: Props) => {
                 <div className={styles.modalContent}>
                     <h3>Причина отмены заказа</h3>
                     <div className={styles.formGroup}>
+                        <label>Причина отмены:</label>
                         <MainTextarea
                             value={cancellationReason}
                             onChange={(e) => setCancellationReason(e.target.value)}
@@ -148,7 +148,10 @@ export const StatusSelect = ({current, onChange, disabled}: Props) => {
                     </div>
                     <div className={styles.modalActions}>
                         <button
-                            onClick={() => setShowCancelledModal(false)}
+                            onClick={() => {
+                                setShowCancelledModal(false);
+                                setCancellationReason("");
+                            }}
                             className={styles.secondaryButton}
                         >
                             Отмена

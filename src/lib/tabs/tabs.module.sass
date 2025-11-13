@@ -1,21 +1,125 @@
+@use "../../styles/_variables" as v
+
 .tabs
   width: 100%
 
   &__content
     width: 100%
-    border-radius: 10px
-    background: #fff
+    border-radius: 12px
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)
     display: grid
     grid-template-columns: 2fr 0.8fr
     column-gap: 40px
+    border: 2px solid transparent
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05)
+    transition: all 0.3s ease
+    position: relative
+    overflow: hidden
+    
+    &::before
+      content: ""
+      position: absolute
+      top: 0
+      left: 0
+      right: 0
+      height: 4px
+      background: linear-gradient(90deg, v.$mainRed 0%, v.$mainBlue 100%)
+      transform: scaleX(0)
+      transition: transform 0.3s ease
+    
+    &:hover
+      border-color: v.$mainRed
+      box-shadow: 0 8px 24px rgba(239, 59, 38, 0.15)
+      
+      &::before
+        transform: scaleX(1)
 
     &Img
       height: 250px
+      border-radius: 8px
+      object-fit: cover
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1)
+      transition: transform 0.3s ease
+      
+      &:hover
+        transform: scale(1.05)
+    
+    ul
+      list-style: none
+      padding-left: 20px
+      
+      li
+        padding: 15px 20px
+        margin-bottom: 15px
+        background: rgba(255, 255, 255, 0.7)
+        border-radius: 8px
+        border-left: 4px solid transparent
+        transition: all 0.3s ease
+        position: relative
+        
+        &::before
+          content: "▶"
+          position: absolute
+          left: 8px
+          top: 50%
+          transform: translateY(-50%)
+          color: v.$mainRed
+          font-size: 12px
+          opacity: 0
+          transition: opacity 0.3s ease
+        
+        &:hover
+          background: rgba(239, 59, 38, 0.05)
+          border-left-color: v.$mainRed
+          transform: translateX(5px)
+          box-shadow: 0 4px 12px rgba(239, 59, 38, 0.1)
+          
+          &::before
+            opacity: 1
+        
+        // Стили для выделения года
+        span.color-red
+          font-weight: 700
+          color: v.$mainRed
+          text-shadow: 0 1px 2px rgba(239, 59, 38, 0.2)
 
   &Label
     width: 230px
-    background: #ffffff
-    border-radius: 5px
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)
+    border-radius: 8px
+    cursor: pointer
+    transition: all 0.3s ease
+    border: 2px solid transparent
+    position: relative
+    overflow: hidden
+    
+    &::before
+      content: ""
+      position: absolute
+      left: 0
+      top: 0
+      bottom: 0
+      width: 4px
+      background: linear-gradient(180deg, v.$mainRed 0%, v.$mainBlue 100%)
+      transform: scaleY(0)
+      transition: transform 0.3s ease
+    
+    &:hover
+      border-color: v.$mainRed
+      box-shadow: 0 4px 12px rgba(239, 59, 38, 0.15)
+      
+      &::before
+        transform: scaleY(1)
+    
+    &.active
+      background: linear-gradient(135deg, rgba(239, 59, 38, 0.1) 0%, rgba(0, 69, 139, 0.05) 100%)
+      border-color: v.$mainRed
+      color: v.$mainRed
+      font-weight: 600
+      box-shadow: 0 4px 12px rgba(239, 59, 38, 0.2)
+      
+      &::before
+        transform: scaleY(1)
 
     &:last-of-type
       margin: 0

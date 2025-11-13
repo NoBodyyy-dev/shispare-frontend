@@ -11,6 +11,7 @@ interface NavPath {
 const adminPaths: NavPath[] = [
     {name: "Каталог", path: "/admin"},
     {name: "Заказы", path: "/orders"},
+    {name: "Заявки", path: "/requests"},
     {name: "Чат", path: "/chat"},
     {name: "Блог", path: "/blog"},
     {name: "Пользователи", path: "/users"},
@@ -32,7 +33,7 @@ export const AdminHeader = () => {
                             key={path.path}
                             to={path.path}
                             className={`${styles.navLink} ${
-                                location.pathname === path.path ? styles.active : ""
+                                location.pathname === path.path || location.pathname.startsWith(path.path + "/") ? styles.active : ""
                             }`}
                         >
                             {path.name}

@@ -8,8 +8,6 @@ import {Categories} from "../pages/Products/CategoriesPage";
 import {Products} from "../pages/Products/ProductsPage";
 import {OneProductPage} from "../pages/Products/OneProductPage";
 import {Blog} from "../pages/Blog/BlogPage";
-import {Solution} from "../pages/Solution/SolutionPage";
-import {OneSolution} from "../pages/Solution/OneSolutionPage";
 import {Contacts} from "../pages/Contacts/ContactsPage";
 import {OneBlog} from "../pages/Blog/OneBlogPage.tsx";
 import {StockPage} from "../pages/Stock/StockPage.tsx";
@@ -27,8 +25,10 @@ import {Error403} from "../pages/Error/Error403.tsx";
 import {ReviewsTab} from "../pages/LK/ReviewTab.tsx";
 import {OrdersTab} from "../pages/LK/OrdersTab.tsx";
 import {ProfileTab} from "../pages/LK/ProfileTab.tsx";
+import {OrderDetailPage} from "../pages/LK/OrderDetailPage.tsx";
 import {SearchPage} from "../pages/Products/SearchPage.tsx";
 import {AdminProductsAccordionPage} from "../pages/Admin/AdminProductsAccordionPage.tsx";
+import {RequestsPage} from "../pages/Admin/RequestsPage.tsx";
 import {ProtectedRoute} from "./Protected.route.tsx";
 import {AdminRoute} from "./Admin.route.tsx";
 import {CodeVerification} from "../pages/Auth/CodeVerification.tsx";
@@ -56,6 +56,14 @@ const router = createBrowserRouter([
                     </AdminRoute>
                 )
             },
+            {
+                path: "/requests",
+                element: (
+                    <AdminRoute>
+                        <RequestsPage/>
+                    </AdminRoute>
+                )
+            },
 
             {path: "/", element: <Home/>},
             {path: "/blog", element: <Blog/>},
@@ -72,8 +80,6 @@ const router = createBrowserRouter([
                 // errorElement: <Error404/>
             },
             {path: "/search", element: <SearchPage/>},
-            {path: "/solution", element: <Solution/>},
-            {path: "/solution/:solution-slug", element: <OneSolution/>},
             {path: "/stock/:stock-slug", element: <StockPage/>},
             {path: "/videos", element: <VideosPage/>},
 
@@ -114,6 +120,7 @@ const router = createBrowserRouter([
                 children: [
                     {index: true, element: <ProfileTab/>},
                     {path: "orders", element: <OrdersTab/>},
+                    {path: "orders/:orderNumber", element: <OrderDetailPage/>},
                     {path: "comments", element: <ReviewsTab/>},
                 ]
             },

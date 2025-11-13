@@ -2,7 +2,8 @@
 
 .container
   display: grid
-  grid-template-columns: 3fr 1fr
+  grid-template-columns: 280px 1fr
+  gap: 20px
 
 .sidebar
   background: #fff
@@ -10,12 +11,14 @@
   box-shadow: 0 4px 20px rgba(0,0,0,0.08)
   display: flex
   flex-direction: column
-  max-height: 350px
+  height: fit-content
+  position: sticky
 
 .nav
   display: flex
   flex-direction: column
   gap: 0.8rem
+  margin-bottom: 20px
 
 .navItem
   padding: 8px 15px
@@ -24,11 +27,6 @@
 .active
   background: v.$mainBlue
   color: #fff
-
-.logoutBtn
-  background: v.$mainRed
-  margin-top: auto
-  text-align: center
 
 .content
   flex: 1
@@ -56,43 +54,95 @@
 // Адаптив
 @media (max-width: 900px)
   .container
-    flex-direction: column
+    grid-template-columns: 1fr
 
   .sidebar
-    flex-direction: row
-    justify-content: space-between
-    align-items: center
+    position: static
+    max-height: none
 
     .nav
       flex-direction: row
       gap: 1rem
+      flex-wrap: wrap
 
   .logoutBtn
-    margin-top: 0
+    margin-top: 20px
 
 .profileSection
-  h2
-    margin-bottom: 1.5rem
-    font-size: 1.5rem
+  width: 100%
+
+  h1
+    margin-bottom: 30px
+    font-size: 28px
+    font-weight: 600
     color: #333
+
+.profileHeader
+  display: flex
+  justify-content: space-between
+  align-items: center
+  margin-bottom: 30px
+  flex-wrap: wrap
+  gap: 16px
 
 .profileGrid
   display: grid
-  grid-template-columns: minmax(150px, 30%) 1fr
-  gap: 1.2rem 1rem
-  font-size: 1.1rem
+  grid-template-columns: 200px 1fr
+  gap: 20px 30px
+  background: #fff
+  border-radius: 12px
+  padding: 30px
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05)
+
+  @media (max-width: 768px)
+    grid-template-columns: 1fr
+    gap: 16px
+
+.banBtn
+  background: #e74c3c
+  color: white
+
+  &:hover
+    background: #c0392b
+
+.unbanBtn
+  background: #2ecc71
+  color: white
+
+  &:hover
+    background: #27ae60
 
 .label
-  font-weight: 500
-  color: #555
+  font-weight: 600
+  color: #666
+  font-size: 15px
+  padding: 12px 0
+  border-bottom: 1px solid #f0f0f0
 
 .value
   color: #333
+  font-size: 16px
+  padding: 12px 0
+  border-bottom: 1px solid #f0f0f0
+  word-break: break-word
 
   &.success
     color: #2ecc71
-    font-weight: 500
+    font-weight: 600
 
   &.error
     color: #e74c3c
-    font-weight: 500
+    font-weight: 600
+
+.reviewsSection
+  h1
+    margin-bottom: 24px
+
+.reviewsList
+  display: flex
+  flex-direction: column
+  gap: 16px
+
+.ordersSection
+  h1
+    margin-bottom: 24px

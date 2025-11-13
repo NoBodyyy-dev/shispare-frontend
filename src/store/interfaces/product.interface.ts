@@ -28,6 +28,13 @@ export interface IVariant {
     countInStock: number;  // Остаток на складе
 }
 
+export interface ISEO {
+    metaTitle?: string;
+    metaDescription?: string;
+    metaKeywords?: string;
+    ogImage?: string;
+}
+
 export interface ProductInterface {
     _id: string;
     title: string;
@@ -54,6 +61,9 @@ export interface ProductInterface {
 
     // ✅ Главное изменение — массив вариантов
     variants: IVariant[];
+
+    // SEO данные
+    seo?: ISEO;
 
     createdAt: Date;
     updatedAt: Date;

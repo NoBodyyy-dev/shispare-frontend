@@ -1,0 +1,18 @@
+.starRatingSelect
+  display: flex
+  gap: 5px
+  align-items: center
+  cursor: pointer
+
+.star
+  color: #ddd
+  transition: all 0.2s
+  user-select: none
+
+  &:hover
+    transform: scale(1.1)
+
+  &.active
+    color: gold
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.5)
+

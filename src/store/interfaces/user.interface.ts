@@ -44,9 +44,15 @@ export interface UserState {
 
 export interface RegisterData {
     type: 'IND' | 'LGL';
-    legalType: 'ЮЛ' | 'ИП';
-    fullName: string;
-    legalId: string;
+    legalType?: 'ЮЛ' | 'ИП';
+    fullName?: string;
+    legalId?: string;
     email: string;
     password: string;
+    bankAccount?: {
+        accountNumber?: string;
+        bankName?: string;
+        bik?: string;
+        correspondentAccount?: string;
+    };
 }

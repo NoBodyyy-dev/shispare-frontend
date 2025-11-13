@@ -1,6 +1,8 @@
 import {UserInterface} from "./user.interface.ts";
+import {ProductInterface} from "./product.interface.ts";
 
 export enum OrderStatus {
+    WAITING_FOR_PAYMENT = "waiting_for_payment", // Ожидает оплаты
     PENDING = "pending",           // Ожидает подтверждения
     PROCESSING = "processing",     // В обработке
     CONFIRMED = "confirmed",       // Подтвержден
@@ -23,12 +25,13 @@ export enum PaymentMethod {
     INVOICE = "invoice",            // По счету для юр. лиц
     PAYINSHOP = "pay_in_shop"
 }
+
 // Интерфейс для элемента заказа
 export interface IOrderItem {
-    product: string;       // Ссылка на продукт
-    optionIndex: number;           // Индекс выбранной опции (цвет/размер)
+    product: string | ProductInterface;       // Ссылка на продукт (может быть ID или объект)
+    article?: number;           // Артикул товара
     quantity: number;              // Количество товара
-    price: number;                 // Цена на момент заказа (фиксируем)
+    price?: number;                 // Цена на момент заказа (фиксируем)
     discount?: number;             // Скидка на товар (%)
 }
 
@@ -62,15 +65,19 @@ export interface IOrder {
     createdAt: Date;               // Дата создания
     updatedAt: Date;               // Дата обновления
     cancelledAt?: Date;            // Дата отмены
+    canceledCaused?: string;       // Причина отмены
     deliveredAt?: Date;            // Дата доставки
     documentUrl: string;
 }
 
 export interface OrderState {
     orders: IOrder[];
+    currentOrder: IOrder | null;
     isLoadingOrders: boolean;
+    isLoadingOrder: boolean;
     isLoadingCreateOrder: boolean;
     successOrders: boolean;
     errorOrders: string;
+    errorOrder: string;
     errorCreateOrder: string;
 }
