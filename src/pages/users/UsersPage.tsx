@@ -37,7 +37,7 @@ export const UsersPage: FC = () => {
 
     if (errorUsers) {
         return (
-            <div className={styles.container}>
+            <div className="main__container p-20">
                 <div className={styles.error}>
                     Ошибка загрузки пользователей: {errorUsers}
                 </div>
@@ -46,11 +46,10 @@ export const UsersPage: FC = () => {
     }
 
     return (
-        <div className="main__container">
-            <h1 className="title mb-20">Управление пользователями</h1>
+        <div className="main__container p-20">
+            <h1 className="title mb-20">Пользователи</h1>
 
             <div className="main__block">
-
                 <div className={`${styles.searchContainer} ${isSearchFocused ? styles.focused : ""}`}>
                     <FiSearch className={styles.searchIcon}/>
                     <MainInput
@@ -67,61 +66,55 @@ export const UsersPage: FC = () => {
                 {isLoadingUsers ? (
                     <div className={styles.loader}>Загрузка пользователей...</div>
                 ) : (
-                    <>
-                        <div className={`${styles.header} p-20`}>
-                            <div>Пользователь</div>
-                            <div>Email</div>
-                            <div>Статус</div>
-                            <div>Тип</div>
-                        </div>
-
-                        <div className={styles.usersList}>
-                            {filteredUsers.length === 0 ? (
-                                <div className={styles.noResults}>
-                                    Пользователи не найдены
-                                </div>
-                            ) : (
-                                filteredUsers.map(user => (
-                                    <UserCard key={user._id} user={user}/>
-                                ))
-                            )}
-                        </div>
-                    </>
+                    <div className={styles.tableWrapper}>
+                        <table className={styles.table}>
+                            <thead>
+                                <tr>
+                                    <th>Пользователь</th>
+                                    <th>Email</th>
+                                    <th>Статус</th>
+                                    <th>Тип</th>
+                                    <th>ИНН</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredUsers.length === 0 ? (
+                                    <tr>
+                                        <td colSpan={5} className={styles.noResults}>
+                                            Пользователи не найдены
+                                        </td>
+                                    </tr>
+                                ) : (
+                                    filteredUsers.map(user => (
+                                        <tr key={user._id} className={styles.tableRow}>
+                                            <td>
+                                                <Link to={`/lk/${user._id}`} className={styles.userLink}>
+                                                    <div>
+                                                        <div className={styles.name}>{user.fullName || "Без имени"}</div>
+                                                        {user.legalName && (
+                                                            <div className={styles.legalName}>{user.legalName}</div>
+                                                        )}
+                                                    </div>
+                                                </Link>
+                                            </td>
+                                            <td>{user.email}</td>
+                                            <td>
+                                                <span className={`${styles.statusBadge} ${user.banned ? styles.banned : styles.active}`}>
+                                                    {user.banned ? "Заблокирован" : "Активен"}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {user.legalId ? "Юр. лицо" : "Физ. лицо"}
+                                            </td>
+                                            <td>{user.legalId || "-"}</td>
+                                        </tr>
+                                    ))
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
             </div>
         </div>
     );
 };
-
-const UserCard = ({user}: { user: UserInterface }) => (
-    <Link to={`/lk/${user._id}`} className={styles.userCard}>
-        <div className={styles.userInfo}>
-            <div>
-                <span className={styles.name}>{user.fullName || "Без имени"}</span>
-                {user.legalName && (
-                    <span className="fz-16 dotted">{user.legalName}</span>
-                )}
-            </div>
-
-            <div className={styles.email}>{user.email}</div>
-
-            <div className={styles.status}>
-        <span className={`${styles.statusBadge} ${user.banned ? styles.banned : styles.active}`}>
-          {user.banned ? "Заблокирован" : "Активен"}
-        </span>
-            </div>
-
-            <div className={styles.type}>
-                {user.role === "Admin" && "Администратор"}
-                {user.role === "Creator" && "Контент-мейкер"}
-                {user.role === "User" && (user.legalId ? "Юр. лицо" : "Физ. лицо")}
-            </div>
-        </div>
-
-        {user.legalId && (
-            <div className={styles.legalInfo}>
-                <span>ИНН: {user.legalId}</span>
-            </div>
-        )}
-    </Link>
-);

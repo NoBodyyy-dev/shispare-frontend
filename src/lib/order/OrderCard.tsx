@@ -33,7 +33,6 @@ export const OrderCard: React.FC<Props> = ({order}) => {
                 <div className={styles.id}>#{order.orderNumber || order._id}</div>
                 <div className={styles.date}>{new Date(order.createdAt).toLocaleDateString()}</div>
             </div>
-
             <div className={styles.rowBottom}>
                 <div className={styles.amount}>{order.finalAmount.toFixed(2)} ₽</div>
                 <div className={`${styles.status} ${styles[`status-${order.status}`]}`}>

@@ -6,19 +6,42 @@ import api from "../api.ts";
 //
 export const createProductFunc = createAsyncThunk(
     "product/create",
-    async (payload: FormData, thunkAPI) => {
+    async (payload: FormData, { rejectWithValue }) => {
         try {
-            const response = await api.post(`/product/create`, payload, {
+            const response = await api.post(`/admin/product/create`, payload, {
                 headers: { 
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
                     "Content-Type": "multipart/form-data",
                 },
             });
             if (response.status !== 200 && response.status !== 201)
-                return thunkAPI.rejectWithValue(response.data);
+                return rejectWithValue(response.data);
             return response.data;
-        } catch (e) {
-            return thunkAPI.rejectWithValue(e);
+        } catch (e: any) {
+            const errorData = e.response?.data || e.response || {};
+            const errorPayload: any = {
+                message: errorData.message || e.message || "Ошибка при создании товара",
+                errors: {}
+            };
+            
+            if (Array.isArray(errorData.errors)) {
+                errorData.errors.forEach((err: any) => {
+                    const field = err.param || err.field || 'general';
+                    const message = err.msg || err.message || err;
+                    if (!errorPayload.errors[field]) {
+                        errorPayload.errors[field] = [];
+                    }
+                    if (Array.isArray(errorPayload.errors[field])) {
+                        errorPayload.errors[field].push(message);
+                    } else {
+                        errorPayload.errors[field] = [message];
+                    }
+                });
+            } else if (errorData.errors && typeof errorData.errors === 'object') {
+                errorPayload.errors = errorData.errors;
+            }
+            
+            return rejectWithValue(errorPayload);
         }
     }
 );
@@ -46,10 +69,17 @@ export const importProductsExcelFunc = createAsyncThunk(
 
 export const getProductsByCategoryFunc = createAsyncThunk(
     "product/getByCategory",
-    async (slug: string, thunkAPI) => {
+    async (
+        payload: {slug: string; params?: Record<string, any>},
+        thunkAPI
+    ) => {
         try {
-            console.log("slug >>>" ,slug)
-            const response = await api.get(`/product/category/${slug}`);
+            if (!payload.slug || payload.slug === "undefined") {
+                return thunkAPI.rejectWithValue({message: "Category slug is required"});
+            }
+            const response = await api.get(`/product/category/${payload.slug}`, {
+                params: payload.params,
+            });
             if (response.status !== 200)
                 return thunkAPI.rejectWithValue(response.data);
             return response.data;
@@ -61,9 +91,10 @@ export const getProductsByCategoryFunc = createAsyncThunk(
 
 export const getPopularProductsFunc = createAsyncThunk(
     "product/getPopular",
-    async (_, thunkAPI) => {
+    async (limit?: number, thunkAPI) => {
         try {
-            const response = await api.get(`/product/popular`);
+            const url = limit ? `/product/popular?limit=${limit}` : `/product/popular`;
+            const response = await api.get(url);
             if (response.status !== 200)
                 return thunkAPI.rejectWithValue(response.data);
             return response.data;
@@ -92,9 +123,10 @@ export const getProductsWithDiscountFunc = createAsyncThunk(
 //
 export const getProductsByBestRatingFunc = createAsyncThunk(
     "product/getBestRating",
-    async (_, thunkAPI) => {
+    async (limit?: number, thunkAPI) => {
         try {
-            const response = await api.get(`/product/best-rating`);
+            const url = limit ? `/product/best-rating?limit=${limit}` : `/product/best-rating`;
+            const response = await api.get(url);
             if (response.status !== 200)
                 return thunkAPI.rejectWithValue(response.data);
             return response.data;
@@ -129,7 +161,7 @@ export const updateProductFunc = createAsyncThunk(
     async (payload: { productID: string; [key: string]: any }, thunkAPI) => {
         try {
             const response = await api.put(
-                `/product/update/${payload.productID}`,
+                `/admin/product/update/${payload.productID}`,
                 payload,
                 {
                     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -155,7 +187,7 @@ export const setCategoryDiscountFunc = createAsyncThunk(
     ) => {
         try {
             const response = await api.put(
-                `/product/category/${payload.categorySlug}/discount`,
+                `/admin/product/category/${payload.categorySlug}/discount`,
                 { discount: payload.discount },
                 {
                     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
@@ -177,7 +209,7 @@ export const deleteProductFunc = createAsyncThunk(
     "product/delete",
     async (productID: string, thunkAPI) => {
         try {
-            const response = await api.delete(`/product/delete/${productID}`, {
+            const response = await api.delete(`/admin/product/delete/${productID}`, {
                 headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
             });
             if (response.status !== 200)

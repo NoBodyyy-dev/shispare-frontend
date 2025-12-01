@@ -1,7 +1,7 @@
 import {ActionReducerMapBuilder, createSlice} from "@reduxjs/toolkit";
 import {UserState} from "../interfaces/user.interface.ts";
 import {
-    authenticateHandler, banUserHandler, getAllUsersHandler,
+    authenticateHandler, banUserHandler, getAllUsersHandler, getAllStaffHandler,
     getMeHandler, getProfileUserHandler,
     logoutHandler,
     registerHandler,
@@ -14,6 +14,7 @@ const initialState: UserState = {
     isAuthenticated: false,
     token: localStorage.getItem("token") || "",
     users: [],
+    staff: [],
 
     isLoadingUser: false,
     isLoadingProfileUser: false,
@@ -21,6 +22,7 @@ const initialState: UserState = {
     isLoadingVerify: false,
     isLoadingLogout: false,
     isLoadingUsers: false,
+    isLoadingStaff: false,
 
     errorUser: "",
     errorProfileUser: "",
@@ -28,6 +30,7 @@ const initialState: UserState = {
     errorVerify: "",
     errorLogout: "",
     errorUsers: "",
+    errorStaff: "",
 
     successCode: false,
     successProfileUser: false,
@@ -35,6 +38,7 @@ const initialState: UserState = {
     successAuth: false,
     successLogout: false,
     successUsers: false,
+    successStaff: false,
 };
 
 const userSlice = createSlice({
@@ -48,6 +52,7 @@ const userSlice = createSlice({
         verifyCodeHandler(builder);
         logoutHandler(builder);
         getAllUsersHandler(builder);
+        getAllStaffHandler(builder);
         getProfileUserHandler(builder);
         banUserHandler(builder);
     },

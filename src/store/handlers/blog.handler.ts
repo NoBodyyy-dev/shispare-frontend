@@ -19,11 +19,7 @@ export const getAllPostsHandler = (builder: ActionReducerMapBuilder<BlogState>) 
         })
         .addCase(getAllPostsFunc.fulfilled, (state: BlogState, action) => {
             state.isLoadingPosts = false;
-            state.posts = Array.isArray(action.payload?.posts) 
-                ? [...action.payload.posts] 
-                : Array.isArray(action.payload) 
-                    ? [...action.payload] 
-                    : [];
+            state.posts = [...action.payload.posts];
         })
 }
 
@@ -39,7 +35,7 @@ export const getCurrentPostHandler = (builder: ActionReducerMapBuilder<BlogState
         .addCase(getCurrentPostFunc.fulfilled, (state: BlogState, action) => {
             state.isLoadingCurrentPost = false;
             state.errorCurrentPost = "";
-            state.currentPost = action.payload?.post || action.payload?.posts || action.payload || null;
+            state.currentPost = action.payload.posts;
         })
 }
 
@@ -71,9 +67,15 @@ export const updatePostHandler = (builder: ActionReducerMapBuilder<BlogState>) =
         .addCase(updatePostFunc.fulfilled, (state: BlogState, action) => {
             state.isLoadingEventPosts = false;
             state.errorEventPost = "";
-            const newPost: number = state.posts.findIndex((post) => post._id === action.payload.post._id);
-            state.posts[newPost] = action.payload.post
-
+            const updatedPost = action.payload.post;
+            const postIndex = state.posts.findIndex((post) => post._id === updatedPost._id);
+            if (postIndex !== -1) {
+                state.posts[postIndex] = updatedPost;
+            }
+            // Обновляем текущий пост, если он редактируется
+            if (state.currentPost && state.currentPost._id === updatedPost._id) {
+                state.currentPost = updatedPost;
+            }
         })
 }
 
@@ -89,6 +91,12 @@ export const deletePostHandler = (builder: ActionReducerMapBuilder<BlogState>) =
         .addCase(deletePostFunc.fulfilled, (state: BlogState, action) => {
             state.isLoadingEventPosts = false;
             state.errorEventPost = "";
-            state.posts = state.posts.filter((post) => post._id === action.payload.post._id);
+            // Удаляем пост из списка по ID из meta.arg (переданный ID)
+            const deletedId = action.meta.arg;
+            state.posts = state.posts.filter((post) => post._id !== deletedId);
+            // Очищаем текущий пост, если он был удален
+            if (state.currentPost && state.currentPost._id === deletedId) {
+                state.currentPost = null;
+            }
         })
 }

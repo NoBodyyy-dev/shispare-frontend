@@ -11,6 +11,7 @@ import socketSlice from "./slices/socket.slice.ts";
 import orderSlice from "./slices/order.slice.ts";
 import commentSlice from "./slices/comment.slice.ts";
 import requestSlice from "./slices/request.slice.ts";
+import solutionSlice from "./slices/solution.slice.ts";
 
 export const store = configureStore({
     middleware: (getDefaultMiddleware) => getDefaultMiddleware({
@@ -28,13 +29,13 @@ export const store = configureStore({
         order: orderSlice,
         comment: commentSlice,
         request: requestSlice,
+        solution: solutionSlice,
     }
 });
 
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 
-// Экспортируем store для использования в других местах
 if (typeof window !== 'undefined') {
     (window as any).__store__ = store;
 }

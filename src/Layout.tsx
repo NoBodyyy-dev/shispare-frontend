@@ -7,6 +7,7 @@ import {AdminLayout} from "./layouts/AdminLayout.tsx";
 import {UserOnlyBodyLayout} from "./layouts/UserOnlyBodyLayout.tsx";
 import {useAppDispatch} from "./hooks/state.hook.ts";
 import {getCart} from "./store/actions/cart.action.ts";
+import {CookieBanner} from "./lib/cookie/CookieBanner.tsx";
 
 const userOnlyBodyPaths = [
     "/auth",
@@ -29,6 +30,11 @@ export const Layout = () => {
     useEffect(() => {
         if (!isLoading && user?._id) dispatch(getCart());
     }, [isLoading, user?._id]);
+
+    // Прокручиваем страницу вверх при смене маршрута
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [location.pathname]);
 
     useEffect(() => {
         if (isLoading) return;
@@ -54,11 +60,29 @@ export const Layout = () => {
 
     if (isLoading) return <Preloader/>;
 
+    // Определяем, нужно ли показывать CookieBanner (не показываем на страницах аутентификации и админке)
+    const shouldShowCookieBanner = !shouldUseUserOnlyBodyLayout(location.pathname) && 
+                                    !location.pathname.startsWith('/admin') && 
+                                    !location.pathname.startsWith('/users') &&
+                                    !location.pathname.startsWith('/requests');
+
     if (shouldUseUserOnlyBodyLayout(location.pathname)) {
         return <UserOnlyBodyLayout/>;
     }
 
-    if (user?.role === "Admin")
-        return <AdminLayout/>;
-    return <UserLayout/>;
+    if (user?.role === "Admin") {
+        return (
+            <>
+                <AdminLayout/>
+                {shouldShowCookieBanner && <CookieBanner/>}
+            </>
+        );
+    }
+    
+    return (
+        <>
+            <UserLayout/>
+            {shouldShowCookieBanner && <CookieBanner/>}
+        </>
+    );
 };

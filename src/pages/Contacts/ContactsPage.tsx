@@ -2,6 +2,9 @@ import {Breadcrumbs} from "../../lib/breadcrumbs/Breadcrumbs";
 import MainMap from "../../lib/Map/Map";
 import "./contacts.sass";
 import {FC} from "react";
+import {BsFillGeoAltFill} from "react-icons/bs";
+import {FaPhoneAlt} from "react-icons/fa";
+import {MdEmail} from "react-icons/md";
 
 export const Contacts: FC = () => {
     const breadcrumbsItems = [
@@ -30,21 +33,21 @@ export const Contacts: FC = () => {
             </div>
             <div className="contacts__container bottom gap-20">
                 <div className="contacts__block flex-align-center gap-10 phone p-15">
-                    <div className="contacts__block-circle"></div>
+                    <div className="contacts__block-circle"><FaPhoneAlt/></div>
                     <span className="contacts__block__info">
             <p className="fz-18">Телефон</p>
             <p className="font-roboto fz-14">+7 (988) 312-14-14</p>
           </span>
                 </div>
                 <div className="contacts__block flex-align-center gap-10 email p-15">
-                    <div className="contacts__block-circle"></div>
+                    <div className="contacts__block-circle"><MdEmail/></div>
                     <span className="contacts__block__info">
             <p className="fz-18">Почта</p>
             <p className="font-roboto fz-14">shispare@yandex.ru</p>
           </span>
                 </div>
                 <div className="contacts__block flex-align-center gap-10 address p-15">
-                    <div className="contacts__block-circle"></div>
+                    <div className="contacts__block-circle"><BsFillGeoAltFill/></div>
                     <span className="contacts__block__info">
             <p className="fz-18">Адрес</p>
             <p className="font-roboto fz-14">г. Краснодар, ул. Кирпичная 1/2</p>

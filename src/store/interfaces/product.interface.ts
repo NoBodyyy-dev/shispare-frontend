@@ -42,7 +42,8 @@ export interface ProductInterface {
     slug: string;
 
     // Связанная категория
-    category: CategoryData;
+    category: CategoryData; // Основная категория (level: 1)
+    subcategory?: CategoryData; // Подкатегория из Excel (level: 2)
 
     // Основная информация
     country: string;
@@ -73,6 +74,7 @@ export interface ProductState {
     products: ProductInterface[];
     discountProducts: ProductInterface[];
     popularProducts: ProductInterface[];
+    bestRatingProducts: ProductInterface[];
     categoryProducts: ProductInterface[];
     currentProduct: ProductInterface | null;
     curCategory: string;
@@ -84,6 +86,7 @@ export interface ProductState {
     isLoadingProducts: boolean;
     isLoadingDiscountProducts: boolean;
     isLoadingPopularProducts: boolean;
+    isLoadingBestRatingProducts: boolean;
     isLoadingCategoryProducts: boolean;
     isLoadingProduct: boolean;
     isCreatingProduct: boolean;
@@ -93,6 +96,7 @@ export interface ProductState {
     productsError?: string;
     discountProductsError?: string;
     popularProductsError?: string;
+    bestRatingProductsError?: string;
     categoryProductsError?: string;
     productError?: string;
     createProductError: string;

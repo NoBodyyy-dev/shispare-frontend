@@ -2,7 +2,7 @@ import React from "react";
 
 interface StarRatingProps {
     rating: number;
-    totalComments: number;
+    totalComments: number | null;
 }
 
 export const StarRating: React.FC<StarRatingProps> = ({rating, totalComments}) => {
@@ -13,7 +13,7 @@ export const StarRating: React.FC<StarRatingProps> = ({rating, totalComments}) =
                 ★
                 </span>
             </div>
-            <p className="fz-14 ml-10">{rating}<span className="color-gray">/{totalComments} отзывов</span></p>
+            <p className="fz-14 ml-10">{rating} {totalComments !== null && <>- <span className="color-gray">{totalComments} отзывов</span></>}</p>
         </div>
     );
 };

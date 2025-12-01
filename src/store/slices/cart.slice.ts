@@ -214,13 +214,25 @@ const cartSlice = createSlice({
                 state.isLoading = false;
                 // Преобразуем данные из бэкенда в формат фронтенда
                 if (action.payload?.items) {
-                    state.products = action.payload.items.map((item: any) => ({
-                        _id: `${item.product._id}-${item.article}`,
-                        product: item.product,
-                        article: item.article,
-                        quantity: item.quantity,
-                        addedAt: new Date(),
-                    }));
+                    state.products = action.payload.items
+                        .filter((item: any) => item.product && item.product._id) // Фильтруем элементы с валидным product
+                        .map((item: any) => ({
+                            _id: `${item.product._id}-${item.article}`,
+                            product: item.product,
+                            article: item.article,
+                            quantity: item.quantity,
+                            addedAt: new Date(),
+                        }));
+                    
+                    // Инициализируем lastSentQuantity для всех товаров из корзины
+                    const lastSentQuantity = (window as any).__lastSentQuantity__ || new Map();
+                    action.payload.items.forEach((item: any) => {
+                        if (item.product && item.product._id) {
+                            const key = `${item.product._id}:${item.article}`;
+                            lastSentQuantity.set(key, item.quantity);
+                        }
+                    });
+                    (window as any).__lastSentQuantity__ = lastSentQuantity;
                 } else {
                     state.products = [];
                 }
@@ -243,20 +255,24 @@ const cartSlice = createSlice({
             .addCase(addToCart.fulfilled, (state, action) => {
                 state.isLoading = false;
                 if (action.payload?.items) {
-                    state.products = action.payload.items.map((item: any) => ({
-                        _id: `${item.product._id}-${item.article}`,
-                        product: item.product,
-                        article: item.article,
-                        quantity: item.quantity,
-                        addedAt: new Date(),
-                    }));
-                    // Обновляем lastSentQuantity после успешного добавления
-                    const key = `${action.payload.items[0]?.product?._id}:${action.payload.items[0]?.article}`;
-                    if (key && action.payload.items[0]) {
-                        const lastSentQuantity = (window as any).__lastSentQuantity__ || new Map();
-                        lastSentQuantity.set(key, action.payload.items[0].quantity);
-                        (window as any).__lastSentQuantity__ = lastSentQuantity;
-                    }
+                    state.products = action.payload.items
+                        .filter((item: any) => item.product && item.product._id) // Фильтруем элементы с валидным product
+                        .map((item: any) => ({
+                            _id: `${item.product._id}-${item.article}`,
+                            product: item.product,
+                            article: item.article,
+                            quantity: item.quantity,
+                            addedAt: new Date(),
+                        }));
+                    // Обновляем lastSentQuantity для всех товаров после успешного добавления
+                    const lastSentQuantity = (window as any).__lastSentQuantity__ || new Map();
+                    action.payload.items.forEach((item: any) => {
+                        if (item.product && item.product._id) {
+                            const key = `${item.product._id}:${item.article}`;
+                            lastSentQuantity.set(key, item.quantity);
+                        }
+                    });
+                    (window as any).__lastSentQuantity__ = lastSentQuantity;
                 }
                 state.totalAmount = action.payload?.totalAmount || 0;
                 state.discountAmount = action.payload?.discountAmount || 0;
@@ -277,27 +293,51 @@ const cartSlice = createSlice({
             .addCase(updateQuantity.fulfilled, (state, action) => {
                 state.isLoading = false;
                 if (action.payload?.items) {
-                    state.products = action.payload.items.map((item: any) => ({
-                        _id: `${item.product._id}-${item.article}`,
-                        product: item.product,
-                        article: item.article,
-                        quantity: item.quantity,
-                        addedAt: new Date(),
-                    }));
-                    // Обновляем lastSentQuantity после успешного обновления
-                    action.payload.items.forEach((item: any) => {
-                        const key = `${item.product?._id}:${item.article}`;
-                        if (key) {
-                            const lastSentQuantity = (window as any).__lastSentQuantity__ || new Map();
-                            lastSentQuantity.set(key, item.quantity);
-                            (window as any).__lastSentQuantity__ = lastSentQuantity;
+                    // Получаем lastSentQuantity для обновления
+                    const lastSentQuantity = (window as any).__lastSentQuantity__ || new Map();
+                    
+                    // Обновляем товары данными с сервера
+                    action.payload.items.forEach((serverItem: any) => {
+                        if (!serverItem.product || !serverItem.product._id) return;
+                        
+                        const key = `${serverItem.product._id}:${serverItem.article}`;
+                        
+                        // Находим товар в текущем состоянии
+                        const existingItemIndex = state.products.findIndex(
+                            (p: CartProductInterface) => 
+                                p.product._id === serverItem.product._id && 
+                                p.article === serverItem.article
+                        );
+                        
+                        if (existingItemIndex >= 0) {
+                            // Обновляем количество из ответа сервера
+                            state.products[existingItemIndex] = {
+                                ...state.products[existingItemIndex],
+                                quantity: serverItem.quantity,
+                            };
+                        } else {
+                            // Товара нет в корзине - добавляем
+                            state.products.push({
+                                _id: `${serverItem.product._id}-${serverItem.article}`,
+                                product: serverItem.product,
+                                article: serverItem.article,
+                                quantity: serverItem.quantity,
+                                addedAt: new Date(),
+                            });
                         }
+                        
+                        // Обновляем lastSentQuantity на значение с сервера
+                        lastSentQuantity.set(key, serverItem.quantity);
                     });
+                    
+                    (window as any).__lastSentQuantity__ = lastSentQuantity;
                 }
                 state.totalAmount = action.payload?.totalAmount || 0;
                 state.discountAmount = action.payload?.discountAmount || 0;
                 state.finalAmount = action.payload?.finalAmount || 0;
                 state.totalProducts = action.payload?.totalProducts || 0;
+                // Пересчитываем итоги на основе актуального состояния products
+                recalcTotals(state);
                 // Для авторизованных пользователей НЕ сохраняем в localStorage
                 // Данные уже на сервере
             })
@@ -313,13 +353,15 @@ const cartSlice = createSlice({
             .addCase(removeFromCart.fulfilled, (state, action) => {
                 state.isLoading = false;
                 if (action.payload?.items) {
-                    state.products = action.payload.items.map((item: any) => ({
-                        _id: `${item.product._id}-${item.article}`,
-                        product: item.product,
-                        article: item.article,
-                        quantity: item.quantity,
-                        addedAt: new Date(),
-                    }));
+                    state.products = action.payload.items
+                        .filter((item: any) => item.product && item.product._id) // Фильтруем элементы с валидным product
+                        .map((item: any) => ({
+                            _id: `${item.product._id}-${item.article}`,
+                            product: item.product,
+                            article: item.article,
+                            quantity: item.quantity,
+                            addedAt: new Date(),
+                        }));
                 } else {
                     state.products = [];
                 }
@@ -357,13 +399,15 @@ const cartSlice = createSlice({
             .addCase(syncCart.fulfilled, (state, action) => {
                 state.isLoading = false;
                 if (action.payload?.items) {
-                    state.products = action.payload.items.map((item: any) => ({
-                        _id: `${item.product._id}-${item.article}`,
-                        product: item.product,
-                        article: item.article,
-                        quantity: item.quantity,
-                        addedAt: new Date(),
-                    }));
+                    state.products = action.payload.items
+                        .filter((item: any) => item.product && item.product._id) // Фильтруем элементы с валидным product
+                        .map((item: any) => ({
+                            _id: `${item.product._id}-${item.article}`,
+                            product: item.product,
+                            article: item.article,
+                            quantity: item.quantity,
+                            addedAt: new Date(),
+                        }));
                 }
                 state.totalAmount = action.payload?.totalAmount || 0;
                 state.discountAmount = action.payload?.discountAmount || 0;
@@ -449,8 +493,8 @@ export const setQuantitySmart = (() => {
         const action = debounce(async () => {
             try {
                 // Получаем актуальное количество из состояния Redux на момент выполнения
+                // Это может отличаться от quantityToSend, если пользователь изменил количество после отправки запроса
                 let currentQuantityInState = quantityToSend;
-                let wasInCart = false;
                 
                 if (getState) {
                     const state = getState();
@@ -459,28 +503,33 @@ export const setQuantitySmart = (() => {
                     );
                     if (cartItem) {
                         currentQuantityInState = cartItem.quantity;
-                        wasInCart = true;
                     }
                 }
                 
-                // Используем последнее отправленное количество
+                // Используем актуальное количество из состояния
+                // Это важно, если пользователь изменил количество после отправки запроса
+                const quantityToUpdate = currentQuantityInState;
+                
+                // Проверяем, был ли товар уже на сервере, используя lastSentQuantity
                 const lastSentQuantity = getLastSentQuantity();
-                const lastSent = lastSentQuantity.get(key);
+                const wasOnServer = lastSentQuantity.has(key);
 
-                if (quantityToSend <= 0) {
+                if (quantityToUpdate <= 0) {
                     await dispatch(removeFromCart({ productId: product._id, article })).unwrap();
                     lastSentQuantity.delete(key);
-                } else if (lastSent === undefined && !wasInCart) {
-                    // Если товара точно не было в корзине (первое добавление), добавляем
-                    // Используем quantityToSend - финальное количество после всех быстрых кликов
-                    await dispatch(addToCart({ productId: product._id, article, quantity: quantityToSend })).unwrap();
-                    lastSentQuantity.set(key, quantityToSend);
+                } else if (!wasOnServer) {
+                    // Если товара еще не было на сервере (первое добавление), добавляем
+                    await dispatch(addToCart({ productId: product._id, article, quantity: quantityToUpdate })).unwrap();
+                    // После успешного добавления сохраняем в lastSentQuantity
+                    lastSentQuantity.set(key, quantityToUpdate);
                 } else {
-                    // Если товар уже был в корзине или мы уже отправляли запрос, обновляем количество напрямую
-                    // Это важно для быстрых кликов - всегда устанавливаем финальное количество, а не добавляем
-                    await dispatch(updateQuantity({ productId: product._id, article, quantity: quantityToSend })).unwrap();
-                    lastSentQuantity.set(key, quantityToSend);
+                    // Если товар уже был на сервере, обновляем количество
+                    await dispatch(updateQuantity({ productId: product._id, article, quantity: quantityToUpdate })).unwrap();
+                    // Обновляем lastSentQuantity после успешного обновления
+                    lastSentQuantity.set(key, quantityToUpdate);
                 }
+                
+                (window as any).__lastSentQuantity__ = lastSentQuantity;
             } catch (error) {
                 // rollback - возвращаемся к последнему успешно отправленному количеству
                 const lastSentQuantity = getLastSentQuantity();

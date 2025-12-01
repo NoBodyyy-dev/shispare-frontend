@@ -6,6 +6,7 @@ const initialState: ProductState = {
     products: [],
     discountProducts: [],
     popularProducts: [],
+    bestRatingProducts: [],
     categoryProducts: [],
     currentProduct: null,
     curCategory: "",
@@ -15,6 +16,7 @@ const initialState: ProductState = {
     isLoadingProducts: false,
     isLoadingDiscountProducts: false,
     isLoadingPopularProducts: false,
+    isLoadingBestRatingProducts: false,
     isLoadingCategoryProducts: false,
     isLoadingProduct: false,
     isCreatingProduct: false,
@@ -25,6 +27,7 @@ const initialState: ProductState = {
     categoryProductsError: "",
     discountProductsError: "",
     popularProductsError: "",
+    bestRatingProductsError: "",
     productError: "",
     createProductError: "",
     checkProductsError: ""
@@ -44,6 +47,7 @@ const productSlice = createSlice({
     extraReducers: (builder: ActionReducerMapBuilder<ProductState>) => {
         handler.importProductsExcelHandler(builder);
         handler.getPopularProductsHandler(builder);
+        handler.getBestRatingProductsHandler(builder);
         handler.getProductsWithDiscountHandler(builder);
         handler.getProductsByCategoriesHandler(builder);
         handler.getProductHandler(builder);

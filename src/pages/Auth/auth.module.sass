@@ -108,3 +108,30 @@
   span
     user-select: none
 
+.consentLabel
+  display: flex
+  align-items: flex-start
+  gap: 10px
+  cursor: pointer
+  user-select: none
+
+.consentCheckbox
+  width: 18px
+  height: 18px
+  margin-top: 2px
+  cursor: pointer
+  flex-shrink: 0
+
+.consentText
+  font-size: 13px
+  color: #444
+  line-height: 1.5
+
+.consentLink
+  color: v.$mainBlue
+  text-decoration: underline
+  transition: color 0.2s
+
+  &:hover
+    color: darken(v.$mainBlue, 10%)
+

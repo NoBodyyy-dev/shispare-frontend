@@ -57,9 +57,6 @@ export const CartSummary: FC<Props> = ({
 
             if (result.success) {
                 localStorage.removeItem("checkout_form_data");
-                navigate("/order-success", {
-                    state: {orderId: result.orderId, totalAmount: finalAmount}
-                });
             }
         } catch (error) {
             console.error("Ошибка создания заказа:", error);
@@ -100,7 +97,6 @@ export const CartSummary: FC<Props> = ({
                     <span className={`${styles.summaryValue} fz-24`}>{finalAmount.toLocaleString()} ₽</span>
                 </div>
 
-                {/* Подсказки об ошибках формы */}
                 {hasFormErrors && !isRedirect && (
                     <div className={styles.formErrors}>
                         <p className={styles.errorText}>Заполните все обязательные поля:</p>
@@ -116,8 +112,9 @@ export const CartSummary: FC<Props> = ({
                 onClick={handleButtonClick}
                 className="full-width"
                 disabled={(!isRedirect && (!isFormValid || isCartEmpty || isSubmitting))}
+                loading={isSubmitting}
             >
-                {isSubmitting ? "Обработка..." : buttonText}
+                {buttonText}
             </Button>
 
             {!isRedirect && isCartEmpty && (

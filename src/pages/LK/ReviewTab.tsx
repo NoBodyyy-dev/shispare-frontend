@@ -3,38 +3,29 @@ import styles from "./lk.module.sass";
 import {useEffect} from "react";
 import {getUserCommentsFunc} from "../../store/actions/comment.action.ts";
 import {useParams} from "react-router-dom";
-import {CommentCard} from "../../lib/comments/CommentCard.tsx";
 
 export const ReviewsTab = () => {
     const dispatch = useAppDispatch();
-    const {comments, isLoadingComments} = useAppSelector(state => state.comment);
-    const params = useParams();
+    const {comments} = useAppSelector(state => state.comment);
+    const params = useParams()
 
     useEffect(() => {
-        if (params.id) {
-            dispatch(getUserCommentsFunc(params.id));
-        }
-    }, [params.id]);
-
-    if (isLoadingComments) {
-        return (
-            <section className={styles.reviewsSection}>
-                <div className={styles.loader}>Загрузка отзывов...</div>
-            </section>
-        );
-    }
+       dispatch(getUserCommentsFunc(params.id!))
+    }, []);
 
     return (
         <section className={styles.reviewsSection}>
-            <h1 className="title">Отзывы</h1>
-            {comments && comments.length > 0 ? (
-                <div className={styles.reviewsList}>
-                    {comments.map(comment => (
-                        <CommentCard key={comment._id} comment={comment} />
+            <h1 className="title">Мои отзывы</h1>
+            {comments?.length ? (
+                <ul className={styles.reviewList}>
+                    {comments.map(c => (
+                        <li key={c._id} className={styles.reviewItem}>
+                            {c.content}
+                        </li>
                     ))}
-                </div>
+                </ul>
             ) : (
-                <p className={styles.noOrders}>Отзывы не найдены.</p>
+                <p className={styles.noOrders}>Вы ещё не оставили отзывов.</p>
             )}
         </section>
     );

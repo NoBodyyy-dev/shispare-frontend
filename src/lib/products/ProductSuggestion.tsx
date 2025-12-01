@@ -1,6 +1,6 @@
 // ProductSuggestions.tsx
 import {useNavigate} from "react-router-dom";
-import {IProductVariant} from "../../store/interfaces/product.interface.ts";
+import {IVariant} from "../../store/interfaces/product.interface.ts";
 import {CategoryData} from "../../store/interfaces/category.interface.ts";
 import styles from "./product.module.sass";
 
@@ -10,7 +10,7 @@ type Props = {
     slug: string;
     images: string[];
     category: CategoryData | null;
-    variants: IProductVariant[];
+    variants: IVariant[];
     variantIndex: number;
     onSelect?: () => void;
 }
@@ -21,11 +21,11 @@ export const ProductSuggestions = (props: Props) => {
     const variant = variants && variants.length > 0 ? variants[variantIndex || 0] : null;
 
     const handleClick = () => {
-        if (category && variant && category.slug) {
+        if (category && variant && category.slug && slug) {
             if (onSelect) {
                 onSelect();
             }
-            navigate(`/categories/${category.slug}/${variant.article}`);
+            navigate(`/catalog/${category.slug}/${slug}/${variant.article}`);
         }
     }
 

@@ -2,11 +2,120 @@
 
 .footer
   width: 100%
-  height: 60px
   background: v.$mainBlue
   color: #ffffff
+  padding: 40px 0 20px
+  margin-top: auto
 
 .container
   width: v.$contentWidth
-  height: 100%
   margin: 0 auto
+  padding: 0 20px
+
+.top
+  display: grid
+  grid-template-columns: repeat(4, 1fr)
+  gap: 40px
+  margin-bottom: 30px
+
+.column
+  display: flex
+  flex-direction: column
+  gap: 15px
+
+.title
+  font-size: 18px
+  font-weight: 600
+  margin: 0
+  margin-bottom: 10px
+
+.contacts
+  display: flex
+  flex-direction: column
+  gap: 8px
+  font-size: 14px
+
+.phone, .email, .address
+  margin: 0
+  line-height: 1.5
+
+.links
+  display: flex
+  flex-direction: column
+  gap: 10px
+
+.link
+  color: #ffffff
+  text-decoration: none
+  font-size: 14px
+  transition: opacity 0.3s ease
+
+  &:hover
+    opacity: 0.8
+
+.certificateLink
+  display: flex
+  flex-direction: column
+  gap: 10px
+  text-decoration: none
+  color: #ffffff
+  transition: opacity 0.3s ease
+
+  &:hover
+    opacity: 0.8
+
+.certificateImage
+  width: 100%
+  height: 120px
+  background: no-repeat url("../../../public/about/certificate-image.png") center
+  background-size: cover
+  border-radius: 8px
+  border: 2px solid rgba(255, 255, 255, 0.3)
+
+.certificateText
+  font-size: 12px
+  margin: 0
+  text-align: center
+  line-height: 1.4
+
+.bottom
+  display: flex
+  justify-content: space-between
+  align-items: center
+  padding-top: 20px
+  border-top: 1px solid rgba(255, 255, 255, 0.2)
+
+.social
+  display: flex
+  gap: 15px
+
+.socialLink
+  color: #ffffff
+  font-size: 24px
+  transition: opacity 0.3s ease
+
+  &:hover
+    opacity: 0.8
+
+.copyright
+  font-size: 12px
+  margin: 0
+  opacity: 0.9
+
+@media (max-width: 1024px)
+  .top
+    grid-template-columns: repeat(2, 1fr)
+    gap: 30px
+
+@media (max-width: 768px)
+  .footer
+    padding: 30px 0 15px
+
+  .top
+    grid-template-columns: 1fr
+    gap: 25px
+
+  .bottom
+    flex-direction: column
+    gap: 15px
+    text-align: center

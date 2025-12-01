@@ -19,19 +19,24 @@ export const CreateReviewForm: FC<CreateReviewFormProps> = ({
 }) => {
     const [rating, setRating] = useState(5);
     const [text, setText] = useState("");
-    const [error, setError] = useState("");
+    const [errors, setErrors] = useState<Record<string, string[]>>({});
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        setError("");
+        setErrors({});
 
+        const validationErrors: Record<string, string[]> = {};
+        
         if (!text.trim()) {
-            setError("Пожалуйста, напишите отзыв");
-            return;
+            validationErrors.text = ["Пожалуйста, напишите отзыв"];
         }
 
         if (rating < 1 || rating > 5) {
-            setError("Пожалуйста, выберите оценку");
+            validationErrors.rating = ["Пожалуйста, выберите оценку"];
+        }
+
+        if (Object.keys(validationErrors).length > 0) {
+            setErrors(validationErrors);
             return;
         }
 
@@ -39,8 +44,38 @@ export const CreateReviewForm: FC<CreateReviewFormProps> = ({
             await onSubmit({rating, text: text.trim()});
             setText("");
             setRating(5);
+            setErrors({});
         } catch (err: any) {
-            setError(err?.message || "Ошибка при отправке отзыва");
+            const errorPayload = err?.payload || err?.response?.data || err;
+            const serverErrors: Record<string, string[]> = {};
+            
+            if (errorPayload?.errors && typeof errorPayload.errors === 'object') {
+                Object.keys(errorPayload.errors).forEach((field) => {
+                    const fieldErrors = errorPayload.errors[field];
+                    if (Array.isArray(fieldErrors)) {
+                        serverErrors[field] = fieldErrors;
+                    } else if (typeof fieldErrors === 'string') {
+                        serverErrors[field] = [fieldErrors];
+                    }
+                });
+            } else if (errorPayload?.message) {
+                const message = errorPayload.message.toLowerCase();
+                if (message.includes('content') || message.includes('текст') || message.includes('отзыв')) {
+                    serverErrors.text = [errorPayload.message];
+                } else if (message.includes('rating') || message.includes('оценк')) {
+                    serverErrors.rating = [errorPayload.message];
+                } else {
+                    serverErrors.text = [errorPayload.message];
+                }
+            } else {
+                const errorMessage = err?.response?.data?.message 
+                    || err?.payload?.message 
+                    || err?.message 
+                    || (typeof err === 'string' ? err : "Ошибка при отправке отзыва");
+                serverErrors.text = [errorMessage];
+            }
+            
+            setErrors(serverErrors);
         }
     };
 
@@ -57,14 +92,36 @@ export const CreateReviewForm: FC<CreateReviewFormProps> = ({
                 <label className={styles.label}>Ваш отзыв:</label>
                 <MainTextarea
                     value={text}
-                    onChange={(e) => setText(e.target.value)}
+                    onChange={(e) => {
+                        setText(e.target.value);
+                        if (errors.text) {
+                            setErrors(prev => {
+                                const newErrors = { ...prev };
+                                delete newErrors.text;
+                                return newErrors;
+                            });
+                        }
+                    }}
                     placeholder="Напишите ваш отзыв о товаре..."
                     className={styles.textarea}
                     required
                 />
+                {errors.text && (
+                    <div className={styles.errorText}>
+                        {errors.text.map((err, i) => (
+                            <div key={i}>{err}</div>
+                        ))}
+                    </div>
+                )}
             </div>
 
-            {error && <div className={styles.error}>{error}</div>}
+            {errors.rating && (
+                <div className={styles.errorText}>
+                    {errors.rating.map((err, i) => (
+                        <div key={i}>{err}</div>
+                    ))}
+                </div>
+            )}
 
             <div className={styles.actions}>
                 <Button
@@ -87,4 +144,6 @@ export const CreateReviewForm: FC<CreateReviewFormProps> = ({
         </form>
     );
 };
+
+
 

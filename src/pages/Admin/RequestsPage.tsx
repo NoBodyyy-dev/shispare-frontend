@@ -66,7 +66,7 @@ export const RequestsPage = () => {
     }
 
     return (
-        <div className="main__container">
+        <div className={`main__container ${user?.role === "Admin" ? "p-20" : ""}`}>
             <h1 className={styles.title}>Заявки</h1>
 
             <div className={styles.tabs}>
@@ -139,7 +139,7 @@ export const RequestsPage = () => {
                                 {request.answeredAt && (
                                     <div className={styles.answeredInfo}>
                                         Отвечено: {new Date(request.answeredAt).toLocaleString('ru-RU')}
-                                        {request.answeredBy && ` (${request.answeredBy.fullName})`}
+                                        {request.answeredBy && typeof request.answeredBy === 'object' && ` (${request.answeredBy.fullName})`}
                                     </div>
                                 )}
                             </div>

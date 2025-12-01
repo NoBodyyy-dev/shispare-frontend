@@ -1,7 +1,7 @@
 import React from 'react';
 import {CommentInterface} from '../../store/interfaces/comment.interface';
-import {Link} from 'react-router-dom';
 import styles from './comment.module.sass';
+import {StarRating} from "../products/StarRating.tsx";
 
 type Props = {
     comment: CommentInterface;
@@ -23,34 +23,17 @@ export const CommentCard: React.FC<Props> = ({comment}) => {
         <div className={styles.commentCard}>
             <div className={styles.commentHeader}>
                 <div className={styles.userInfo}>
-                    <Link 
-                        to={`/lk/${comment.owner._id}`}
-                        className={styles.userName}
-                    >
-                        {comment.owner.fullName || 'Пользователь'}
-                    </Link>
+                    {comment.owner.fullName || 'Удаленный пользователь'}
                     <span className={styles.commentDate}>
                         {formatDate(comment.createdAt)}
                     </span>
                 </div>
+                <StarRating rating={comment.rating} totalComments={null} />
             </div>
-            
+
             <div className={styles.commentContent}>
                 <p>{comment.content}</p>
             </div>
-
-            {comment.product && (
-                <div className={styles.commentProduct}>
-                    <Link 
-                        to={`/product/${comment.product.slug || comment.product._id}`}
-                        className={styles.productLink}
-                    >
-                        <span className={styles.productLabel}>Товар:</span>
-                        <span className={styles.productName}>{comment.product.title}</span>
-                    </Link>
-                </div>
-            )}
         </div>
     );
 };
-

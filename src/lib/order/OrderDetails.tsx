@@ -3,6 +3,7 @@ import {IOrder, IOrderItem, OrderStatus, DeliveryType, PaymentMethod} from "../.
 import {ProductInterface} from "../../store/interfaces/product.interface.ts";
 import styles from "./orderDetails.module.sass";
 import {Link} from "react-router-dom";
+import {Button} from "../buttons/Button.tsx";
 
 const STATUS_LABEL: Record<OrderStatus, string> = {
     [OrderStatus.WAITING_FOR_PAYMENT]: "Ожидает оплаты",
@@ -38,9 +39,10 @@ const formatCurrency = (value: number) =>
 
 interface OrderDetailsProps {
     order: IOrder;
+    handlePayment?: () => void;
 }
 
-export const OrderDetails: React.FC<OrderDetailsProps> = ({order}) => {
+export const OrderDetails: React.FC<OrderDetailsProps> = ({order, handlePayment}) => {
     const getStatusClass = (status: OrderStatus) => {
         const statusClasses: Record<OrderStatus, string> = {
             [OrderStatus.WAITING_FOR_PAYMENT]: styles.statusWaiting,
@@ -56,7 +58,7 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({order}) => {
     };
 
     return (
-        <div className={styles.orderDetails}>
+        <div>
             <div className={styles.header}>
                 <h1 className={styles.title}>Заказ #{order.orderNumber}</h1>
                 <div className={`${styles.statusBadge} ${getStatusClass(order.status)}`}>
@@ -126,17 +128,17 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({order}) => {
                     <div className={styles.infoGrid}>
                         <div className={styles.infoRow}>
                             <span className={styles.label}>ФИО:</span>
-                            <span className={styles.value}>{order.owner.fullName}</span>
+                            <span className={styles.value}>{order.owner?.fullName || order.owner?.email || "Пользователь удален"}</span>
                         </div>
                         <div className={styles.infoRow}>
                             <span className={styles.label}>Email:</span>
-                            <span className={styles.value}>{order.owner.email}</span>
+                            <span className={styles.value}>{order.owner?.email || "Не указан"}</span>
                         </div>
                         <div className={styles.infoRow}>
                             <span className={styles.label}>Телефон:</span>
                             <span className={styles.value}>{order.deliveryInfo.phone}</span>
                         </div>
-                        {order.owner.telegramId && (
+                        {order.owner?.telegramId && (
                             <div className={styles.infoRow}>
                                 <span className={styles.label}>Telegram ID:</span>
                                 <span className={styles.value}>{order.owner.telegramId}</span>
@@ -194,6 +196,16 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({order}) => {
                                 {order.paymentStatus ? "Оплачено" : "Не оплачено"}
                             </span>
                         </div>
+                        {!order.paymentStatus && order.paymentUrl && handlePayment && (
+                            <div className={styles.paymentButton}>
+                                <Button
+                                    onClick={handlePayment}
+                                    className={styles.payButton}
+                                >
+                                    Перейти к оплате
+                                </Button>
+                            </div>
+                        )}
                         {order.invoiceUrl && (
                             <div className={styles.infoRow}>
                                 <span className={styles.label}>Счет/накладная:</span>
@@ -254,32 +266,51 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({order}) => {
                                     <Link to={`/categories/${product.category?.slug}/${item.article}`} className={styles.itemName}>
                                         {product.title}
                                     </Link>
-                                    <div className={styles.itemMeta}>
-                                        {variant?.color && (
-                                            <span className={styles.itemBadge}>
-                                                <span
-                                                    className={styles.colorDot}
-                                                    style={{backgroundColor: variant.color.hex}}
-                                                />
-                                                {variant.color.ru}
-                                            </span>
-                                        )}
-                                        {variant?.package && (
-                                            <span className={styles.itemBadge}>
-                                                {variant.package.count} {variant.package.unit}
-                                            </span>
-                                        )}
-                                        <span className={styles.itemBadge}>Арт: {item.article}</span>
-                                    </div>
-                                    {discount > 0 && (
-                                        <div className={styles.itemDiscount}>
-                                            Скидка: {discount}%
+                                    <div className={styles.itemInfo}>
+                                        <div className={styles.itemRow}>
+                                            <span className={styles.itemLabel}>Артикул:</span>
+                                            <span className={styles.itemValue}>{item.article}</span>
                                         </div>
-                                    )}
+                                        {variant?.package && (
+                                            <>
+                                                <div className={styles.itemRow}>
+                                                    <span className={styles.itemLabel}>Тип упаковки:</span>
+                                                    <span className={styles.itemValue}>{variant.package.type || "—"}</span>
+                                                </div>
+                                                <div className={styles.itemRow}>
+                                                    <span className={styles.itemLabel}>Упаковка:</span>
+                                                    <span className={styles.itemValue}>
+                                                        {variant.package.count} {variant.package.unit}
+                                                    </span>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
                                 </div>
-                                <div className={styles.itemQuantity}>x{item.quantity}</div>
-                                <div className={styles.itemPrice}>
-                                    {formatCurrency(finalPrice * item.quantity)}
+                                <div className={styles.itemPricing}>
+                                    <div className={styles.itemRow}>
+                                        <span className={styles.itemLabel}>Цена:</span>
+                                        <span className={styles.itemValue}>
+                                            {discount > 0 ? (
+                                                <>
+                                                    <span className={styles.oldPrice}>{formatCurrency(itemPrice)}</span>
+                                                    <span className={styles.newPrice}>{formatCurrency(finalPrice)}</span>
+                                                </>
+                                            ) : (
+                                                <span className={styles.newPrice}>{formatCurrency(finalPrice)}</span>
+                                            )}
+                                        </span>
+                                    </div>
+                                    <div className={styles.itemRow}>
+                                        <span className={styles.itemLabel}>Количество:</span>
+                                        <span className={styles.itemValue}>x{item.quantity}</span>
+                                    </div>
+                                    <div className={styles.itemRow}>
+                                        <span className={styles.itemLabel}>Итого:</span>
+                                        <span className={styles.itemTotalPrice}>
+                                            {formatCurrency(finalPrice * item.quantity)}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
                         );
@@ -303,7 +334,7 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({order}) => {
                             </span>
                         </div>
                     )}
-                    {order.deliveryCost > 0 && (
+                    {order.deliveryCost && order.deliveryCost > 0 && (
                         <div className={styles.summaryRow}>
                             <span className={styles.summaryLabel}>Доставка:</span>
                             <span className={styles.summaryValue}>{formatCurrency(order.deliveryCost)}</span>
@@ -318,4 +349,3 @@ export const OrderDetails: React.FC<OrderDetailsProps> = ({order}) => {
         </div>
     );
 };
-

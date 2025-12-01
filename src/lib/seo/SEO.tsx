@@ -20,17 +20,17 @@ const defaultUrl = typeof window !== "undefined" ? window.location.origin : "";
 const defaultSiteName = "Shispare";
 
 export const SEO: React.FC<SEOProps> = ({
-    title,
-    description,
-    keywords,
-    image,
-    url,
-    type = "website",
-    siteName = defaultSiteName,
-    locale = "ru_RU",
-    noindex = false,
-    canonical,
-}) => {
+                                            title,
+                                            description,
+                                            keywords,
+                                            image,
+                                            url,
+                                            type = "website",
+                                            siteName = defaultSiteName,
+                                            locale = "ru_RU",
+                                            noindex = false,
+                                            canonical,
+                                        }) => {
     const fullTitle = title ? `${title} | ${defaultSiteName}` : defaultTitle;
     const fullDescription = description || defaultDescription;
     const fullImage = image ? (image.startsWith("http") ? image : `${defaultUrl}${image}`) : `${defaultUrl}${defaultImage}`;
@@ -97,4 +97,3 @@ export const SEO: React.FC<SEOProps> = ({
 
     return null;
 };
-

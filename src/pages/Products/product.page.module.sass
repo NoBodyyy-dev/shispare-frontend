@@ -1,3 +1,5 @@
+@use "../../styles/variables" as *
+
 .category
   &Container
     width: 100%
@@ -70,3 +72,139 @@
   display: grid
   grid-template-columns: 1fr 1fr 1fr 1fr
   gap: 20px
+
+.filtersBar
+  width: 100%
+  display: flex
+  flex-wrap: wrap
+  gap: 16px
+  padding: 20px
+  margin-bottom: 24px
+  background: #ffffff
+  border-radius: 12px
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08)
+
+.filterGroup
+  display: flex
+  flex-direction: column
+  gap: 8px
+  min-width: 180px
+  flex: 1
+
+  label
+    font-size: 12px
+    font-weight: 600
+    text-transform: uppercase
+    color: #666
+    letter-spacing: 0.5px
+
+  select
+    padding: 10px 12px
+    border-radius: 8px
+    border: 1px solid #e0e0e0
+    font-size: 14px
+    background: #ffffff
+    cursor: pointer
+    transition: all 0.2s ease
+
+    &:focus
+      border-color: $mainBlue
+      outline: none
+      box-shadow: 0 0 0 3px rgba($mainBlue, 0.1)
+
+    &:hover
+      border-color: $mainBlue
+
+.priceDropdown
+  min-width: 200px
+
+.priceDropdownContent
+  padding: 16px
+  display: flex
+  flex-direction: column
+  gap: 16px
+  min-width: 280px
+
+.filterGroupCheckbox
+  display: flex
+  align-items: flex-end
+
+  label
+    display: flex
+    align-items: center
+    gap: 6px
+    font-size: 14px
+    color: #333
+
+.dropdownOption
+  display: flex
+  flex-direction: column
+
+  label
+    display: flex
+    align-items: center
+    gap: 8px
+    font-weight: 500
+
+  input[type="checkbox"]
+    accent-color: $mainBlue
+
+// Search Page Styles
+.searchPage
+  width: 100%
+  padding: 20px 0
+
+.title
+  font-size: 24px
+  font-weight: 700
+  color: #333
+  margin-bottom: 24px
+  line-height: 1.3
+
+  @media (max-width: 768px)
+    font-size: 20px
+    margin-bottom: 20px
+
+.noResults
+  text-align: center
+  padding: 60px 20px
+  color: #666
+  font-size: 16px
+  background: #ffffff
+  border-radius: 12px
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06)
+
+.resultsGrid
+  display: grid
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr))
+  gap: 20px
+  margin-top: 24px
+
+  @media (max-width: 768px)
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr))
+    gap: 16px
+    margin-top: 20px
+
+.loadingState
+  text-align: center
+  padding: 40px 20px
+  color: #666
+  font-size: 16px
+
+.queryText
+  color: $mainBlue
+  font-weight: 700
+
+.resultsCount
+  font-size: 16px
+  color: #666
+  margin-bottom: 20px
+
+  strong
+    color: #333
+    font-weight: 700
+
+.noResultsHint
+  margin-top: 12px
+  font-size: 14px
+  color: #999

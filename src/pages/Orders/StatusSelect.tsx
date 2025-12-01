@@ -3,6 +3,7 @@ import {OrderStatus} from "../../store/interfaces/order.interface.ts";
 import styles from "./orders.module.sass";
 import {MainTextarea} from "../../lib/input/MainTextarea.tsx";
 import {Modal} from "../../lib/modal/Modal.tsx";
+import {Button} from "../../lib/buttons/Button.tsx";
 
 type Props = {
     current: OrderStatus;
@@ -147,7 +148,7 @@ export const StatusSelect = ({current, onChange, disabled}: Props) => {
                         />
                     </div>
                     <div className={styles.modalActions}>
-                        <button
+                        <Button
                             onClick={() => {
                                 setShowCancelledModal(false);
                                 setCancellationReason("");
@@ -155,14 +156,14 @@ export const StatusSelect = ({current, onChange, disabled}: Props) => {
                             className={styles.secondaryButton}
                         >
                             Отмена
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                             onClick={handleConfirmCancellation}
                             disabled={!cancellationReason.trim()}
                             className={styles.primaryButton}
                         >
                             Подтвердить отмену
-                        </button>
+                        </Button>
                     </div>
                 </div>
             </Modal>

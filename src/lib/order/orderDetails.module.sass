@@ -67,18 +67,20 @@
   margin-bottom: 30px
 
 .section
-  background: #f8f9fa
-  border-radius: 8px
-  padding: 20px
-  border: 1px solid #eee
+  background: #fff
+  border-radius: 12px
+  padding: 24px
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05)
+  transition: box-shadow 0.2s
+
+  &:hover
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08)
 
 .sectionTitle
-  font-size: 18px
+  font-size: 20px
   font-weight: 600
   color: #333
-  margin: 0 0 15px 0
-  padding-bottom: 10px
-  border-bottom: 1px solid #ddd
+  margin: 0 0 20px 0
 
 .infoGrid
   display: flex
@@ -132,31 +134,62 @@
   &:hover
     text-decoration: underline
 
+.paymentButton
+  margin-top: 16px
+  padding-top: 16px
+  border-top: 1px solid #eee
+
+.payButton
+  width: 100%
+  background: v.$mainBlue
+  color: white
+  padding: 12px 24px
+  border-radius: 8px
+  font-weight: 600
+  font-size: 16px
+  transition: background 0.3s ease
+  border: none
+  cursor: pointer
+
+  &:hover
+    background: darken(v.$mainBlue, 10%)
+
 .itemsList
   display: flex
   flex-direction: column
   gap: 15px
 
+.emptyMessage
+  text-align: center
+  padding: 40px 20px
+  color: #999
+  font-size: 16px
+  font-style: italic
+
 .itemCard
-  display: flex
-  align-items: center
-  gap: 15px
-  padding: 15px
+  display: grid
+  grid-template-columns: 120px 1fr auto
+  gap: 20px
+  padding: 20px
   background: #fff
-  border: 1px solid #e0e0e0
-  border-radius: 8px
-  transition: box-shadow 0.2s
+  border-radius: 12px
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05)
+  transition: box-shadow 0.2s, transform 0.2s
 
   &:hover
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1)
+    box-shadow: 0 4px 16px rgba(0,0,0,0.1)
+    transform: translateY(-2px)
 
 .itemImageLink
   flex-shrink: 0
-  width: 80px
-  height: 80px
-  border-radius: 6px
+  width: 120px
+  height: 120px
+  border-radius: 8px
   overflow: hidden
-  border: 1px solid #eee
+  background: #f5f5f5
+  display: flex
+  align-items: center
+  justify-content: center
 
 .itemImage
   width: 100%
@@ -164,62 +197,81 @@
   object-fit: cover
 
 .itemDetails
-  flex-grow: 1
   display: flex
   flex-direction: column
-  gap: 8px
+  gap: 12px
+  min-width: 0
 
 .itemName
-  font-size: 16px
-  font-weight: 500
+  font-size: 18px
+  font-weight: 600
   color: #2C2C2C
   text-decoration: none
   transition: color 0.2s
+  line-height: 1.4
+  word-break: break-word
 
   &:hover
     color: v.$mainBlue
 
-.itemMeta
+.itemInfo
   display: flex
-  flex-wrap: wrap
+  flex-direction: column
   gap: 8px
-  font-size: 12px
 
-.itemBadge
-  display: inline-flex
+.itemRow
+  display: flex
   align-items: center
-  gap: 4px
-  padding: 4px 8px
-  background: #f5f5f5
-  border-radius: 4px
+  gap: 12px
+  font-size: 14px
+
+.itemLabel
+  font-weight: 500
   color: #666
+  min-width: 120px
+  flex-shrink: 0
 
-.colorDot
-  width: 12px
-  height: 12px
-  border-radius: 50%
-  border: 1px solid rgba(0,0,0,0.1)
-  display: inline-block
+.itemValue
+  color: #333
+  word-break: break-word
+  flex: 1
 
-.itemDiscount
+.itemPricing
+  display: flex
+  flex-direction: column
+  gap: 8px
+  min-width: 180px
+  padding-left: 20px
+  border-left: 1px solid #eee
+
+  .itemRow
+    justify-content: space-between
+    gap: 8px
+
+  .itemLabel
+    min-width: auto
+    font-size: 13px
+    color: #999
+
+  .itemValue
+    text-align: right
+    font-size: 14px
+
+.oldPrice
+  text-decoration: line-through
+  color: #999
   font-size: 13px
-  color: v.$mainRed
-  font-weight: 500
+  margin-right: 8px
 
-.itemQuantity
-  flex-shrink: 0
-  font-size: 15px
-  color: v.$textGray
-  font-weight: 500
-  min-width: 50px
-  text-align: center
-
-.itemPrice
-  flex-shrink: 0
-  font-size: 16px
+.newPrice
+  color: #333
   font-weight: 600
-  color: #2C2C2C
-  min-width: 100px
+  font-size: 14px
+
+.itemTotalPrice
+  font-size: 18px
+  font-weight: 700
+  color: v.$mainBlue
   text-align: right
 
 .summary
@@ -258,15 +310,22 @@
     grid-template-columns: 1fr
 
   .itemCard
-    flex-wrap: wrap
+    grid-template-columns: 100px 1fr
+    gap: 15px
 
   .itemImageLink
-    width: 60px
-    height: 60px
+    width: 100px
+    height: 100px
 
-  .itemDetails
-    flex-basis: 100%
+  .itemPricing
+    grid-column: 1 / -1
+    border-left: none
+    border-top: 1px solid #eee
+    padding-left: 0
+    padding-top: 15px
+    margin-top: 10px
+    min-width: auto
 
-  .itemQuantity, .itemPrice
-    flex-basis: auto
+    .itemRow
+      justify-content: space-between
 

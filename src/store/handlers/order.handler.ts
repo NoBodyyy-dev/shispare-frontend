@@ -8,16 +8,20 @@ export const getUserOrdersHandler = (builder: ActionReducerMapBuilder<OrderState
     builder
         .addCase(getUserOrdersFunc.pending, (state: OrderState) => {
             state.isLoadingOrders = true;
-        }).addCase(getUserOrdersFunc.rejected, (state: OrderState, action) => {
-        state.isLoadingOrders = false;
-        state.successOrders = false
-        state.errorOrders = action.error.message as string;
-    }).addCase(getUserOrdersFunc.fulfilled, (state, action) => {
-        state.orders = action.payload.orders;
-        state.isLoadingOrders = false;
-        state.successOrders = true;
-    })
-}
+            state.errorOrders = "";
+        })
+        .addCase(getUserOrdersFunc.rejected, (state: OrderState, action) => {
+            state.isLoadingOrders = false;
+            state.successOrders = false;
+            state.errorOrders = action.error.message || "Ошибка при загрузке заказов";
+        })
+        .addCase(getUserOrdersFunc.fulfilled, (state, action) => {
+            state.orders = action.payload.orders || [];
+            state.isLoadingOrders = false;
+            state.successOrders = true;
+            state.errorOrders = "";
+        });
+};
 
 export const createOrderHandler = (builder: ActionReducerMapBuilder<OrderState>) => {
     builder
@@ -52,8 +56,8 @@ export const createOrderHandler = (builder: ActionReducerMapBuilder<OrderState>)
         .addCase(createOrderFunc.rejected, (state: OrderState, action) => {
             state.isLoadingCreateOrder = false;
             state.errorCreateOrder = action.error.message || "Ошибка создания заказа";
-        })
-}
+        });
+};
 
 export const getOrderByNumberHandler = (builder: ActionReducerMapBuilder<OrderState>) => {
     builder
@@ -62,15 +66,16 @@ export const getOrderByNumberHandler = (builder: ActionReducerMapBuilder<OrderSt
             state.errorOrder = "";
         })
         .addCase(getOrderByNumberFunc.fulfilled, (state: OrderState, action) => {
-            state.currentOrder = action.payload.order;
+            state.currentOrder = action.payload.order || action.payload;
             state.isLoadingOrder = false;
+            state.errorOrder = "";
         })
         .addCase(getOrderByNumberFunc.rejected, (state: OrderState, action) => {
             state.isLoadingOrder = false;
             state.errorOrder = action.error.message || "Ошибка загрузки заказа";
             state.currentOrder = null;
-        })
-}
+        });
+};
 
 export const getOneOrderHandler = (builder: ActionReducerMapBuilder<OrderState>) => {
     builder
@@ -79,12 +84,13 @@ export const getOneOrderHandler = (builder: ActionReducerMapBuilder<OrderState>)
             state.errorOrder = "";
         })
         .addCase(getOneOrderFunc.fulfilled, (state: OrderState, action) => {
-            state.currentOrder = action.payload.order;
+            state.currentOrder = action.payload.order || action.payload;
             state.isLoadingOrder = false;
+            state.errorOrder = "";
         })
         .addCase(getOneOrderFunc.rejected, (state: OrderState, action) => {
             state.isLoadingOrder = false;
             state.errorOrder = action.error.message || "Ошибка загрузки заказа";
             state.currentOrder = null;
-        })
-}
+        });
+};

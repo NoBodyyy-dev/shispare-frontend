@@ -6,7 +6,8 @@ import {
     getMyCommentsFunc,
     getUserCommentsFunc,
     createCommentFunc,
-    deleteCommentFunc
+    deleteCommentFunc,
+    checkCanCommentFunc
 } from "../actions/comment.action.ts";
 
 export const getProductCommentsHandler = (builder: ActionReducerMapBuilder<CommentState>) => {
@@ -21,7 +22,15 @@ export const getProductCommentsHandler = (builder: ActionReducerMapBuilder<Comme
         })
         .addCase(getProductCommentsFunc.fulfilled, (state: CommentState, action) => {
             state.isLoadingComments = false;
-            state.comments = action.payload.comments || action.payload;
+            if (action.payload.comments && action.payload.pagination) {
+                state.comments = Array.isArray(action.payload.comments) ? action.payload.comments : [];
+                state.pagination = action.payload.pagination;
+            } else {
+                // Обратная совместимость
+                const comments = action.payload.comments || action.payload;
+                state.comments = Array.isArray(comments) ? comments : [];
+                state.pagination = null;
+            }
             state.errorComments = "";
         });
 };
@@ -38,6 +47,10 @@ export const getCommentByIdHandler = (builder: ActionReducerMapBuilder<CommentSt
         })
         .addCase(getCommentByIdFunc.fulfilled, (state: CommentState, action) => {
             state.isLoadingActionComment = false;
+            // Убедимся, что comments - массив
+            if (!Array.isArray(state.comments)) {
+                state.comments = [];
+            }
             // Обновляем конкретный комментарий в списке или добавляем его
             const index = state.comments.findIndex(c => c._id === action.payload._id);
             if (index !== -1) {
@@ -61,7 +74,8 @@ export const getMyCommentsHandler = (builder: ActionReducerMapBuilder<CommentSta
         })
         .addCase(getMyCommentsFunc.fulfilled, (state: CommentState, action) => {
             state.isLoadingComments = false;
-            state.comments = action.payload.comments || action.payload;
+            const comments = action.payload.comments || action.payload;
+            state.comments = Array.isArray(comments) ? comments : [];
             state.errorComments = "";
         });
 };
@@ -78,7 +92,8 @@ export const getUserCommentsHandler = (builder: ActionReducerMapBuilder<CommentS
         })
         .addCase(getUserCommentsFunc.fulfilled, (state: CommentState, action) => {
             state.isLoadingComments = false;
-            state.comments = action.payload.comments || action.payload;
+            const comments = action.payload.comments || action.payload;
+            state.comments = Array.isArray(comments) ? comments : [];
             state.errorComments = "";
         });
 };
@@ -91,11 +106,19 @@ export const createCommentHandler = (builder: ActionReducerMapBuilder<CommentSta
         })
         .addCase(createCommentFunc.rejected, (state: CommentState, action) => {
             state.isLoadingActionComment = false;
-            state.errorActionComment = action.error.message as string;
+            const errorMessage = (action.payload as any)?.message || action.error?.message || "Ошибка при создании комментария";
+            state.errorActionComment = errorMessage;
         })
         .addCase(createCommentFunc.fulfilled, (state: CommentState, action) => {
             state.isLoadingActionComment = false;
-            state.comments.push(action.payload.comment || action.payload);
+            // Убедимся, что comments - массив
+            if (!Array.isArray(state.comments)) {
+                state.comments = [];
+            }
+            const newComment = action.payload.comment || action.payload;
+            if (newComment) {
+                state.comments.push(newComment);
+            }
             state.errorActionComment = "";
         });
 };
@@ -112,7 +135,32 @@ export const deleteCommentHandler = (builder: ActionReducerMapBuilder<CommentSta
         })
         .addCase(deleteCommentFunc.fulfilled, (state: CommentState, action) => {
             state.isLoadingActionComment = false;
-            state.comments = state.comments.filter(c => c._id !== action.payload.id);
+            // Убедимся, что comments - массив
+            if (!Array.isArray(state.comments)) {
+                state.comments = [];
+            } else {
+                state.comments = state.comments.filter(c => c._id !== action.payload.id);
+            }
             state.errorActionComment = "";
+        });
+};
+
+export const checkCanCommentHandler = (builder: ActionReducerMapBuilder<CommentState>) => {
+    builder
+        .addCase(checkCanCommentFunc.pending, (state: CommentState) => {
+            state.isLoadingCanComment = true;
+            state.canComment = null;
+            state.canCommentReason = null;
+        })
+        .addCase(checkCanCommentFunc.rejected, (state: CommentState, action) => {
+            state.isLoadingCanComment = false;
+            state.canComment = false;
+            const errorPayload = action.payload as any;
+            state.canCommentReason = errorPayload?.message || "Ошибка при проверке возможности комментирования";
+        })
+        .addCase(checkCanCommentFunc.fulfilled, (state: CommentState, action) => {
+            state.isLoadingCanComment = false;
+            state.canComment = action.payload.canComment;
+            state.canCommentReason = action.payload.reason || null;
         });
 };

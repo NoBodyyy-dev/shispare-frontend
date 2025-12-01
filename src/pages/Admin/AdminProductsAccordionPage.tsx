@@ -1,27 +1,31 @@
-import React, { useEffect, useState, ChangeEvent } from "react";
+import React, {useEffect, useState, ChangeEvent} from "react";
 import {
     getProductsByCategoryFunc,
     createProductFunc,
     updateProductFunc,
     deleteProductFunc,
 } from "../../store/actions/product.action";
-import { getAllCategoriesFunc } from "../../store/actions/category.action";
-import { ProductTable } from "./ProductTable";
-import { useAppDispatch, useAppSelector } from "../../hooks/state.hook";
+import {getAllCategoriesFunc} from "../../store/actions/category.action";
+import {ProductTable} from "./ProductTable";
+import {useAppDispatch, useAppSelector} from "../../hooks/state.hook";
 import styles from "./admin.module.sass";
-import { Modal } from "../../lib/modal/Modal";
-import { MainInput } from "../../lib/input/MainInput";
-import { MainTextarea } from "../../lib/input/MainTextarea";
-import { useAuth } from "../../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import {Modal} from "../../lib/modal/Modal";
+import {MainInput} from "../../lib/input/MainInput";
+import {MainTextarea} from "../../lib/input/MainTextarea";
+import {useAuth} from "../../context/AuthContext";
+import {useNavigate} from "react-router-dom";
 import api from "../../store/api";
+import {Button} from "../../lib/buttons/Button.tsx";
+import {TitleWithCreateButton} from "../../lib/title/TitleWithCreateButton.tsx";
+import {ConfirmModal} from "../../lib/modal/ConfirmModal.tsx";
+import {addMessage} from "../../store/slices/push.slice.ts";
 
 export const AdminProductsAccordionPage: React.FC = () => {
-    const { user, isAuthenticated } = useAuth();
+    const {user, isAuthenticated} = useAuth();
     const navigate = useNavigate();
     const dispatch = useAppDispatch();
 
-    const { categories } = useAppSelector((state) => state.category);
+    const {categories} = useAppSelector((state) => state.category);
 
     const [activeCategory, setActiveCategory] = useState<string | null>(null);
     const [categoryProducts, setCategoryProducts] = useState<Record<string, any[]>>({});
@@ -30,6 +34,10 @@ export const AdminProductsAccordionPage: React.FC = () => {
     const [openEditModal, setOpenEditModal] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [uploadResponse, setUploadResponse] = useState<any>(null);
+    const [formErrors, setFormErrors] = useState<Record<string, string[]>>({});
+    const [deleteConfirm, setDeleteConfirm] = useState<{isOpen: boolean; productId: string | null}>({isOpen: false, productId: null});
+    const [isCreatingProduct, setIsCreatingProduct] = useState(false);
+    const [isUpdatingProduct, setIsUpdatingProduct] = useState(false);
 
     const [formData, setFormData] = useState<any>({
         title: "",
@@ -59,12 +67,24 @@ export const AdminProductsAccordionPage: React.FC = () => {
         dispatch(getAllCategoriesFunc());
     }, [dispatch]);
 
-    // ─────────────────────────────
-    // 📦 Excel upload
-    // ─────────────────────────────
+    const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+    const handleExcelUploadClick = () => {
+        fileInputRef.current?.click();
+    };
+
     const handleExcelUpload = async (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if (!file) return;
+
+        // Проверка типа файла
+        const validTypes = ['.xlsx', '.xls'];
+        const fileExtension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+        if (!validTypes.includes(fileExtension)) {
+            dispatch(addMessage({text: "Пожалуйста, выберите файл Excel (.xlsx или .xls)", type: "error"}));
+            e.target.value = "";
+            return;
+        }
 
         setUploading(true);
         setUploadResponse(null);
@@ -72,18 +92,23 @@ export const AdminProductsAccordionPage: React.FC = () => {
         try {
             const formData = new FormData();
             formData.append("file", file);
-            const res = await api.post("/parse/test", formData, {
-                headers: { "Content-Type": "multipart/form-data" },
+            const res = await api.post("/admin/parse/test", formData, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem("token")}`
+                },
             });
 
             setUploadResponse(res.data);
-            alert("✅ Файл успешно отправлен на парсинг");
+            dispatch(addMessage({text: "Файл успешно отправлен на парсинг", type: "success"}));
         } catch (err: any) {
             console.error(err);
-            alert("Ошибка при отправке файла");
+            const errorMessage = err.response?.data?.message || err.message || "Ошибка при отправке файла";
+            dispatch(addMessage({text: `Ошибка: ${errorMessage}`, type: "error"}));
         } finally {
             setUploading(false);
-            e.target.value = "";
+            if (fileInputRef.current) {
+                fileInputRef.current.value = "";
+            }
         }
     };
 
@@ -101,19 +126,14 @@ export const AdminProductsAccordionPage: React.FC = () => {
         if (!categoryProducts[slug]) {
             try {
                 setLoadingCategory(slug);
-                const result = await dispatch(getProductsByCategoryFunc(slug)).unwrap();
+                const result = await dispatch(getProductsByCategoryFunc({slug})).unwrap();
                 console.log("📦 Ответ API:", result);
 
-                // ✅ сервер возвращает { success: true, products: { products: [...] } }
-                let productsArray: any[] = [];
-
-                if (Array.isArray(result)) {
-                    productsArray = result;
-                } else if (result?.products?.products) {
-                    productsArray = result.products.products;
-                } else if (result?.products) {
-                    productsArray = result.products;
-                }
+                const productsArray = Array.isArray(result)
+                    ? result
+                    : Array.isArray(result?.products)
+                        ? result.products
+                        : [];
 
                 console.log("✅ Массив товаров:", productsArray);
 
@@ -156,6 +176,8 @@ export const AdminProductsAccordionPage: React.FC = () => {
 
     const handleCreateProduct = async (e: React.FormEvent) => {
         e.preventDefault();
+        setFormErrors({});
+        setIsCreatingProduct(true);
         try {
             const formDataToSend = new FormData();
             formDataToSend.append("title", formData.title);
@@ -166,55 +188,90 @@ export const AdminProductsAccordionPage: React.FC = () => {
             formDataToSend.append("price", formData.price || "");
             formDataToSend.append("discount", formData.discount || "0");
             formDataToSend.append("countInStock", formData.countInStock || "0");
-            formDataToSend.append("color", JSON.stringify({ ru: formData.colorRu || "Без цвета", hex: formData.colorHex || "#000000" }));
-            formDataToSend.append("package", JSON.stringify({ 
-                type: formData.packageType || "шт", 
-                count: Number(formData.packageCount) || 1, 
-                unit: formData.packageUnit || "шт" 
+            formDataToSend.append("color", JSON.stringify({
+                ru: formData.colorRu || "Без цвета",
+                hex: formData.colorHex || "#000000"
             }));
-            
+            formDataToSend.append("package", JSON.stringify({
+                type: formData.packageType || "шт",
+                count: Number(formData.packageCount) || 1,
+                unit: formData.packageUnit || "шт"
+            }));
+
             if (formData.images && Array.isArray(formData.images)) {
                 formData.images.forEach((file: File) => {
                     formDataToSend.append("images", file);
                 });
             }
 
-            const result = await dispatch(createProductFunc(formDataToSend)).unwrap();
-            setCategoryProducts((prev) => ({
-                ...prev,
-                [formData.categorySlug]: [
-                    ...(prev[formData.categorySlug] || []),
-                    result.product,
-                ],
-            }));
-            setOpenModal(false);
-            setFormData({
-                title: "",
-                description: "",
-                categorySlug: "",
-                categoryTitle: "",
-                price: "",
-                country: "",
-                countInStock: "",
-                discount: "",
-                article: "",
-                package: "",
-                colorRu: "",
-                colorHex: "#000000",
-                packageType: "",
-                packageCount: "",
-                packageUnit: "",
-                images: [],
-            });
+            const result = await dispatch(createProductFunc(formDataToSend));
+
+            if (createProductFunc.rejected.match(result)) {
+                const errorPayload = result.payload as any;
+                const serverErrors: Record<string, string[]> = {};
+
+                if (errorPayload?.errors && typeof errorPayload.errors === 'object') {
+                    Object.keys(errorPayload.errors).forEach((field) => {
+                        const fieldErrors = errorPayload.errors[field];
+                        if (Array.isArray(fieldErrors)) {
+                            serverErrors[field] = fieldErrors;
+                        } else if (typeof fieldErrors === 'string') {
+                            serverErrors[field] = [fieldErrors];
+                        }
+                    });
+                } else if (errorPayload?.message) {
+                    const message = errorPayload.message.toLowerCase();
+                    if (message.includes('title') || message.includes('назван')) {
+                        serverErrors.title = [errorPayload.message];
+                    } else if (message.includes('price') || message.includes('цена')) {
+                        serverErrors.price = [errorPayload.message];
+                    } else {
+                        serverErrors.title = [errorPayload.message];
+                    }
+                }
+
+                setFormErrors(serverErrors);
+                return;
+            }
+
+            if (createProductFunc.fulfilled.match(result)) {
+                setCategoryProducts((prev) => ({
+                    ...prev,
+                    [formData.categorySlug]: [
+                        ...(prev[formData.categorySlug] || []),
+                        result.payload.product,
+                    ],
+                }));
+                setOpenModal(false);
+                setFormErrors({});
+                setFormData({
+                    title: "",
+                    description: "",
+                    categorySlug: "",
+                    categoryTitle: "",
+                    price: "",
+                    country: "",
+                    countInStock: "",
+                    discount: "",
+                    article: "",
+                    package: "",
+                    colorRu: "",
+                    colorHex: "#000000",
+                    packageType: "",
+                    packageCount: "",
+                    packageUnit: "",
+                    images: [],
+                });
+            }
         } catch (err) {
             console.error(err);
-            alert("Ошибка при создании товара");
         }
     };
 
     const handleUpdateProduct = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!editingProduct) return;
+        setIsUpdatingProduct(true);
         try {
             const payload: any = {
                 productID: editingProduct._id,
@@ -229,7 +286,7 @@ export const AdminProductsAccordionPage: React.FC = () => {
                         price: formData.price,
                         discount: formData.discount,
                         countInStock: formData.countInStock,
-                        package: { type: formData.package },
+                        package: {type: formData.package},
                     },
                 ],
             };
@@ -248,155 +305,202 @@ export const AdminProductsAccordionPage: React.FC = () => {
 
             setOpenEditModal(false);
             setEditingProduct(null);
+            dispatch(addMessage({text: "Товар успешно обновлен", type: "success"}));
         } catch (err) {
             console.error(err);
-            alert('Ошибка при обновлении товара');
+            dispatch(addMessage({text: "Ошибка при обновлении товара", type: "error"}));
+        } finally {
+            setIsUpdatingProduct(false);
+        }
+    };
+
+    const handleDeleteConfirm = async () => {
+        if (!deleteConfirm.productId) return;
+        
+        const productId = deleteConfirm.productId;
+        const product = Object.values(categoryProducts).flat().find(p => p._id === productId);
+        const categorySlug = product?.category?.slug || Object.keys(categoryProducts).find(slug => 
+            categoryProducts[slug]?.some(p => p._id === productId)
+        );
+
+        try {
+            await dispatch(deleteProductFunc(productId)).unwrap();
+            if (categorySlug) {
+                setCategoryProducts((prev) => ({
+                    ...prev,
+                    [categorySlug]: (prev[categorySlug] || []).filter((pp) => pp._id !== productId),
+                }));
+            }
+            dispatch(addMessage({text: "Товар успешно удален", type: "success"}));
+        } catch (err) {
+            console.error(err);
+            dispatch(addMessage({text: "Ошибка при удалении товара", type: "error"}));
+        } finally {
+            setDeleteConfirm({isOpen: false, productId: null});
         }
     };
 
     return (
-        <div className="main__container">
-            <div className="flex align-center justify-between mb-20">
-                <h1 className="title">Управление товарами</h1>
-
-                <label
-                    htmlFor="excel-upload"
-                    className={styles.uploadBtn}
-                    style={{
-                        background: uploading ? "#ccc" : "#4A90E2",
-                        color: "#fff",
-                        padding: "8px 14px",
-                        borderRadius: "6px",
-                        cursor: uploading ? "not-allowed" : "pointer",
-                        transition: "0.2s",
-                    }}
-                >
-                    {uploading ? "Загрузка..." : "📁 Импорт Excel"}
-                </label>
-                <input
-                    id="excel-upload"
-                    type="file"
-                    accept=".xlsx, .xls"
-                    onChange={handleExcelUpload}
-                    style={{ display: "none" }}
-                />
-            </div>
+        <div className="main__container p-20">
+            <TitleWithCreateButton
+                title="Управление товарами"
+                customButton={
+                    <>
+                        <Button
+                            onClick={handleExcelUploadClick}
+                            disabled={uploading}
+                            className={styles.uploadBtn}
+                        >
+                            {uploading ? "Загрузка..." : "📁 Импорт Excel"}
+                        </Button>
+                        <input
+                            ref={fileInputRef}
+                            type="file"
+                            accept=".xlsx,.xls"
+                            onChange={handleExcelUpload}
+                            style={{display: "none"}}
+                        />
+                    </>
+                }
+            />
 
             <div className={styles.accordion}>
-                {categories.map((cat) => {
-                    const isActive = activeCategory === cat.slug;
-                    const productsForCat = categoryProducts[cat.slug] || [];
-                    const isLoading = loadingCategory === cat.slug;
+                {categories && Array.isArray(categories) && categories.length > 0
+                    ? categories.map((cat) => {
+                        const isActive = activeCategory === cat.slug;
+                        const productsForCat = categoryProducts[cat.slug] || [];
+                        const isLoading = loadingCategory === cat.slug;
 
-                    return (
-                        <div
-                            key={cat.slug}
-                            className={`${styles.item} ${isActive ? styles.active : ""}`}
-                        >
-                            <div className={styles.header}>
-                                <div
-                                    className={styles.headerLeft}
-                                    onClick={() => toggleCategory(cat.slug)}
-                                >
-                                    <span>{cat.title}</span>
-                                    <span className={styles.count}>
+                        return (
+                            <div
+                                key={cat.slug}
+                                className={`${styles.item} ${isActive ? styles.active : ""}`}
+                            >
+                                <div className={styles.header}>
+                                    <div
+                                        className={styles.headerLeft}
+                                        onClick={() => toggleCategory(cat.slug)}
+                                    >
+                                        <span>{cat.title}</span>
+                                        <span className={styles.count}>
                                         {productsForCat.length > 0
                                             ? `${productsForCat.length} товаров`
                                             : ""}
                                     </span>
-                                    <span className={styles.arrow}>
+                                        <span className={styles.arrow}>
                                         {isActive ? "▲" : "▼"}
                                     </span>
+                                    </div>
+
+                                    <button
+                                        onClick={() => handleOpenModal(cat.slug, cat.title)}
+                                        className={styles.addBtn}
+                                    >
+                                        +
+                                    </button>
                                 </div>
 
-                                <button
-                                    onClick={() => handleOpenModal(cat.slug, cat.title)}
-                                    className={styles.addBtn}
-                                >
-                                    +
-                                </button>
+                                {isActive && (
+                                    <div className={styles.body}>
+                                        {isLoading ? (
+                                            <p className={styles.loading}>Загрузка товаров...</p>
+                                        ) : (
+                                            <ProductTable
+                                                products={productsForCat}
+                                                onEdit={(p) => {
+                                                    // open edit modal
+                                                    setEditingProduct(p);
+                                                    setOpenEditModal(true);
+                                                    setFormData({
+                                                        title: p.title || "",
+                                                        description: p.description || "",
+                                                        categorySlug: p.category?.slug || cat.slug,
+                                                        categoryTitle: p.category?.title || cat.title,
+                                                        price: p.variants?.[0]?.price || "",
+                                                        country: p.country || "",
+                                                        countInStock: p.variants?.[0]?.countInStock || "",
+                                                        discount: p.variants?.[0]?.discount || "",
+                                                        article: p.variants?.[0]?.article || "",
+                                                        package: p.variants?.[0]?.package?.type || "",
+                                                        isActive: p.isActive,
+                                                        images: [] as File[], // Добавляем images для безопасности
+                                                    });
+                                                }}
+                                                onDelete={(id) => {
+                                                    setDeleteConfirm({isOpen: true, productId: id});
+                                                }}
+                                            />
+                                        )}
+                                    </div>
+                                )}
                             </div>
-
-                            {isActive && (
-                                <div className={styles.body}>
-                                    {isLoading ? (
-                                        <p className={styles.loading}>Загрузка товаров...</p>
-                                    ) : (
-                                        <ProductTable
-                                            products={productsForCat}
-                                            onEdit={(p) => {
-                                                // open edit modal
-                                                setEditingProduct(p);
-                                                setOpenEditModal(true);
-                                                setFormData({
-                                                    title: p.title || "",
-                                                    description: p.description || "",
-                                                    categorySlug: p.category?.slug || cat.slug,
-                                                    categoryTitle: p.category?.title || cat.title,
-                                                    price: p.variants?.[0]?.price || "",
-                                                    country: p.country || "",
-                                                    countInStock: p.variants?.[0]?.countInStock || "",
-                                                    discount: p.variants?.[0]?.discount || "",
-                                                    article: p.variants?.[0]?.article || "",
-                                                    package: p.variants?.[0]?.package?.type || "",
-                                                    isActive: p.isActive,
-                                                    images: [] as File[], // Добавляем images для безопасности
-                                                });
-                                            }}
-                                            onDelete={async (id) => {
-                                                if (!confirm('Удалить товар?')) return;
-                                                try {
-                                                    await dispatch(deleteProductFunc(id)).unwrap();
-                                                    setCategoryProducts((prev) => ({
-                                                        ...prev,
-                                                        [cat.slug]: (prev[cat.slug] || []).filter((pp) => pp._id !== id),
-                                                    }));
-                                                } catch (err) {
-                                                    console.error(err);
-                                                    alert('Ошибка при удалении товара');
-                                                }
-                                            }}
-                                        />
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    );
-                })}
+                        );
+                    })
+                    : <p className="text-center color-gray">Категории не найдены</p>
+                }
             </div>
 
-            {/* ─────────────── МОДАЛКА ─────────────── */}
             <Modal modal={openModal} setModal={setOpenModal}>
-                <form onSubmit={handleCreateProduct} className="flex-col">
+                <form onSubmit={handleCreateProduct} className="flex-col" onReset={() => setFormErrors({})}>
                     <h2>Добавить товар ({formData.categoryTitle})</h2>
 
                     <label>Название</label>
                     <MainInput
                         value={formData.title}
-                        onChange={(e) =>
-                            setFormData({ ...formData, title: e.target.value })
-                        }
+                        onChange={(e) => {
+                            setFormData({...formData, title: e.target.value});
+                            if (formErrors.title) {
+                                setFormErrors(prev => {
+                                    const newErrors = {...prev};
+                                    delete newErrors.title;
+                                    return newErrors;
+                                });
+                            }
+                        }}
+                        error={formErrors.title}
                         required
                     />
 
                     <label>Описание</label>
                     <MainTextarea
                         value={formData.description}
-                        onChange={(e) =>
-                            setFormData({ ...formData, description: e.target.value })
-                        }
+                        onChange={(e) => {
+                            setFormData({...formData, description: e.target.value});
+                            if (formErrors.description) {
+                                setFormErrors(prev => {
+                                    const newErrors = {...prev};
+                                    delete newErrors.description;
+                                    return newErrors;
+                                });
+                            }
+                        }}
                     />
+                    {formErrors.description && (
+                        <div className="error-text" style={{marginTop: '4px'}}>
+                            {formErrors.description.map((err, i) => (
+                                <div key={i}>{err}</div>
+                            ))}
+                        </div>
+                    )}
 
                     <label>Цена (₽)</label>
                     <MainInput
                         type="number"
                         value={formData.price}
-                        onChange={(e) =>
+                        onChange={(e) => {
                             setFormData({
                                 ...formData,
                                 price: Number(e.target.value),
-                            })
-                        }
+                            });
+                            if (formErrors.price) {
+                                setFormErrors(prev => {
+                                    const newErrors = {...prev};
+                                    delete newErrors.price;
+                                    return newErrors;
+                                });
+                            }
+                        }}
+                        error={formErrors.price}
                         required
                     />
 
@@ -427,16 +531,24 @@ export const AdminProductsAccordionPage: React.FC = () => {
                     <label>Артикул</label>
                     <MainInput
                         value={formData.article}
-                        onChange={(e) =>
-                            setFormData({ ...formData, article: e.target.value })
-                        }
+                        onChange={(e) => {
+                            setFormData({...formData, article: e.target.value});
+                            if (formErrors.article) {
+                                setFormErrors(prev => {
+                                    const newErrors = {...prev};
+                                    delete newErrors.article;
+                                    return newErrors;
+                                });
+                            }
+                        }}
+                        error={formErrors.article}
                     />
 
                     <label>Страна</label>
                     <MainInput
                         value={formData.country}
                         onChange={(e) =>
-                            setFormData({ ...formData, country: e.target.value })
+                            setFormData({...formData, country: e.target.value})
                         }
                     />
 
@@ -444,7 +556,7 @@ export const AdminProductsAccordionPage: React.FC = () => {
                     <MainInput
                         value={formData.colorRu}
                         onChange={(e) =>
-                            setFormData({ ...formData, colorRu: e.target.value })
+                            setFormData({...formData, colorRu: e.target.value})
                         }
                         placeholder="Например: Красный"
                     />
@@ -454,7 +566,7 @@ export const AdminProductsAccordionPage: React.FC = () => {
                         type="color"
                         value={formData.colorHex}
                         onChange={(e) =>
-                            setFormData({ ...formData, colorHex: e.target.value })
+                            setFormData({...formData, colorHex: e.target.value})
                         }
                     />
 
@@ -462,7 +574,7 @@ export const AdminProductsAccordionPage: React.FC = () => {
                     <MainInput
                         value={formData.packageType}
                         onChange={(e) =>
-                            setFormData({ ...formData, packageType: e.target.value })
+                            setFormData({...formData, packageType: e.target.value})
                         }
                         placeholder="Например: мешок, ведро"
                     />
@@ -472,7 +584,7 @@ export const AdminProductsAccordionPage: React.FC = () => {
                         type="number"
                         value={formData.packageCount}
                         onChange={(e) =>
-                            setFormData({ ...formData, packageCount: e.target.value })
+                            setFormData({...formData, packageCount: e.target.value})
                         }
                         placeholder="Например: 25"
                     />
@@ -481,7 +593,7 @@ export const AdminProductsAccordionPage: React.FC = () => {
                     <MainInput
                         value={formData.packageUnit}
                         onChange={(e) =>
-                            setFormData({ ...formData, packageUnit: e.target.value })
+                            setFormData({...formData, packageUnit: e.target.value})
                         }
                         placeholder="Например: кг, л, шт"
                     />
@@ -493,19 +605,24 @@ export const AdminProductsAccordionPage: React.FC = () => {
                         accept="image/*"
                         onChange={(e) => {
                             const files = Array.from(e.target.files || []);
-                            setFormData({ ...formData, images: files });
+                            setFormData({...formData, images: files});
                         }}
                         className={styles.fileInput}
                     />
                     {formData.images && formData.images.length > 0 && (
-                        <div style={{ marginTop: "10px", fontSize: "14px", color: "#666" }}>
+                        <div style={{marginTop: "10px", fontSize: "14px", color: "#666"}}>
                             Выбрано файлов: {formData.images.length}
                         </div>
                     )}
 
-                    <button type="submit" className={styles.submitBtn}>
-                        💾 Создать
-                    </button>
+                    <Button 
+                        type="submit" 
+                        className="full-width mt-10"
+                        loading={isCreatingProduct}
+                        disabled={isCreatingProduct}
+                    >
+                        Создать
+                    </Button>
                 </form>
             </Modal>
 
@@ -517,21 +634,21 @@ export const AdminProductsAccordionPage: React.FC = () => {
                     <label>Название</label>
                     <MainInput
                         value={formData.title}
-                        onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                        onChange={(e) => setFormData({...formData, title: e.target.value})}
                         required
                     />
 
                     <label>Описание</label>
                     <MainTextarea
                         value={formData.description}
-                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        onChange={(e) => setFormData({...formData, description: e.target.value})}
                     />
 
                     <label>Цена (₽)</label>
                     <MainInput
                         type="number"
                         value={formData.price}
-                        onChange={(e) => setFormData({ ...formData, price: Number(e.target.value) })}
+                        onChange={(e) => setFormData({...formData, price: Number(e.target.value)})}
                         required
                     />
 
@@ -539,40 +656,47 @@ export const AdminProductsAccordionPage: React.FC = () => {
                     <MainInput
                         type="number"
                         value={formData.countInStock}
-                        onChange={(e) => setFormData({ ...formData, countInStock: Number(e.target.value) })}
+                        onChange={(e) => setFormData({...formData, countInStock: Number(e.target.value)})}
                     />
 
                     <label>Скидка (%)</label>
                     <MainInput
                         type="number"
                         value={formData.discount}
-                        onChange={(e) => setFormData({ ...formData, discount: Number(e.target.value) })}
+                        onChange={(e) => setFormData({...formData, discount: Number(e.target.value)})}
                     />
 
                     <label>Артикул</label>
                     <MainInput
                         value={formData.article}
-                        onChange={(e) => setFormData({ ...formData, article: e.target.value })}
+                        onChange={(e) => setFormData({...formData, article: e.target.value})}
                     />
 
                     <label>Страна</label>
-                    <MainInput value={formData.country} onChange={(e) => setFormData({ ...formData, country: e.target.value })} />
+                    <MainInput value={formData.country}
+                               onChange={(e) => setFormData({...formData, country: e.target.value})}/>
 
                     <label>Тип упаковки</label>
-                    <MainInput value={formData.package} onChange={(e) => setFormData({ ...formData, package: e.target.value })} />
+                    <MainInput value={formData.package}
+                               onChange={(e) => setFormData({...formData, package: e.target.value})}/>
 
                     <label>
                         <input
                             type="checkbox"
                             checked={!!formData.isActive}
-                            onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+                            onChange={(e) => setFormData({...formData, isActive: e.target.checked})}
                         />{' '}
                         Активен
                     </label>
 
-                    <button type="submit" className={styles.submitBtn}>
-                        💾 Сохранить
-                    </button>
+                    <Button 
+                        type="submit" 
+                        className="full-width mt-10"
+                        loading={isUpdatingProduct}
+                        disabled={isUpdatingProduct}
+                    >
+                        Сохранить
+                    </Button>
                 </form>
             </Modal>
 
@@ -588,11 +712,22 @@ export const AdminProductsAccordionPage: React.FC = () => {
                             maxHeight: "300px",
                             overflow: "auto",
                         }}
-                    >?
+                    >
                         {JSON.stringify(uploadResponse, null, 2)}
                     </pre>
                 </div>
             )}
+
+            <ConfirmModal
+                isOpen={deleteConfirm.isOpen}
+                onClose={() => setDeleteConfirm({isOpen: false, productId: null})}
+                onConfirm={handleDeleteConfirm}
+                title="Удаление товара"
+                message="Вы уверены, что хотите удалить этот товар?"
+                confirmText="Удалить"
+                cancelText="Отмена"
+                confirmButtonStyle="danger"
+            />
         </div>
     );
 };

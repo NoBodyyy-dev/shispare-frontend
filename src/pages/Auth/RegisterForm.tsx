@@ -2,6 +2,7 @@ import {MainInput} from "../../lib/input/MainInput.tsx";
 import {ChangeEvent} from "react";
 import styles from "./auth.module.sass";
 import {RegisterData} from "../../store/interfaces/user.interface.ts";
+import {Link} from "react-router-dom";
 
 interface Data extends RegisterData {
     confirmPassword: string;
@@ -20,7 +21,6 @@ export const RegisterForm = (props: Props) => {
         <>
             <h2 className="subtitle mb-15 center">Зарегистрироваться</h2>
 
-            {/* Переключатель типа пользователя */}
             <div className="flex full-width mb-10">
                 <div
                     className={`${styles.btn} ${checkIND ? styles.active : ""} full-width flex-to-center-col`}
@@ -45,7 +45,6 @@ export const RegisterForm = (props: Props) => {
                             props.setData({...props.data, fullName: e.target.value})
                         }
                         inputMode="text"
-                        pattern="а-яА-Я"
                         placeholder="Иванов Иван Иванович"
                         error={props.errors?.fullName}
                     />
@@ -144,6 +143,56 @@ export const RegisterForm = (props: Props) => {
                     placeholder="Ещё раз пароль"
                     error={props.errors?.confirmPassword}
                 />
+            </div>
+
+            <div className="flex-col gap-10 mt-15">
+                <label className={styles.consentLabel}>
+                    <input
+                        type="checkbox"
+                        checked={props.data.personalDataConsent || false}
+                        onChange={(e) =>
+                            props.setData({...props.data, personalDataConsent: e.target.checked})
+                        }
+                        className={styles.consentCheckbox}
+                        required
+                    />
+                    <span className={styles.consentText}>
+                        Я согласен на обработку персональных данных{" "}
+                        <Link to="/privacy-policy" className={styles.consentLink}>
+                            (Политика конфиденциальности)
+                        </Link>
+                        {props.errors?.personalDataConsent && (
+                            <span className="error-text"> *</span>
+                        )}
+                    </span>
+                </label>
+                {props.errors?.personalDataConsent && (
+                    <div className="error-text">{props.errors.personalDataConsent[0]}</div>
+                )}
+
+                <label className={styles.consentLabel}>
+                    <input
+                        type="checkbox"
+                        checked={props.data.userAgreementConsent || false}
+                        onChange={(e) =>
+                            props.setData({...props.data, userAgreementConsent: e.target.checked})
+                        }
+                        className={styles.consentCheckbox}
+                        required
+                    />
+                    <span className={styles.consentText}>
+                        Я согласен с{" "}
+                        <Link to="/user-agreement" className={styles.consentLink}>
+                            пользовательским соглашением
+                        </Link>
+                        {props.errors?.userAgreementConsent && (
+                            <span className="error-text"> *</span>
+                        )}
+                    </span>
+                </label>
+                {props.errors?.userAgreementConsent && (
+                    <div className="error-text">{props.errors.userAgreementConsent[0]}</div>
+                )}
             </div>
         </>
     );

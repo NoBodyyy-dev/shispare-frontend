@@ -6,15 +6,20 @@ import {
     getProductCommentsHandler,
     getCommentByIdHandler,
     getMyCommentsHandler,
-    getUserCommentsHandler
+    getUserCommentsHandler,
+    checkCanCommentHandler
 } from "../handlers/comment.handler.ts"
 
 const initialState: CommentState = {
     comments: [],
+    pagination: null,
     isLoadingActionComment: false,
     isLoadingComments: false,
     errorActionComment: "",
     errorComments: "",
+    canComment: null,
+    canCommentReason: null,
+    isLoadingCanComment: false,
 };
 
 const commentSlice = createSlice({
@@ -28,6 +33,7 @@ const commentSlice = createSlice({
         getCommentByIdHandler(builder);
         getUserCommentsHandler(builder);
         getMyCommentsHandler(builder);
+        checkCanCommentHandler(builder);
     }
 });
 

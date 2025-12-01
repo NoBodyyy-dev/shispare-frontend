@@ -19,6 +19,7 @@ export const Chat: React.FC = () => {
     const [attachments, setAttachments] = useState<Attachments[]>([]);
     const [uploadingFiles, setUploadingFiles] = useState(false);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const [openMenuMessageId, setOpenMenuMessageId] = useState<string | null>(null);
 
     const messageRefs = useRef<Map<string, HTMLDivElement | null>>(new Map());
     const messagesContainerRef = useRef<HTMLDivElement | null>(null);
@@ -28,11 +29,12 @@ export const Chat: React.FC = () => {
     const handleSend = async () => {
         if (!text.trim() && attachments.length === 0) return;
 
-        // Если редактируем сообщение
         if (editingMessage) {
             setIsSending(true);
             try {
-                await editMessage(editingMessage._id, text, attachments.length > 0 ? attachments : undefined);
+                // При редактировании отправляем новые вложения, если они есть, иначе оставляем старые
+                const attachmentsToSend = attachments.length > 0 ? attachments : (editingMessage.attachments || []);
+                editMessage(editingMessage._id, text || "", attachmentsToSend.length > 0 ? attachmentsToSend : undefined);
                 setEditingMessage(null);
                 setText("");
                 setAttachments([]);
@@ -42,10 +44,9 @@ export const Chat: React.FC = () => {
                 setIsSending(false);
             }
         } else {
-            // Если отправляем новое сообщение
             setIsSending(true);
             try {
-                await sendMessage(text || "", attachments.length > 0 ? attachments : undefined, replyTo?._id);
+                sendMessage(text || "", attachments.length > 0 ? attachments : undefined, replyTo?._id);
                 setText("");
                 setReplyTo(null);
                 setAttachments([]);
@@ -74,7 +75,7 @@ export const Chat: React.FC = () => {
                 const formData = new FormData();
                 formData.append("file", file);
 
-                const response = await api.post("/chat/upload", formData, {
+                const response = await api.post("/user/chat/upload", formData, {
                     headers: {
                         "Content-Type": "multipart/form-data",
                         Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -88,7 +89,7 @@ export const Chat: React.FC = () => {
             setAttachments(prev => [...prev, ...uploadedAttachments]);
         } catch (error) {
             console.error("Ошибка при загрузке файлов:", error);
-            alert("Ошибка при загрузке файлов");
+            // Ошибка будет обработана через push messages, если нужно
         } finally {
             setUploadingFiles(false);
             if (fileInputRef.current) {
@@ -131,9 +132,12 @@ export const Chat: React.FC = () => {
             if (!currentMessage) {
                 setEditingMessage(null);
                 setText("");
-            } else if (currentMessage.content !== editingMessage.content) {
+                setAttachments([]);
+            } else if (currentMessage.content !== editingMessage.content || 
+                      JSON.stringify(currentMessage.attachments) !== JSON.stringify(editingMessage.attachments)) {
                 setEditingMessage(currentMessage);
                 setText(currentMessage.content || "");
+                setAttachments(currentMessage.attachments || []);
             }
         }
     }, [chatMessages, editingMessage]);
@@ -176,142 +180,143 @@ export const Chat: React.FC = () => {
     };
 
     return (
-        <div className="main__container">
-            <div className={`${styles.chatPage}`} tabIndex={-1}>
-                <div className={styles.chatHeader}>
-                    <div className={styles.onlineInfo}>
+        <div className={`${styles.chatPage}`} tabIndex={-1}>
+            <div className={styles.chatHeader}>
+                <div className={styles.onlineInfo}>
                         <span
                             className={styles.onlineLink}
                             onClick={() => setShowOnlineModal(true)}
                         >
                             В сети: {onlineAdmins.length}
                         </span>
-                    </div>
-                    {typingUsers && typingUsers.length > 0 && (
-                        <div className={styles.typingIndicator}>
-                            {typingUsers.join(', ')} {typingUsers.length > 1 ? 'печатают...' : 'печатает...'}
-                        </div>
-                    )}
                 </div>
-                <div
-                    className={`${styles.messagesContainer} ${replyTo || editingMessage ? styles.replyPadding : ""}`}
-                    ref={messagesContainerRef}
-                    tabIndex={-1}
-                >
-                    {chatMessages.map((msg) => (
-                        <Message
-                            key={msg._id}
-                            msg={msg}
-                            onReply={(m) => {
-                                setReplyTo(m);
-                                setEditingMessage(null); // Сбрасываем редактирование при ответе
-                                inputRef.current?.focus();
-                            }}
-                            onEdit={(m) => {
-                                setEditingMessage(m);
-                                setText(m.content || "");
-                                setReplyTo(null); // Сбрасываем ответ при редактировании
-                                inputRef.current?.focus();
-                            }}
-                            scrollToMessage={scrollToMessage}
-                            registerRef={(el) => messageRefs.current.set(msg._id, el)}
-                        />
-                    ))}
-                    <div ref={scrollRef}/>
-                </div>
-
-
-                <div className={styles.fixedInputBox}>
-                    {editingMessage && (
-                        <div className={styles.replyPreview}>
-                            <span className={styles.replyLabel}>Редактирование сообщения:</span>
-                            <span className={styles.replyText}>{editingMessage.content}</span>
-                            <button
-                                className={styles.cancelReply}
-                                onClick={cancelEdit}
-                                title="Отменить редактирование"
-                            >
-                                ✖
-                            </button>
-                        </div>
-                    )}
-                    {replyTo && (
-                        <div className={styles.replyPreview}>
-                            <span className={styles.replyLabel}>Ответ на:</span>
-                            <span className={styles.replyText}>{replyTo.content}</span>
-                            <button
-                                className={styles.cancelReply}
-                                onClick={cancelReply}
-                                title="Отменить ответ"
-                            >
-                                ✖
-                            </button>
-                        </div>
-                    )}
-                    {attachments.length > 0 && (
-                        <div className={styles.attachmentsPreview}>
-                            {attachments.map((attachment, index) => {
-                                const decodedFilename = decodeFilename(attachment.filename);
-                                return (
-                                    <div key={index} className={styles.attachmentItem}>
-                                        {attachment.type === 'image' ? (
-                                            <img src={attachment.url} alt={decodedFilename}
-                                                 className={styles.attachmentImage}/>
-                                        ) : (
-                                            <div className={styles.attachmentFile}>
-                                                <span>📎 {decodedFilename}</span>
-                                            </div>
-                                        )}
-                                        <button
-                                            className={styles.removeAttachment}
-                                            onClick={() => removeAttachment(index)}
-                                            title="Удалить"
-                                        >
-                                            ✖
-                                        </button>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    )}
-                    <div className={styles.inputBox}>
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            multiple
-                            onChange={handleFileSelect}
-                            style={{display: 'none'}}
-                            accept="image/*,video/*,.pdf,.doc,.docx,.txt"
-                        />
-                        <Button
-                            className="fz-16 w-40"
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={uploadingFiles}
-                            loading={uploadingFiles}
-                            title="Прикрепить файл"
-                        >
-                            <FaPaperclip/>
-                        </Button>
-
-                        <MainTextarea
-                            className="main-textarea"
-                            tabIndex={1}
-                            ref={inputRef}
-                            value={text}
-                            placeholder={editingMessage ? "Редактирование сообщения..." : "Напишите сообщение..."}
-                            onChange={handleTextChange}
-                            onKeyDown={handleKeyDown}
-                            disabled={isSending}
-                        />
-
-                        <Button
-                            onClick={handleSend}
-                            className=""
-                            disabled={isSending || !text.trim()}
-                        >
-                            <IoSend/>
-                        </Button>
+                {typingUsers && typingUsers.length > 0 && (
+                    <div className={styles.typingIndicator}>
+                        {typingUsers.join(', ')} {typingUsers.length > 1 ? 'печатают...' : 'печатает...'}
                     </div>
+                )}
+            </div>
+            <div
+                className={`${styles.messagesContainer} ${replyTo || editingMessage ? styles.replyPadding : ""}`}
+                ref={messagesContainerRef}
+                tabIndex={-1}
+            >
+                {chatMessages.map((msg) => (
+                    <Message
+                        key={msg._id}
+                        msg={msg}
+                        onReply={(m) => {
+                            setReplyTo(m);
+                            setEditingMessage(null); // Сбрасываем редактирование при ответе
+                            inputRef.current?.focus();
+                        }}
+                        onEdit={(m) => {
+                            setEditingMessage(m);
+                            setText(m.content || "");
+                            setAttachments(m.attachments || []);
+                            setReplyTo(null); // Сбрасываем ответ при редактировании
+                            inputRef.current?.focus();
+                        }}
+                        scrollToMessage={scrollToMessage}
+                        registerRef={(el) => messageRefs.current.set(msg._id, el)}
+                        openMenuMessageId={openMenuMessageId}
+                        setOpenMenuMessageId={setOpenMenuMessageId}
+                    />
+                ))}
+                <div ref={scrollRef}/>
+            </div>
+
+
+            <div className={styles.fixedInputBox}>
+                {editingMessage && (
+                    <div className={styles.replyPreview}>
+                        <span className={styles.replyLabel}>Редактирование сообщения:</span>
+                        <span className={styles.replyText}>{editingMessage.content}</span>
+                        <button
+                            className={styles.cancelReply}
+                            onClick={cancelEdit}
+                            title="Отменить редактирование"
+                        >
+                            ✖
+                        </button>
+                    </div>
+                )}
+                {replyTo && (
+                    <div className={styles.replyPreview}>
+                        <span className={styles.replyLabel}>Ответ на:</span>
+                        <span className={styles.replyText}>{replyTo.content}</span>
+                        <button
+                            className={styles.cancelReply}
+                            onClick={cancelReply}
+                            title="Отменить ответ"
+                        >
+                            ✖
+                        </button>
+                    </div>
+                )}
+                {attachments.length > 0 && (
+                    <div className={styles.attachmentsPreview}>
+                        {attachments.map((attachment, index) => {
+                            const decodedFilename = decodeFilename(attachment.filename);
+                            return (
+                                <div key={index} className={styles.attachmentItem}>
+                                    {attachment.type === 'image' ? (
+                                        <img src={attachment.url} alt={decodedFilename}
+                                             className={styles.attachmentImage}/>
+                                    ) : (
+                                        <div className={styles.attachmentFile}>
+                                            <span>📎 {decodedFilename}</span>
+                                        </div>
+                                    )}
+                                    <button
+                                        className={styles.removeAttachment}
+                                        onClick={() => removeAttachment(index)}
+                                        title="Удалить"
+                                    >
+                                        ✖
+                                    </button>
+                                </div>
+                            );
+                        })}
+                    </div>
+                )}
+                <div className={styles.inputBox}>
+                    <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        onChange={handleFileSelect}
+                        style={{display: 'none'}}
+                        accept="image/*,video/*,.pdf,.doc,.docx,.txt"
+                    />
+                    <Button
+                        className="fz-16 w-40"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={uploadingFiles}
+                        loading={uploadingFiles}
+                        title="Прикрепить файл"
+                    >
+                        <FaPaperclip/>
+                    </Button>
+
+                    <MainTextarea
+                        tabIndex={1}
+                        ref={inputRef}
+                        value={text}
+                        placeholder={editingMessage ? "Редактирование сообщения..." : "Напишите сообщение..."}
+                        onChange={handleTextChange}
+                        onKeyDown={handleKeyDown}
+                        disabled={isSending}
+                    />
+
+                    <Button
+                        onClick={handleSend}
+                        className=""
+                        disabled={isSending || (!text.trim() && attachments.length === 0)}
+                        loading={isSending}
+                    >
+                        <IoSend/>
+                    </Button>
                 </div>
             </div>
 
@@ -320,12 +325,12 @@ export const Chat: React.FC = () => {
                     <div className={styles.onlineModalContent} onClick={(e) => e.stopPropagation()}>
                         <div className={styles.onlineModalHeader}>
                             <h3>Онлайн администраторы</h3>
-                            <button
+                            <Button
                                 className={styles.closeButton}
                                 onClick={() => setShowOnlineModal(false)}
                             >
                                 ✖
-                            </button>
+                            </Button>
                         </div>
                         <div className={styles.onlineModalList}>
                             {onlineAdmins.length > 0 ? (

@@ -8,6 +8,7 @@ import {Modal} from "../../lib/modal/Modal.tsx";
 import {TitleWithCreateButton} from "../../lib/title/TitleWithCreateButton.tsx";
 import {Breadcrumbs} from "../../lib/breadcrumbs/Breadcrumbs.tsx";
 import {SEO} from "../../lib/seo/SEO.tsx";
+import {useAuth} from "../../context/AuthContext.tsx";
 
 export const Blog: FC = () => {
     const breadcrumbsItems = [
@@ -24,6 +25,7 @@ export const Blog: FC = () => {
     const dispatch = useAppDispatch();
     const {posts, isLoadingPosts, errorPosts} = useAppSelector(state => state.blog)
     const [openModal, setOpenModal] = useState(false);
+    const {user} = useAuth()
 
     useEffect(() => {
         dispatch(getAllPostsFunc())
@@ -38,7 +40,7 @@ export const Blog: FC = () => {
                 url="/blog"
                 type="website"
             />
-            <div className="main__container">
+            <div className={`main__container ${user?.role === "Admin" ? "p-20" : ""}`}>
                 <Breadcrumbs items={breadcrumbsItems} isLoading={false}/>
             <div className="main__block">
                 <TitleWithCreateButton title="Блог" openModal={setOpenModal} />

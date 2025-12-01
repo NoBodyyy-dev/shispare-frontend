@@ -1,6 +1,6 @@
 import {useState, useRef, useEffect, KeyboardEvent} from "react";
 import {useAppDispatch, useAppSelector} from "../../hooks/state.hook.ts";
-import {checkVerifyFunc, verifyCodeFunc} from "../../store/actions/user.action.ts";
+import {checkVerifyFunc, verifyCodeFunc, getMeFunc} from "../../store/actions/user.action.ts";
 import {addMessage} from "../../store/slices/push.slice.ts";
 import {Button} from "../../lib/buttons/Button.tsx";
 import {MainInput} from "../../lib/input/MainInput.tsx";
@@ -12,11 +12,12 @@ import {syncCart} from "../../store/actions/cart.action.ts";
 export const CodeVerification = () => {
     const dispatch = useAppDispatch();
     const navigate = useNavigate();
-    const {isLoadingVerify, errorVerify} = useAppSelector((state) => state.user);
+    const {isLoadingVerify, errorVerify, curUser} = useAppSelector((state) => state.user);
     const {isAuthenticated} = useAuth();
 
     const [code, setCode] = useState<string[]>(new Array(6).fill(""));
     const inputsRef = useRef<HTMLInputElement[]>([]);
+    const [errors, setErrors] = useState<Record<string, string[]>>({});
 
     const [resendTimer, setResendTimer] = useState<number>(() => {
         const savedTimer = localStorage.getItem('resendTimer');
@@ -48,10 +49,14 @@ export const CodeVerification = () => {
 
     useEffect(() => {
         const fullCode = code.join('');
-        if (fullCode.length === 6) {
-            dispatch(verifyCodeFunc({code: fullCode}));
+        if (fullCode.length === 6 && !isSubmittingRef.current && !isLoadingVerify) {
+            // Небольшая задержка перед автоматической отправкой
+            const timer = setTimeout(() => {
+                handleSubmit();
+            }, 300);
+            return () => clearTimeout(timer);
         }
-    }, [code, dispatch]);
+    }, [code]);
 
     useEffect(() => {
         dispatch(checkVerifyFunc()).unwrap().then(data => {
@@ -60,8 +65,11 @@ export const CodeVerification = () => {
     }, []);
 
     useEffect(() => {
-        if (isAuthenticated) navigate("/")
-    }, [isAuthenticated])
+        // Редирект происходит только после загрузки данных пользователя
+        if (isAuthenticated && curUser && Object.keys(curUser).length > 0) {
+            navigate("/");
+        }
+    }, [isAuthenticated, curUser, navigate])
 
     const handleChange = (value: string, index: number) => {
         const numeric = value.replace(/\D/g, "");
@@ -70,6 +78,11 @@ export const CodeVerification = () => {
         const newCode = [...code];
         newCode[index] = numeric;
         setCode(newCode);
+        
+        // Очищаем ошибки при изменении кода
+        if (errors.code || errors.general) {
+            setErrors({});
+        }
 
         if (numeric && index < 5) {
             inputsRef.current[index + 1]?.focus();
@@ -114,35 +127,112 @@ export const CodeVerification = () => {
         if (isSubmittingRef.current) return;
 
         const fullCode = code.join("");
+        
+        // Валидация кода
+        if (fullCode.length !== 6) {
+            setErrors({ code: ["Введите полный 6-значный код"] });
+            return;
+        }
+        
         isSubmittingRef.current = true;
+        setErrors({});
 
         try {
-            await dispatch(verifyCodeFunc({code: fullCode})).unwrap();
-            dispatch(addMessage({text: "Код подтвержден", type: "success"}));
+            const result = await dispatch(verifyCodeFunc({code: fullCode}));
             
-            const localCart = localStorage.getItem("cart");
-            if (localCart) {
-                try {
-                    const cartItems = JSON.parse(localCart);
-                    if (Array.isArray(cartItems) && cartItems.length > 0) {
-                        const items = cartItems
-                            .map((item: any) => ({
-                                productId: item.product?._id || item.productId,
-                                article: item.article,
-                                quantity: item.quantity || 1,
-                            }))
-                            .filter((item: any) => item.productId && item.article);
-                        
-                        if (items.length > 0) {
-                            await dispatch(syncCart(items)).unwrap();
+            if (verifyCodeFunc.rejected.match(result)) {
+                const errorPayload = result.payload as any;
+                const serverErrors: Record<string, string[]> = {};
+                
+                console.log("Verify code error payload:", errorPayload);
+                
+                // Вариант 1: Ошибки в формате { errors: { field: ["error"] } }
+                if (errorPayload?.errors && typeof errorPayload.errors === 'object') {
+                    Object.keys(errorPayload.errors).forEach((field) => {
+                        const fieldErrors = errorPayload.errors[field];
+                        if (Array.isArray(fieldErrors)) {
+                            serverErrors[field] = fieldErrors;
+                        } else if (typeof fieldErrors === 'string') {
+                            serverErrors[field] = [fieldErrors];
                         }
+                    });
+                }
+                // Вариант 2: Ошибки в формате { field: ["error"] } напрямую
+                else if (errorPayload && typeof errorPayload === 'object') {
+                    Object.keys(errorPayload).forEach((key) => {
+                        if (key !== 'message' && key !== 'errors') {
+                            const value = errorPayload[key];
+                            if (Array.isArray(value)) {
+                                serverErrors[key] = value;
+                            } else if (typeof value === 'string') {
+                                serverErrors[key] = [value];
+                            }
+                        }
+                    });
+                }
+                // Вариант 3: Общая ошибка в message
+                if (errorPayload?.message && Object.keys(serverErrors).length === 0) {
+                    serverErrors.code = [errorPayload.message];
+                }
+                
+                console.log("Setting server errors:", serverErrors);
+                
+                if (Object.keys(serverErrors).length > 0) {
+                    setErrors(serverErrors);
+                    // Очищаем код при ошибке
+                    setCode(new Array(6).fill(""));
+                    setTimeout(() => {
+                        inputsRef.current[0]?.focus();
+                    }, 100);
+                } else {
+                    // Если ошибки не распознаны, показываем общую ошибку
+                    setErrors({ code: ["Неверный код подтверждения"] });
+                    setCode(new Array(6).fill(""));
+                    setTimeout(() => {
+                        inputsRef.current[0]?.focus();
+                    }, 100);
+                }
+                return;
+            }
+            
+            if (verifyCodeFunc.fulfilled.match(result)) {
+                dispatch(addMessage({text: "Код подтвержден", type: "success"}));
+                
+                // Загружаем данные пользователя после успешной верификации
+                try {
+                    await dispatch(getMeFunc()).unwrap();
+                } catch (error) {
+                    console.error("Ошибка загрузки данных пользователя:", error);
+                    dispatch(addMessage({text: "Ошибка загрузки данных пользователя", type: "error"}));
+                }
+                
+                // Синхронизируем корзину после загрузки пользователя
+                const localCart = localStorage.getItem("cart");
+                if (localCart) {
+                    try {
+                        const cartItems = JSON.parse(localCart);
+                        if (Array.isArray(cartItems) && cartItems.length > 0) {
+                            const items = cartItems
+                                .map((item: any) => ({
+                                    productId: item.product?._id || item.productId,
+                                    article: item.article,
+                                    quantity: item.quantity || 1,
+                                }))
+                                .filter((item: any) => item.productId && item.article);
+                            
+                            if (items.length > 0) {
+                                await dispatch(syncCart(items)).unwrap();
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Ошибка синхронизации корзины:", e);
                     }
-                } catch (e) {
-                    console.error("Ошибка синхронизации корзины:", e);
                 }
             }
         } catch (err: any) {
-            dispatch(addMessage({text: err?.message || "Ошибка подтверждения кода", type: "error"}));
+            const errorMessage = err?.message || "Ошибка подтверждения кода";
+            setErrors({ code: [errorMessage] });
+            dispatch(addMessage({text: errorMessage, type: "error"}));
         } finally {
             isSubmittingRef.current = false;
         }
@@ -150,6 +240,7 @@ export const CodeVerification = () => {
 
     const handleResend = async () => {
         if (!canResend) return;
+        setErrors({});
         try {
             const api = (await import("../../store/api")).default;
             await api.post("/auth/resend");
@@ -160,7 +251,8 @@ export const CodeVerification = () => {
             inputsRef.current[0]?.focus();
             localStorage.setItem('resendTimer', '60');
         } catch (err: any) {
-            dispatch(addMessage({text: err?.message || "Ошибка при повторной отправке", type: "error"}));
+            const errorMessage = err?.response?.data?.message || err?.message || "Ошибка при повторной отправке";
+            dispatch(addMessage({text: errorMessage, type: "error"}));
         }
     };
 
@@ -191,6 +283,13 @@ export const CodeVerification = () => {
                         />
                     ))}
                 </div>
+                {errors.code && errors.code.length > 0 && (
+                    <div className="error-text center" style={{ marginTop: '12px', marginBottom: '12px' }}>
+                        {errors.code.map((err, i) => (
+                            <div key={i} style={{ color: '#f44336', fontSize: '14px' }}>{err}</div>
+                        ))}
+                    </div>
+                )}
 
                 <div className={styles.verifyActions}>
                     <Button

@@ -2,7 +2,8 @@ export interface CategoryData {
   _id: string;
   title: string;
   slug: string;
-  image: string;
+  level: number; // 1 - основная категория, 2 - подкатегория
+  image?: string; // Опциональное поле (может отсутствовать)
 }
 
 export interface CategoryState {

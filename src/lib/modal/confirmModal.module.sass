@@ -1,0 +1,82 @@
+@use "../../styles/variables" as v
+
+.confirmModal
+  padding: 0
+  min-width: 400px
+  max-width: 500px
+
+.title
+  font-size: 20px
+  font-weight: 600
+  color: #333
+  margin: 0 0 16px 0
+
+.message
+  font-size: 16px
+  color: #666
+  line-height: 1.5
+  margin: 0 0 24px 0
+
+.actions
+  display: flex
+  gap: 12px
+  justify-content: flex-end
+
+.cancelButton
+  padding: 10px 20px
+  background: #f5f5f5
+  color: #333
+  border: 1px solid #ddd
+  border-radius: 8px
+  font-size: 14px
+  font-weight: 500
+  cursor: pointer
+  transition: all 0.2s
+
+  &:hover:not(:disabled)
+    background: #e8e8e8
+    border-color: #bbb
+
+  &:disabled
+    opacity: 0.6
+    cursor: not-allowed
+
+.confirmButton
+  padding: 10px 20px
+  border-radius: 8px
+  font-size: 14px
+  font-weight: 500
+  cursor: pointer
+  transition: all 0.2s
+  border: none
+
+  &.primary
+    background: v.$mainBlue
+    color: white
+
+    &:hover:not(:disabled)
+      background: darken(v.$mainBlue, 10%)
+
+  &.danger
+    background: v.$mainRed
+    color: white
+
+    &:hover:not(:disabled)
+      background: darken(v.$mainRed, 10%)
+
+  &:disabled
+    opacity: 0.6
+    cursor: not-allowed
+
+@media (max-width: 768px)
+  .confirmModal
+    min-width: auto
+    width: 90vw
+
+  .actions
+    flex-direction: column
+
+  .cancelButton,
+  .confirmButton
+    width: 100%
+

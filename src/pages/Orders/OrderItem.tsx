@@ -40,7 +40,7 @@ export const OrderItem = memo(({order, search}: Props) => {
     return (
         <tr className={styles.row}>
             <td><Link to={`/orders/${order.orderNumber}`}>{highlightMatch(order.orderNumber, search)}</Link></td>
-            <td>{order.owner.fullName}</td>
+            <td>{order.owner?.fullName || order.owner?.email || "Пользователь удален"}</td>
             <td>{order.finalAmount} ₽</td>
             <td>
                 <StatusSelect

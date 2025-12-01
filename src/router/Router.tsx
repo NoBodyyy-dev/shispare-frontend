@@ -19,6 +19,7 @@ import {Chat} from "../pages/Chat/Chat.tsx";
 import {CheckoutPage} from "../pages/Cart/CheckoutPage";
 import {OrdersPage} from "../pages/Orders/OrdersPage.tsx";
 import {OneOrderPage} from "../pages/Orders/OneOrderPage.tsx";
+import {FullOrderPage} from "../pages/Orders/FullOrderPage.tsx";
 import {Error404} from "../pages/Error/Error404.tsx";
 import {Error500} from "../pages/Error/Error500.tsx";
 import {Error403} from "../pages/Error/Error403.tsx";
@@ -29,9 +30,20 @@ import {OrderDetailPage} from "../pages/LK/OrderDetailPage.tsx";
 import {SearchPage} from "../pages/Products/SearchPage.tsx";
 import {AdminProductsAccordionPage} from "../pages/Admin/AdminProductsAccordionPage.tsx";
 import {RequestsPage} from "../pages/Admin/RequestsPage.tsx";
+import {AdminProfilePage} from "../pages/Admin/AdminProfilePage.tsx";
 import {ProtectedRoute} from "./Protected.route.tsx";
 import {AdminRoute} from "./Admin.route.tsx";
 import {CodeVerification} from "../pages/Auth/CodeVerification.tsx";
+import {SolutionsPage} from "../pages/Solution/SolutionsPage.tsx";
+import {OneSolutionPage} from "../pages/Solution/OneSolutionPage.tsx";
+import {PrivacyPolicyPage} from "../pages/Legal/PrivacyPolicyPage.tsx";
+import {UserAgreementPage} from "../pages/Legal/UserAgreementPage.tsx";
+import {PublicOfferPage} from "../pages/Legal/PublicOfferPage.tsx";
+import {ReturnPolicyPage} from "../pages/Legal/ReturnPolicyPage.tsx";
+import {CreateSolutionPage} from "../pages/Admin/CreateSolutionPage.tsx";
+import {StaffPage} from "../pages/Admin/StaffPage.tsx";
+import {CalculatorPage} from "../pages/Calculator/CalculatorPage.tsx";
+import {CalculatorResultPage} from "../pages/Calculator/CalculatorResultPage.tsx";
 
 const router = createBrowserRouter([
     {
@@ -57,10 +69,34 @@ const router = createBrowserRouter([
                 )
             },
             {
+                path: "/staff",
+                element: (
+                    <AdminRoute>
+                        <StaffPage/>
+                    </AdminRoute>
+                )
+            },
+            {
                 path: "/requests",
                 element: (
                     <AdminRoute>
                         <RequestsPage/>
+                    </AdminRoute>
+                )
+            },
+            {
+                path: "/profile",
+                element: (
+                    <AdminRoute>
+                        <AdminProfilePage/>
+                    </AdminRoute>
+                )
+            },
+            {
+                path: "/admin/create-solution",
+                element: (
+                    <AdminRoute>
+                        <CreateSolutionPage/>
                     </AdminRoute>
                 )
             },
@@ -72,16 +108,23 @@ const router = createBrowserRouter([
             {path: "/cart", element: <Cart/>},
             {path: "/contacts", element: <Contacts/>},
             {path: "/delivery-payment", element: <DeliveryPayment/>},
-            {path: "/categories", element: <Categories/>},
-            {path: "/categories/:category-slug", element: <Products/>},
+            {path: "/catalog", element: <Categories/>},
+            {path: "/catalog/:category-slug", element: <Products/>},
             {
-                path: "/categories/:category-slug/:article",
+                path: "/catalog/:category-slug/:product-slug/:article",
                 element: <OneProductPage/>,
-                // errorElement: <Error404/>
             },
             {path: "/search", element: <SearchPage/>},
             {path: "/stock/:stock-slug", element: <StockPage/>},
+            {path: "/solution", element: <SolutionsPage/>},
+            {path: "/solution/:slug", element: <OneSolutionPage/>},
             {path: "/videos", element: <VideosPage/>},
+            {path: "/calculator", element: <CalculatorPage/>},
+            {path: "/calculator/:article", element: <CalculatorResultPage/>},
+            {path: "/privacy-policy", element: <PrivacyPolicyPage/>},
+            {path: "/user-agreement", element: <UserAgreementPage/>},
+            {path: "/public-offer", element: <PublicOfferPage/>},
+            {path: "/return-policy", element: <ReturnPolicyPage/>},
 
             {path: "/auth", element: <AuthPage/>},
             {path: "/auth/confirm", element: <CodeVerification/>},
@@ -97,25 +140,26 @@ const router = createBrowserRouter([
             {
                 path: "/chat",
                 element: (
-                        <Chat/>
+                    <Chat/>
                 )
             },
             {
                 path: "/orders",
                 element: (
-                        <OrdersPage/>
+                    <OrdersPage/>
                 )
             },
             {
                 path: "/orders/:orderNumber",
                 element: (
-                        <OneOrderPage/>
+                    <OneOrderPage/>
                 )
             },
+
             {
                 path: "/lk/:id",
                 element: (
-                        <Lk/>
+                    <Lk/>
                 ),
                 children: [
                     {index: true, element: <ProfileTab/>},

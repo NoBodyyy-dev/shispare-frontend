@@ -1,0 +1,104 @@
+@use "../../styles/variables" as *
+
+.dropdown
+  display: flex
+  flex-direction: column
+  gap: 6px
+  position: relative
+
+.label
+  font-size: 12px
+  text-transform: uppercase
+  color: #666
+
+.control
+  display: flex
+  align-items: center
+  justify-content: space-between
+  padding: 10px 12px
+  border-radius: 10px
+  border: 1px solid #e0e0e0
+  background: #fff
+  font-size: 14px
+  color: #333
+  cursor: pointer
+  transition: border-color 0.2s ease, box-shadow 0.2s ease
+
+  &:hover
+    border-color: $mainBlue
+
+  &:focus-visible
+    outline: none
+    border-color: $mainBlue
+    box-shadow: 0 0 0 3px rgba($mainBlue, 0.15)
+
+.placeholder
+  color: #999
+
+.icon
+  font-size: 18px
+  color: #999
+  transition: transform 0.2s ease
+
+.iconOpened
+  transform: rotate(180deg)
+
+.menu
+  position: absolute
+  top: calc(100% + 4px)
+  left: 0
+  width: 100%
+  background: #fff
+  border: 1px solid #e0e0e0
+  border-radius: 12px
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.08)
+  z-index: 10
+  display: flex
+  flex-direction: column
+  overflow: hidden
+
+.option
+  display: flex
+  justify-content: space-between
+  align-items: center
+  width: 100%
+  padding: 10px 12px
+  background: transparent
+  border: none
+  text-align: left
+  font-size: 14px
+  color: #333
+  cursor: pointer
+  transition: background 0.2s ease
+
+  &:hover
+    background: #f5f5f5
+
+  small
+    font-size: 12px
+    color: #888
+
+.optionActive
+  background: rgba($mainBlue, 0.1)
+  font-weight: 600
+
+.optionDisabled
+  color: #bbb
+  cursor: not-allowed
+
+.empty
+  padding: 12px
+  font-size: 13px
+  color: #777
+
+.disabled
+  opacity: 0.6
+  pointer-events: none
+
+.errorBorder
+  border-color: #ff4d4f !important
+
+.errorText
+  font-size: 12px
+  color: #ff4d4f
+

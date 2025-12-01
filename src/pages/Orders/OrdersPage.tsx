@@ -3,6 +3,7 @@ import {useEffect, useMemo, useState} from "react";
 import {IOrder, OrderStatus} from "../../store/interfaces/order.interface.ts";
 import {OrderItem} from "./OrderItem.tsx";
 import styles from "./orders.module.sass";
+import {MainInput} from "../../lib/input/MainInput.tsx";
 
 const TABS: { label: string; value: OrderStatus, statusLabel: string }[] = [
     {label: "В ожидании", value: OrderStatus.PENDING, statusLabel: "В ожидании"},
@@ -37,12 +38,11 @@ export const OrdersPage = () => {
 
 
     return (
-        <div className="main__container">
+        <div className="main__container p-20">
             <h1 className={styles.title}>Заказы</h1>
 
-            {/* Поиск */}
             <div className={styles.searchWrapper}>
-                <input
+                <MainInput
                     type="text"
                     placeholder="Поиск по номеру заказа..."
                     className={styles.search}
@@ -65,7 +65,6 @@ export const OrdersPage = () => {
                 ))}
             </div>
 
-            {/* Таблица */}
             <div className={styles.tableWrapper}>
                 <table className={styles.table}>
                     <thead>

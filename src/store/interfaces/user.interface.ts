@@ -19,27 +19,31 @@ export interface UserState {
     isAuthenticated: boolean;
     token: string;
     users: UserInterface[];
+    staff: UserInterface[];
 
     isLoadingUser: boolean;
     isLoadingProfileUser: boolean,
     isLoadingAuthenticated: boolean;
     isLoadingVerify: boolean;
     isLoadingLogout: boolean;
-    isLoadingUsers: boolean
+    isLoadingUsers: boolean;
+    isLoadingStaff: boolean;
 
     errorAuthenticated: string;
     errorProfileUser: string;
     errorUser?: string;
     errorVerify: string;
     errorLogout: string;
-    errorUsers: string
+    errorUsers: string;
+    errorStaff: string;
 
     successCode: boolean;
     successProfileUser: boolean,
     successUser: boolean;
     successAuth: boolean;
     successLogout: boolean;
-    successUsers: boolean
+    successUsers: boolean;
+    successStaff: boolean;
 }
 
 export interface RegisterData {
@@ -55,4 +59,8 @@ export interface RegisterData {
         bik?: string;
         correspondentAccount?: string;
     };
+    // Согласия пользователя (обязательны при регистрации)
+    personalDataConsent?: boolean;
+    userAgreementConsent?: boolean;
+    cookieConsent?: boolean; // Может быть получено ранее через cookie banner
 }

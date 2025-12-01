@@ -4,7 +4,7 @@ import api from "../api";
 
 export const getCart = createAsyncThunk("cart/get", async (_, thunkAPI) => {
     try {
-        const { data, status } = await api.get("/cart/get", {
+        const { data, status } = await api.get("/user/cart/get", {
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
         if (status !== 200) return thunkAPI.rejectWithValue(data);
@@ -21,7 +21,7 @@ export const addToCart = createAsyncThunk(
         thunkAPI
     ) => {
         try {
-            const { data, status } = await api.post("/cart/add", payload, {
+            const { data, status } = await api.post("/user/cart/add", payload, {
                 headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
             });
             if (status !== 200) return thunkAPI.rejectWithValue(data);
@@ -39,7 +39,7 @@ export const updateQuantity = createAsyncThunk(
         thunkAPI
     ) => {
         try {
-            const { data, status } = await api.put("/cart/update", payload, {
+            const { data, status } = await api.put("/user/cart/update", payload, {
                 headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
             });
             if (status !== 200) return thunkAPI.rejectWithValue(data);
@@ -55,7 +55,7 @@ export const removeFromCart = createAsyncThunk(
     async (payload: { productId: string; article: number }, thunkAPI) => {
         try {
             const { data } = await api.delete(
-                `/cart/remove?productId=${payload.productId}&article=${payload.article}`,
+                `/user/cart/remove?productId=${payload.productId}&article=${payload.article}`,
                 {
                     headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
                 }
@@ -69,7 +69,7 @@ export const removeFromCart = createAsyncThunk(
 
 export const clearCart = createAsyncThunk("cart/clear", async (_, thunkAPI) => {
     try {
-        const { data } = await api.delete("/cart/clear", {
+        const { data } = await api.delete("/user/cart/clear", {
             headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         });
         return data.data;
@@ -82,7 +82,7 @@ export const syncCart = createAsyncThunk(
     "cart/sync",
     async (items: Array<{ productId: string; article: number; quantity: number }>, thunkAPI) => {
         try {
-            const { data, status } = await api.post("/cart/sync", { items }, {
+            const { data, status } = await api.post("/user/cart/sync", { items }, {
                 headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
             });
             if (status !== 200) return thunkAPI.rejectWithValue(data);

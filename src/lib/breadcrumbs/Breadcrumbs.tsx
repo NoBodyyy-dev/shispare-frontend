@@ -16,7 +16,7 @@ type Props = {
 export const Breadcrumbs = memo((props: Props) => {
     return (
         <nav aria-label="breadcrumb" className="mb-25">
-            <ol className={`${styles["container"]} flex gap-10`}>
+            <ol className={`${styles["container"]} flex`}>
                 {props.isLoading ? (
                     <>
                         <BreadcrumbsItemsSkeleton/>
@@ -32,9 +32,6 @@ export const Breadcrumbs = memo((props: Props) => {
                                 </Link>
                             ) : (
                                 <span className="color-gray">{item.label}</span>
-                            )}
-                            {index !== props.items.length - 1 && (
-                                <span className="color-gray ml-10">{">"}</span>
                             )}
                         </li>
                     ))

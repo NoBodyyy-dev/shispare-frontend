@@ -65,7 +65,7 @@ export const PushMessageList = () => {
                         className={`${styles.pushMessage} ${getMessageStyle(msg.type || 'info')} mb-5`}
                         layout
                     >
-                        <div className={styles.pushLeftIcon}>
+                        <div className={styles.pushLeftIcon} style={msg.type === 'error' ? { color: '#e74c3c' } : undefined}>
                             {msg.type === 'success' && <FaCheckCircle />}
                             {msg.type === 'info' && <FaInfoCircle />}
                             {msg.type === 'warning' && <FaExclamationTriangle />}

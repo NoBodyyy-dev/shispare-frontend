@@ -1,67 +1,50 @@
-import React from 'react';
-import {motion, useReducedMotion} from 'framer-motion';
+import React, {FC} from "react";
+import {motion} from "framer-motion";
 import styles from "./timeline.module.sass";
 
-type TimelineItem = {
-    id: string;
+interface TimelineItem {
     year: string;
-    content: React.ReactNode[];
-};
+    title: string;
+    description: string | React.ReactNode;
+    image?: string;
+}
 
-type Props = {
+interface TimelineProps {
     items: TimelineItem[];
-};
+}
 
-const Timeline: React.FC<Props> = ({items}) => {
-    const prefersReducedMotion = useReducedMotion();
-    
-    if (!items || items.length === 0) {
-        return <div className={styles.timeline} style={{padding: '20px', background: '#f0f0f0'}}>Нет данных для отображения</div>;
-    }
-    
+export const Timeline: FC<TimelineProps> = ({items}) => {
+    const itemAnimation = {
+        initial: {opacity: 0, y: 50},
+        whileInView: {opacity: 1, y: 0},
+        viewport: {once: true, margin: "-100px"},
+        transition: {duration: 0.6, ease: [0.4, 0, 0.2, 1]}
+    };
+
     return (
         <div className={styles.timeline}>
-            <div className={styles.timeline__line}></div>
-            <div className={styles.timeline__container}>
-                {items.map((item, index) => {
-                    const isEven = index % 2 === 0;
-                    // Четные блоки сверху, нечетные снизу
-                    const isTop = isEven;
-                    
-                    return (
-                        <motion.div
-                            key={item.id}
-                            className={`${styles.timeline__item} ${isTop ? styles.timeline__item_top : styles.timeline__item_bottom}`}
-                            initial={{ opacity: prefersReducedMotion ? 1 : 0, y: prefersReducedMotion ? 0 : (isTop ? -30 : 30) }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true, amount: 0.15, margin: "-50px" }}
-                            transition={{ duration: prefersReducedMotion ? 0 : 0.4, ease: [0.4, 0, 0.2, 1] }}
-                        >
-                            <div className={styles.timeline__content}>
-                                <h3 className={styles.timeline__year}>
-                                    {item.year}
-                                </h3>
-                                <div className={styles.timeline__text}>
-                                    {item.content.map((contentItem, contentIndex) => (
-                                        <p
-                                            key={contentIndex}
-                                            className={styles.timeline__paragraph}
-                                        >
-                                            {contentItem}
-                                        </p>
-                                    ))}
-                                </div>
+            <div className={styles.timelineLine}></div>
+            {items.map((item, index) => (
+                <motion.div
+                    key={index}
+                    className={`${styles.timelineItem} ${index % 2 === 0 ? styles.left : styles.right}`}
+                    {...itemAnimation}
+                    transition={{...itemAnimation.transition, delay: index * 0.1}}
+                >
+                    <div className={styles.timelineDot}></div>
+                    <div className={styles.timelineContent}>
+                        <div className={styles.timelineYear}>{item.year}</div>
+                        <h3 className={styles.timelineTitle}>{item.title}</h3>
+                        <div className={styles.timelineDescription}>{item.description}</div>
+                        {item.image && (
+                            <div className={styles.timelineImage}>
+                                <img src={item.image} alt={item.title} />
                             </div>
-                            <div className={styles.timeline__marker}>
-                                <div className={styles.timeline__markerDot}></div>
-                            </div>
-                        </motion.div>
-                    );
-                })}
-            </div>
+                        )}
+                    </div>
+                </motion.div>
+            ))}
         </div>
     );
 };
-
-export default Timeline;
 

@@ -1,10 +1,160 @@
 @use "../../styles/variables" as *
 
+.home__container
+  display: flex
+  flex-direction: column
+  gap: 40px
+
+.home__hero
+  position: relative
+  width: 100%
+  min-height: 500px
+  padding: 80px 0
+  overflow: hidden
+  display: flex
+  align-items: center
+  animation: fadeInUp 0.8s ease-out
+
+.home__hero-background
+  position: absolute
+  top: 0
+  left: 0
+  width: 100%
+  height: 100%
+  background-image: url('https://sika.scene7.com/is/image/sika/glo-sika-logo-crane-zurich:16-9?wid=1920&hei=1080&fit=crop%2C1')
+  background-size: cover
+  background-position: center
+  background-repeat: no-repeat
+  z-index: 0
+
+  &::after
+    content: ''
+    position: absolute
+    top: 0
+    left: 0
+    width: 100%
+    height: 100%
+    background: rgba(0, 0, 0, 0.7)
+    z-index: 1
+
+@keyframes fadeInUp
+  from
+    opacity: 0
+    transform: translateY(30px)
+  to
+    opacity: 1
+    transform: translateY(0)
+
+@keyframes pulse
+  0%, 100%
+    transform: scale(1)
+    opacity: 0.5
+  50%
+    transform: scale(1.1)
+    opacity: 0.8
+
+@keyframes fadeIn
+  from
+    opacity: 0
+  to
+    opacity: 1
+
+.home__hero-content
+  position: relative
+  z-index: 2
+  max-width: 900px
+  color: white
+  animation: fadeIn 1s ease-out 0.2s both
+
+.home__hero-title
+  font-size: 42px
+  font-weight: 700
+  line-height: 1.3
+  margin: 0 0 40px 0
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3)
+
+.home__hero-accent
+  text-shadow: 0 0 20px rgb(0, 69, 139, 0.6)
+
+.home__hero-info
+  display: flex
+  flex-direction: column
+  gap: 15px
+
+.home__hero-description
+  font-size: 17px
+  line-height: 1.8
+  margin: 0
+  color: rgba(255, 255, 255, 0.95)
+  text-align: justify
+
+  strong
+    color: $mainYellow
+    font-weight: 600
+
+.home__hero-btn
+  margin-top: 25px
+  padding: 14px 28px
+  font-size: 16px
+  font-weight: 600
+  border-radius: 10px
+  //background: $mainRed
+  border: none
+  transition: transform 0.2s ease, box-shadow 0.2s ease
+
+  &:hover
+    transform: translateY(-2px)
+    box-shadow: 0 10px 25px opacify($mainBlue, 0.5)
+
+.home__hero-highlights
+  margin-top: 35px
+  display: grid
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr))
+  gap: 20px
+
+.home__highlight-card
+  background: rgba(255, 255, 255, 0.15)
+  backdrop-filter: blur(6px)
+  border: 1px solid rgba(255, 255, 255, 0.2)
+  border-radius: 14px
+  padding: 18px 20px
+  color: white
+  transition: background 0.3s ease, transform 0.3s ease
+
+  h3
+    margin: 0 0 10px 0
+    font-size: 18px
+    font-weight: 600
+
+  p
+    margin: 0
+    font-size: 14px
+    line-height: 1.5
+    color: rgba(255, 255, 255, 0.9)
+
+  &:hover
+    background: rgba(255, 255, 255, 0.25)
+    transform: translateY(-4px)
+
 .stock
   &__container
     height: 350px
     width: 100%
-    border: 1px solid #000
+    border-radius: 15px
+    overflow: hidden
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1)
+
+  img
+    width: 100%
+    height: 100%
+    object-fit: cover
+
+  .single-stock
+    width: 100%
+    height: 350px
+    object-fit: cover
+    border-radius: 15px
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1)
 
 .swiper-pagination-bullet-active
   transform: scale(1.4)
@@ -25,38 +175,61 @@
 .feedback
   display: grid
   grid-template-columns: 1fr 1fr
-  column-gap: 20px
+  column-gap: 30px
+  margin-top: 20px
+
+  @media (max-width: 968px)
+    grid-template-columns: 1fr
+    row-gap: 20px
 
   &__block
     background: #fff
-    border-radius: 10px
+    border-radius: 12px
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08)
+    overflow: hidden
+    transition: box-shadow 0.3s ease
+
+    &:hover
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12)
 
   &__info
     height: 100%
     display: flex
     flex-direction: column
     justify-content: center
+    padding: 40px
+    background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%)
+
+    @media (max-width: 768px)
+      padding: 30px 20px
+
+  &__content
+    max-width: 100%
 
   &__title
-    font-size: 28px
-    font-weight: 600
-    color: #333
+    font-size: 32px
+    font-weight: 700
+    color: #2C2C2C
     margin: 0 0 20px 0
+    line-height: 1.3
+
+    @media (max-width: 768px)
+      font-size: 26px
 
   &__text
     font-size: 16px
     color: #666
-    line-height: 1.6
+    line-height: 1.7
     margin: 0 0 30px 0
 
   &__reasons
-    margin-bottom: 30px
+    margin-bottom: 0
 
   &__subtitle
-    font-size: 18px
+    font-size: 20px
     font-weight: 600
     color: #333
-    margin: 0 0 15px 0
+    margin: 0 0 18px 0
 
   &__list
     list-style: none
@@ -64,13 +237,79 @@
     margin: 0
     display: flex
     flex-direction: column
-    gap: 12px
+    gap: 14px
 
     li
       font-size: 15px
       color: #555
-      line-height: 1.6
+      line-height: 1.7
       padding-left: 0
+      position: relative
+      padding-left: 8px
+
+      &::before
+        content: ''
+        position: absolute
+        left: 0
+        top: 8px
+        width: 4px
+        height: 4px
+        background: $mainBlue
+        border-radius: 50%
+
+  &__form
+    padding: 40px
+
+    @media (max-width: 768px)
+      padding: 30px 20px
+
+  &__form-content
+    display: flex
+    flex-direction: column
+    gap: 20px
+
+  &__textarea-wrapper
+    display: flex
+    flex-direction: column
+    gap: 8px
+
+  &__textarea-label
+    font-size: 14px
+    font-weight: 500
+    color: #333
+    margin-bottom: 4px
+
+  &__textarea--error
+    border-color: $mainRed !important
+
+  &__error-text
+    font-size: 13px
+    color: $mainRed
+    margin: 0
+    padding: 0
+
+  &__submit-btn
+    margin-top: 10px
+    padding: 14px 28px
+    font-size: 16px
+    font-weight: 600
+    background: $mainBlue
+    color: #fff
+    border: none
+    border-radius: 8px
+    cursor: pointer
+    transition: all 0.3s ease
+    width: 100%
+
+    &:hover:not(:disabled)
+      box-shadow: 0 4px 12px rgba(74, 144, 226, 0.3)
+
+    &:active:not(:disabled)
+      transform: translateY(0)
+
+    &:disabled
+      opacity: 0.6
+      cursor: not-allowed
 
       strong
         color: #333
@@ -104,3 +343,166 @@
 
     &__block:last-child
       order: 1
+
+// Responsive styles for hero section
+@media (max-width: 968px)
+  .home__hero
+    min-height: 450px
+    padding: 60px 0
+
+  .home__hero-content
+    max-width: 100%
+    padding: 0 20px
+
+  .home__hero-title
+    font-size: 32px
+    margin-bottom: 30px
+
+  .home__hero-description
+    font-size: 16px
+  
+  .home__hero-highlights
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr))
+
+@media (max-width: 600px)
+  .home__hero
+    min-height: 400px
+    padding: 40px 0
+
+  .home__hero-content
+    padding: 0 15px
+
+  .home__hero-title
+    font-size: 24px
+    margin-bottom: 25px
+
+  .home__hero-description
+    font-size: 15px
+    line-height: 1.6
+
+  .home__hero-info
+    gap: 15px
+  
+  .home__hero-highlights
+    grid-template-columns: 1fr
+  
+  .home__hero-btn
+    width: 100%
+
+.home__section
+  margin-bottom: 50px
+
+  .title
+    margin-bottom: 25px
+
+.home__products-swiper
+  padding-bottom: 50px
+
+  .swiper-button-prev,
+  .swiper-button-next
+    width: 45px
+    height: 45px
+    border-radius: 50%
+    background: white
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1)
+    color: $mainBlue
+
+    &::after
+      font-size: 20px
+      font-weight: 600
+
+    &:hover
+      background: $mainBlue
+      color: white
+
+  .swiper-pagination-bullet
+    background: $mainBlue
+    opacity: 0.5
+
+    &-active
+      opacity: 1
+      background: $mainBlue
+
+.home__calculator-cta
+  width: 100%
+  background: linear-gradient(135deg, rgba(0, 69, 139, 0.95) 0%, rgba(0, 69, 139, 0.85) 100%)
+  padding: 50px 40px
+  text-align: center
+  position: relative
+  overflow: hidden
+
+  &::before
+    content: ''
+    position: absolute
+    top: -50%
+    right: -50%
+    width: 200%
+    height: 200%
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%)
+    animation: pulse 20s ease-in-out infinite
+
+.home__calculator-content
+  position: relative
+  z-index: 2
+  margin: 0 auto
+  color: white
+
+.home__calculator-title
+  font-size: 32px
+  font-weight: 700
+  line-height: 1.3
+  margin: 0 0 20px 0
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3)
+
+.home__calculator-text
+  font-size: 18px
+  line-height: 1.7
+  margin: 0 0 30px 0
+  color: rgba(255, 255, 255, 0.95)
+
+.home__calculator-btn
+  padding: 15px 40px
+  font-size: 18px
+  font-weight: 600
+  border-radius: 10px
+  background: $mainRed
+  border: none
+  cursor: pointer
+  display: inline-flex
+  align-items: center
+  gap: 10px
+  transition: all 0.3s ease
+  text-decoration: none
+
+  &:hover
+    background: darken($mainYellow, 10%)
+    transform: translateY(-2px)
+    box-shadow: 0 5px 20px rgba(236, 168, 19, 0.4)
+
+@media (max-width: 768px)
+  .home__calculator-cta
+    padding: 40px 25px
+    margin: 40px 0
+
+  .home__calculator-title
+    font-size: 24px
+
+  .home__calculator-text
+    font-size: 16px
+
+  .home__calculator-btn
+    padding: 12px 30px
+    font-size: 16px
+
+.products__container
+  display: grid
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr))
+  gap: 25px
+
+  @media (max-width: 768px)
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr))
+    gap: 15px
+
+  @media (max-width: 600px)
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr))
+    gap: 15px

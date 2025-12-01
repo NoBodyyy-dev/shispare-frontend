@@ -52,14 +52,17 @@ export interface IOrder {
     owner: UserInterface;          // Пользователь, оформивший заказ
     items: IOrderItem[];           // Состав заказа
     totalAmount: number;           // Общая сумма
+    totalProducts?: number;        // Общее количество товаров
     discountAmount: number;        // Сумма скидки
-    deliveryCost: number;          // Стоимость доставки
+    deliveryCost?: number;         // Стоимость доставки (может отсутствовать)
     finalAmount: number;           // Итоговая сумма к оплате
     status: OrderStatus;           // Статус заказа
     deliveryType: DeliveryType;    // Способ доставки
     deliveryInfo: IDeliveryInfo;   // Данные доставки
     paymentMethod: PaymentMethod;  // Способ оплаты
     paymentStatus: boolean;        // Статус оплаты
+    paymentId?: string;            // ID платежа
+    paymentUrl?: string;           // Ссылка на страницу оплаты
     invoiceUrl?: string;           // Ссылка на счет/накладную
     trackingNumber?: string;       // Трек-номер для отслеживания
     createdAt: Date;               // Дата создания
@@ -67,7 +70,7 @@ export interface IOrder {
     cancelledAt?: Date;            // Дата отмены
     canceledCaused?: string;       // Причина отмены
     deliveredAt?: Date;            // Дата доставки
-    documentUrl: string;
+    documentUrl?: string;           // Ссылка на документ (может отсутствовать)
 }
 
 export interface OrderState {

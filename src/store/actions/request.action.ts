@@ -15,10 +15,10 @@ export const createRequestFunc = createAsyncThunk(
 );
 
 export const getAllRequestsFunc = createAsyncThunk(
-    "request/getAll",
+    "/request/getAll",
     async (_, {rejectWithValue}) => {
         try {
-            const response = await api.get("/request/all", {
+            const response = await api.get("/admin/request/all", {
                 headers: {Authorization: `Bearer ${localStorage.getItem("token")}`}
             });
             if (response.status !== 200) return rejectWithValue(response.data);
@@ -33,7 +33,7 @@ export const getRequestByIdFunc = createAsyncThunk(
     "request/getById",
     async (id: string, {rejectWithValue}) => {
         try {
-            const response = await api.get(`/request/${id}`, {
+            const response = await api.get(`/admin/request/${id}`, {
                 headers: {Authorization: `Bearer ${localStorage.getItem("token")}`}
             });
             if (response.status !== 200) return rejectWithValue(response.data);
@@ -48,7 +48,7 @@ export const answerRequestFunc = createAsyncThunk(
     "request/answer",
     async (payload: {id: string; answer: string}, {rejectWithValue}) => {
         try {
-            const response = await api.post(`/request/${payload.id}/answer`, {answer: payload.answer}, {
+            const response = await api.post(`/admin/request/${payload.id}/answer`, {answer: payload.answer}, {
                 headers: {Authorization: `Bearer ${localStorage.getItem("token")}`}
             });
             if (response.status !== 200) return rejectWithValue(response.data);
@@ -58,4 +58,3 @@ export const answerRequestFunc = createAsyncThunk(
         }
     }
 );
-

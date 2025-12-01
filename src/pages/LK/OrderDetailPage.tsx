@@ -48,7 +48,11 @@ const convertOrderItemToCartProduct = (item: IOrderItem): CartProductInterface |
     }
     
     const product = item.product as ProductInterface;
-    const article = item.article || 0;
+    const article = item.article || (product.variants && product.variants.length > 0 ? product.variants[0].article : 0);
+    
+    if (!article) {
+        return null;
+    }
     
     return {
         _id: `${product._id}-${article}`,
@@ -251,6 +255,13 @@ export const OrderDetailPage = () => {
                                 <div className={styles.infoRow}>
                                     <a href={currentOrder.documentUrl} target="_blank" rel="noreferrer" className={styles.link}>
                                         Скачать документ
+                                    </a>
+                                </div>
+                            )}
+                            {currentOrder.paymentUrl && !currentOrder.paymentStatus && (
+                                <div className={styles.infoRow}>
+                                    <a href={currentOrder.paymentUrl} target="_blank" rel="noreferrer" className={styles.paymentLink}>
+                                        Перейти к оплате
                                     </a>
                                 </div>
                             )}

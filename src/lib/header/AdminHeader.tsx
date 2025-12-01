@@ -14,7 +14,9 @@ const adminPaths: NavPath[] = [
     {name: "Заявки", path: "/requests"},
     {name: "Чат", path: "/chat"},
     {name: "Блог", path: "/blog"},
+    {name: "Решения", path: "/solution"},
     {name: "Пользователи", path: "/users"},
+    {name: "Сотрудники", path: "/staff"},
 ]
 
 export const AdminHeader = () => {

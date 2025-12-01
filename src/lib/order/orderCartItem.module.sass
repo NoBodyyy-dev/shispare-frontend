@@ -2,23 +2,38 @@
 
 .orderCartItem
   display: flex
-  gap: 20px
-  padding: 20px
+  flex-direction: column
+  gap: 16px
+  padding: 16px
   background: #fff
   border: 1px solid #e6e6e6
   border-radius: 12px
-  transition: box-shadow 0.2s
+  transition: box-shadow 0.2s, transform 0.2s
+  width: 100%
+  max-width: 100%
+  box-sizing: border-box
+  overflow-x: hidden
+  cursor: pointer
 
   &:hover
     box-shadow: 0 4px 12px rgba(0,0,0,0.08)
+    transform: translateY(-2px)
+
+.topSection
+  display: flex
+  gap: 16px
+  align-items: center
+  width: 100%
+  box-sizing: border-box
 
 .imageLink
   flex-shrink: 0
-  width: 120px
-  height: 120px
+  width: 80px
+  height: 80px
   border-radius: 8px
   overflow: hidden
   background: #f5f5f5
+  pointer-events: none
 
 .image
   width: 100%
@@ -29,17 +44,26 @@
   flex: 1
   display: flex
   flex-direction: column
-  gap: 12px
+  gap: 10px
+  min-width: 0
+  max-width: 100%
+  box-sizing: border-box
+  overflow: hidden
 
 .title
-  font-size: 18px
+  font-size: 16px
   font-weight: 600
   color: #333
-  text-decoration: none
-  transition: color 0.2s
-
-  &:hover
-    color: v.$mainBlue
+  margin: 0
+  padding: 0
+  display: -webkit-box
+  -webkit-line-clamp: 2
+  -webkit-box-orient: vertical
+  overflow: hidden
+  text-overflow: ellipsis
+  line-height: 1.4
+  max-width: 100%
+  word-break: break-word
 
 .variantInfo
   display: flex
@@ -91,18 +115,16 @@
   color: #333
 
 .quantityBlock
-  display: flex
-  flex-direction: column
-  align-items: flex-end
-  justify-content: space-between
-  gap: 12px
-  min-width: 150px
+  gap: 20px
+  flex: 1
+  box-sizing: border-box
+  margin-left: auto
 
 .quantity, .totalPrice
   display: flex
-  flex-direction: column
   align-items: flex-end
   gap: 4px
+  flex-shrink: 0
 
 .quantityLabel, .totalLabel
   font-size: 12px
@@ -119,16 +141,22 @@
   font-weight: 600
 
 @media (max-width: 768px)
-  .orderCartItem
+  .topSection
     flex-direction: column
+    align-items: flex-start
 
   .imageLink
     width: 100%
     height: 200px
+    align-self: center
+    max-width: 200px
 
   .quantityBlock
-    flex-direction: row
-    justify-content: space-between
     width: 100%
-    min-width: auto
+    justify-content: space-between
+    margin-left: 0
+
+
+
+
 

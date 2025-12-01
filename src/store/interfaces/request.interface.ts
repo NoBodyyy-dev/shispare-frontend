@@ -28,4 +28,3 @@ export interface RequestState {
     errorCreateRequest: string;
     errorAnswerRequest: string;
 }
-

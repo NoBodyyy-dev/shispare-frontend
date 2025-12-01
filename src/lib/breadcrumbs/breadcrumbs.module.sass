@@ -1,4 +1,16 @@
+@use "../../styles/variables"
 
-
-
-
+.container
+  & > li
+    position: relative
+    &:not(&:first-child)
+      margin-left: 30px
+      &::before
+        position: absolute
+        content: ""
+        width: 4px
+        height: 4px
+        background: variables.$textGray
+        top: 6px
+        left: -17px
+        border-radius: 50%

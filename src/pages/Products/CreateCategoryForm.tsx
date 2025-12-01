@@ -24,6 +24,7 @@ export const CreateCategoryForm = () => {
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState<string | null>(null);
+    const [serverErrors, setServerErrors] = useState<Record<string, string[]>>({});
 
     const photoFile = watch('image');
 
@@ -35,6 +36,7 @@ export const CreateCategoryForm = () => {
 
         setIsSubmitting(true);
         setSubmitError(null);
+        setServerErrors({});
 
         try {
             const imageFormData = new FormData();
@@ -46,9 +48,34 @@ export const CreateCategoryForm = () => {
 
             if (createCategoryFunc.fulfilled.match(result)) {
                 reset();
+                setServerErrors({});
                 addMessage('Категория успешно создана');
             } else if (createCategoryFunc.rejected.match(result)) {
-                addMessage(result.payload as string || 'Ошибка при создании категории', 'error');
+                const errorPayload = result.payload as any;
+                const errors: Record<string, string[]> = {};
+                
+                if (errorPayload?.errors && typeof errorPayload.errors === 'object') {
+                    Object.keys(errorPayload.errors).forEach((field) => {
+                        const fieldErrors = errorPayload.errors[field];
+                        if (Array.isArray(fieldErrors)) {
+                            errors[field] = fieldErrors;
+                        } else if (typeof fieldErrors === 'string') {
+                            errors[field] = [fieldErrors];
+                        }
+                    });
+                } else if (errorPayload?.message) {
+                    const message = errorPayload.message.toLowerCase();
+                    if (message.includes('title') || message.includes('назван')) {
+                        errors.title = [errorPayload.message];
+                    } else if (message.includes('image') || message.includes('изображен')) {
+                        errors.image = [errorPayload.message];
+                    } else {
+                        errors.title = [errorPayload.message];
+                    }
+                }
+                
+                setServerErrors(errors);
+                addMessage(errorPayload?.message || 'Ошибка при создании категории', 'error');
             }
         } catch (error) {
             console.error('Upload error:', error);
@@ -72,15 +99,24 @@ export const CreateCategoryForm = () => {
                 <MainInput
                     id="title"
                     placeholder="Введите название категории"
+                    error={serverErrors.title || (errors.title ? [errors.title.message || ''] : undefined)}
                     {...register('title', {
                         required: 'Название обязательно',
                         minLength: {
                             value: 3,
                             message: 'Минимум 3 символа'
                         },
+                        onChange: () => {
+                            if (serverErrors.title) {
+                                setServerErrors(prev => {
+                                    const newErrors = { ...prev };
+                                    delete newErrors.title;
+                                    return newErrors;
+                                });
+                            }
+                        }
                     })}
                 />
-                {errors.title && <span className={styles.error}>{errors.title.message}</span>}
             </div>
 
             <div className={styles.formGroup}>
@@ -111,6 +147,8 @@ export const CreateCategoryForm = () => {
             <Button
                 type="submit"
                 className="full-width"
+                loading={isSubmitting}
+                disabled={isSubmitting}
             >
                 Создать категорию
             </Button>

@@ -2,15 +2,17 @@ import React, {useEffect, useState} from 'react';
 import {TitleWithCreateButton} from "../../lib/title/TitleWithCreateButton.tsx";
 import {useAppDispatch, useAppSelector} from "../../hooks/state.hook.ts";
 import {useParams} from "react-router-dom";
-import {getCurrentPostFunc} from "../../store/actions/blog.action.ts";
+import {getCurrentPostFunc, getAllPostsFunc} from "../../store/actions/blog.action.ts";
 import {Breadcrumbs} from "../../lib/breadcrumbs/Breadcrumbs.tsx";
-import {SEO} from "../../lib/seo/SEO.tsx";
 import styles from "./blog.module.sass"
 import {Modal} from "../../lib/modal/Modal.tsx";
+import {EditPostForm} from "./EditPostForm.tsx";
+import {useAuth} from "../../context/AuthContext.tsx";
 
 export const OneBlog: React.FC = () => {
     const dispatch = useAppDispatch();
     const {currentPost, isLoadingCurrentPost, errorCurrentPost} = useAppSelector(state => state.blog);
+    const {user} = useAuth();
     const params = useParams();
     const [openModal, setOpenModal] = useState(false);
 
@@ -22,7 +24,12 @@ export const OneBlog: React.FC = () => {
 
     useEffect(() => {
         dispatch(getCurrentPostFunc(params.slug!))
-    }, [])
+    }, [params.slug, dispatch])
+
+    const handleUpdate = () => {
+        dispatch(getCurrentPostFunc(params.slug!));
+        dispatch(getAllPostsFunc());
+    };
 
     if (isLoadingCurrentPost) return <>Загрузка</>;
     if (errorCurrentPost) return errorCurrentPost;
@@ -30,27 +37,12 @@ export const OneBlog: React.FC = () => {
 
     const finalText = currentPost!.content.split("\n")
 
-    // SEO данные
-    const seoTitle = currentPost!.seo?.metaTitle || currentPost!.title;
-    const seoDescription = currentPost!.seo?.metaDescription || currentPost!.content.substring(0, 160).replace(/\n/g, " ") || `Читайте статью "${currentPost!.title}" в блоге Shispare`;
-    const seoKeywords = currentPost!.seo?.metaKeywords || `${currentPost!.title}, блог, строительные материалы`;
-    const seoImage = currentPost!.seo?.ogImage || currentPost!.image;
-    const seoUrl = `/blog/${currentPost!.slug}`;
-
     return (
-        <>
-            <SEO
-                title={seoTitle}
-                description={seoDescription}
-                keywords={seoKeywords}
-                image={seoImage}
-                url={seoUrl}
-                type="article"
-                canonical={seoUrl}
-            />
-            <div className="main__container">
-                <Breadcrumbs items={breadcrumbsItems} isLoading={isLoadingCurrentPost}/>
-            <TitleWithCreateButton title={"Статья"} openModal={setOpenModal}/>
+        <div className={`main__container ${user?.role === "Admin" ? "p-20" : ""}`}>
+            <Breadcrumbs items={breadcrumbsItems} isLoading={isLoadingCurrentPost}/>
+            {user?.role === "Admin" && (
+                <TitleWithCreateButton title={"Статья"} openModal={setOpenModal}/>
+            )}
             <article className={styles.article}>
                 <h2 className="subtitle mb-15">{currentPost!.title}</h2>
 
@@ -68,10 +60,15 @@ export const OneBlog: React.FC = () => {
                     </div>
                 </div>
             </article>
-            <Modal modal={openModal} setModal={setOpenModal}>
-                <>Пенис</>
-            </Modal>
+            {user?.role === "Admin" && currentPost && (
+                <Modal modal={openModal} setModal={setOpenModal}>
+                    <EditPostForm
+                        post={currentPost}
+                        onClose={() => setOpenModal(false)}
+                        onUpdate={handleUpdate}
+                    />
+                </Modal>
+            )}
         </div>
-        </>
     );
 };

@@ -1,4 +1,4 @@
-import React, {FC, useState} from "react";
+import {FC, useState} from "react";
 import styles from "./starRatingSelect.module.sass";
 
 interface StarRatingSelectProps {
@@ -27,4 +27,3 @@ export const StarRatingSelect: FC<StarRatingSelectProps> = ({rating, onRatingCha
         </div>
     );
 };
-

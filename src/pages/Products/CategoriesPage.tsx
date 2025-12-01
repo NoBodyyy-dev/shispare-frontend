@@ -19,7 +19,7 @@ export const Categories: FC = () => {
 
     const items = [
         {path: "/", label: "Главная"},
-        {path: "/categories", label: "Категории"},
+        {path: "/catalog", label: "Каталог"},
     ]
 
     useEffect(() => {
@@ -29,34 +29,20 @@ export const Categories: FC = () => {
     return (
         <div className={`main__container ${styles.category}`}>
             <Breadcrumbs items={items} isLoading={isLoadingCategory}/>
-            {
-                (isAuthenticated && user?.role === "Admin")
-                    ? <div className="flex-align-start-sbetw">
-                        <h1 className="title mb-20">Категории</h1>
-                        <Button
-                            className="fz-20"
-                            onClick={() => setOpenModal(true)}
-                        >+</Button>
-                    </div>
-                    : <h1 className="title mb-20">Категории</h1>
-            }
+            <h1 className="title mb-20">Категории</h1>
             <div className={styles.categoryContainer}>
-                {categories.map((category) => {
-                    return (<Link to={`/categories/${category.slug}`}>
-                            <div key={category._id} className={`${styles.categoryItem} flex-to-center-col`}>
-                                <img src={category.image} alt={category.title}/>
-                                <p className="fz-18 center mt-20">{category.title}</p>
-                            </div>
-                        </Link>
-                    );
-                })}
+                {categories && Array.isArray(categories) && categories.length > 0
+                    ? categories.map((category) => {
+                        return (<Link key={category._id} to={`/catalog/${category.slug}`}>
+                                <div className={`${styles.categoryItem} flex-to-center-col`}>
+                                    <p className="fz-18 center mt-20">{category.title}</p>
+                                </div>
+                            </Link>
+                        );
+                    })
+                    : <p className="text-center color-gray">Категории не найдены</p>
+                }
             </div>
-            {
-                openModal
-                && <Modal modal={openModal} setModal={setOpenModal}>
-                    <CreateCategoryForm/>
-                </Modal>
-            }
         </div>
     );
 }

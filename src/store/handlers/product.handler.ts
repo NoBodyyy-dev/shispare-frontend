@@ -47,13 +47,19 @@ export const getPopularProductsHandler = (
         })
         .addCase(actions.getPopularProductsFunc.rejected, (state, action) => {
             state.isLoadingPopularProducts = false;
-            state.popularProductsError = action.error.message;
+            state.popularProductsError = action.error?.message || "Ошибка загрузки популярных товаров";
+            console.error("getPopularProductsFunc rejected:", action.error, action.payload);
+            // При ошибке устанавливаем пустой массив
+            state.popularProducts = [];
         })
         .addCase(actions.getPopularProductsFunc.fulfilled, (state, action) => {
             state.isLoadingPopularProducts = false;
+            console.log("getPopularProductsFunc fulfilled:", action.payload);
+            // Бэкенд возвращает { success: true, products: [...] }
             const products = action.payload?.products || action.payload;
             state.popularProducts = Array.isArray(products) ? products as ProductInterface[] : [];
-        });
+            console.log("popularProducts after handler:", state.popularProducts);
+        })
 };
 
 export const getProductsByCategoriesHandler = (
@@ -71,9 +77,28 @@ export const getProductsByCategoriesHandler = (
         })
         .addCase(actions.getProductsByCategoryFunc.fulfilled, (state, action) => {
             state.isLoadingProducts = false;
-            console.log("handler ---", action.payload);
-            state.products = action.payload.products.products as ProductInterface[];
-            state.curCategory = action.payload.products.products[0]?.category?.title || "";
+            const products = action.payload.products as ProductInterface[];
+            state.products = products;
+            state.curCategory = products[0]?.category?.title || "";
+        });
+};
+
+export const getBestRatingProductsHandler = (
+    builder: ActionReducerMapBuilder<ProductState>
+) => {
+    builder
+        .addCase(actions.getProductsByBestRatingFunc.pending, (state) => {
+            state.isLoadingBestRatingProducts = true;
+        })
+        .addCase(actions.getProductsByBestRatingFunc.rejected, (state, action) => {
+            state.isLoadingBestRatingProducts = false;
+            state.bestRatingProductsError = action.error?.message || "Ошибка загрузки товаров";
+            state.bestRatingProducts = [];
+        })
+        .addCase(actions.getProductsByBestRatingFunc.fulfilled, (state, action) => {
+            state.isLoadingBestRatingProducts = false;
+            const products = action.payload?.products || action.payload;
+            state.bestRatingProducts = Array.isArray(products) ? products as ProductInterface[] : [];
         });
 };
 

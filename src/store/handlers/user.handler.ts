@@ -4,6 +4,7 @@ import {
     authenticateFunc,
     banUserFunc,
     getAllUsersFunc,
+    getAllStaffFunc,
     getMeFunc, getProfileUserFunc,
     logoutFunc,
     registerFunc,
@@ -32,13 +33,17 @@ export const registerHandler = (builder: ActionReducerMapBuilder<UserState>) => 
     builder
         .addCase(registerFunc.pending, (state) => {
             state.isLoadingAuthenticated = true;
+            state.errorAuthenticated = "";
         })
         .addCase(registerFunc.rejected, (state, action) => {
             state.isLoadingAuthenticated = false;
-            state.errorAuthenticated = action.error.message!;
+            const errorPayload = action.payload as any;
+            const errorMessage = errorPayload?.message || action.error?.message || "Ошибка регистрации";
+            state.errorAuthenticated = errorMessage;
         })
         .addCase(registerFunc.fulfilled, (state) => {
             state.isLoadingAuthenticated = false;
+            state.errorAuthenticated = "";
             state.successAuth = true;
         });
 }
@@ -47,13 +52,17 @@ export const authenticateHandler = (builder: ActionReducerMapBuilder<UserState>)
     builder
         .addCase(authenticateFunc.pending, (state) => {
             state.isLoadingAuthenticated = true;
+            state.errorAuthenticated = "";
         })
         .addCase(authenticateFunc.rejected, (state, action) => {
             state.isLoadingAuthenticated = false;
-            state.errorAuthenticated = action.error.message!;
+            const errorPayload = action.payload as any;
+            const errorMessage = errorPayload?.message || action.error?.message || "Ошибка авторизации";
+            state.errorAuthenticated = errorMessage;
         })
         .addCase(authenticateFunc.fulfilled, (state) => {
             state.isLoadingAuthenticated = false;
+            state.errorAuthenticated = "";
             state.successAuth = true
         });
 }
@@ -105,6 +114,21 @@ export const getAllUsersHandler = (builder: ActionReducerMapBuilder<UserState>) 
         .addCase(getAllUsersFunc.fulfilled, (state: UserState, action) => {
             state.isLoadingUsers = false;
             state.users = action.payload.users;
+        })
+}
+
+export const getAllStaffHandler = (builder: ActionReducerMapBuilder<UserState>) => {
+    builder
+        .addCase(getAllStaffFunc.pending, (state: UserState) => {
+            state.isLoadingStaff = true;
+        })
+        .addCase(getAllStaffFunc.rejected, (state: UserState, action) => {
+            state.isLoadingStaff = false;
+            state.errorStaff = action.error.message!;
+        })
+        .addCase(getAllStaffFunc.fulfilled, (state: UserState, action) => {
+            state.isLoadingStaff = false;
+            state.staff = action.payload.staff;
         })
 }
 

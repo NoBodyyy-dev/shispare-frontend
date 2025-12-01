@@ -1,8 +1,9 @@
 @use "sass:color"
+@use "../../styles/variables" as *
 
 $primary-color: #2c3e50
 $secondary-color: #7f8c8d
-$accent-color: #3498db
+$accent-color: $mainBlue
 $border-color: #e0e0e0
 $light-bg: #f9f9f9
 $warning-bg: #fff8e1
@@ -34,16 +35,32 @@ $warning-text: #e65100
 
 .section
   background: white
-  border-radius: 12px
-  padding: 2rem
-  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05)
-  margin-bottom: 20px
+  border-radius: 16px
+  padding: 2.5rem
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08)
+  margin-bottom: 30px
+  transition: box-shadow 0.3s ease
+
+  &:hover
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.12)
 
   h2
-    font-size: 1.5rem
+    font-size: 1.75rem
     color: $primary-color
     margin-top: 0
     margin-bottom: 1.5rem
+    font-weight: 600
+
+.sectionHeader
+  display: flex
+  align-items: center
+  gap: 12px
+  margin-bottom: 1.5rem
+
+.sectionIcon
+  font-size: 2rem
+  color: $accent-color
+  flex-shrink: 0
 
 .sectionDescription
   color: $secondary-color
@@ -55,24 +72,55 @@ $warning-text: #e65100
   gap: 1.5rem
 
 .deliveryCard
-  background: $light-bg
-  border-radius: 8px
-  padding: 1.5rem
-  transition: transform 0.3s ease, box-shadow 0.3s ease
-  border: 1px solid $border-color
+  background: linear-gradient(135deg, #ffffff 0%, $light-bg 100%)
+  border-radius: 12px
+  padding: 2rem
+  transition: all 0.3s ease
+  border: 2px solid $border-color
+  position: relative
+  overflow: hidden
+
+  &::before
+    content: ''
+    position: absolute
+    top: 0
+    left: 0
+    width: 4px
+    height: 100%
+    background: $accent-color
+    transform: scaleY(0)
+    transition: transform 0.3s ease
 
   &:hover
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08)
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12)
+    transform: translateY(-5px)
+    border-color: $accent-color
+
+    &::before
+      transform: scaleY(1)
 
 .cardHeader
   display: flex
   align-items: center
   gap: 1rem
-  margin-bottom: 1rem
+  margin-bottom: 1.25rem
 
-.cardIcon
-  width: 48px
-  height: 48px
+.cardIconWrapper
+  width: 60px
+  height: 60px
+  display: flex
+  align-items: center
+  justify-content: center
+  background: linear-gradient(135deg, $accent-color 0%, color.adjust($accent-color, $lightness: -10%) 100%)
+  border-radius: 12px
+  color: white
+  font-size: 1.75rem
+  flex-shrink: 0
+  box-shadow: 0 4px 15px rgba($accent-color, 0.3)
+
+  svg
+    width: 30px
+    height: 30px
 
 .cardTitle
   font-size: 1.3rem
@@ -85,16 +133,27 @@ $warning-text: #e65100
   margin-bottom: 1rem
 
 .cardDetails
-  padding-left: 1.2rem
+  padding-left: 0
   margin: 0
+  list-style: none
 
   li
-    margin-bottom: 0.5rem
-    line-height: 1.5
+    margin-bottom: 0.75rem
+    line-height: 1.6
     color: $primary-color
+    display: flex
+    align-items: flex-start
+    gap: 0.75rem
+    padding-left: 0
 
     &:last-child
       margin-bottom: 0
+
+.detailIcon
+  color: #27ae60
+  font-size: 0.9rem
+  margin-top: 0.2rem
+  flex-shrink: 0
 
 .factorsGrid
   display: grid
@@ -106,33 +165,66 @@ $warning-text: #e65100
   display: flex
   flex-direction: column
   align-items: center
-  padding: 1rem
-  background: $light-bg
-  border-radius: 6px
-  transition: background 0.2s ease
+  padding: 1.5rem 1rem
+  background: linear-gradient(135deg, #ffffff 0%, $light-bg 100%)
+  border-radius: 12px
+  transition: all 0.3s ease
+  border: 2px solid transparent
+  cursor: pointer
 
   &:hover
-    background: color.adjust($light-bg, $lightness: -5%)
+    background: linear-gradient(135deg, $light-bg 0%, #ffffff 100%)
+    border-color: $accent-color
+    transform: translateY(-5px)
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1)
 
-.factorIcon
-  width: 40px
-  height: 40px
-  margin-bottom: 0.8rem
+.factorIconWrapper
+  width: 60px
+  height: 60px
+  display: flex
+  align-items: center
+  justify-content: center
+  background: linear-gradient(135deg, $accent-color 0%, color.adjust($accent-color, $lightness: -10%) 100%)
+  border-radius: 50%
+  margin-bottom: 1rem
+  color: white
+  font-size: 1.5rem
+  transition: all 0.3s ease
+
+  svg
+    width: 30px
+    height: 30px
+
+.factorCard:hover .factorIconWrapper
+  transform: scale(1.1) rotate(5deg)
+  box-shadow: 0 4px 15px rgba($accent-color, 0.4)
 
 .factorText
-  font-weight: 500
+  font-weight: 600
   text-align: center
   color: $primary-color
+  font-size: 0.95rem
 
 .importantNote
-  background: $warning-bg
-  border-left: 4px solid $warning-border
-  padding: 1rem
-  border-radius: 4px
+  background: linear-gradient(135deg, $warning-bg 0%, color.adjust($warning-bg, $lightness: 2%) 100%)
+  border-left: 5px solid $warning-border
+  padding: 1.25rem 1.5rem
+  border-radius: 8px
   margin-top: 1.5rem
+  display: flex
+  align-items: flex-start
+  gap: 1rem
+  box-shadow: 0 2px 10px rgba($warning-border, 0.2)
 
   strong
     color: $warning-text
+    font-size: 1.05rem
+
+.warningIcon
+  font-size: 1.5rem
+  color: $warning-border
+  flex-shrink: 0
+  margin-top: 2px
 
 .paymentGrid
   display: grid
@@ -142,28 +234,75 @@ $warning-text: #e65100
 .paymentCard
   display: flex
   align-items: center
-  gap: 1rem
-  padding: 1rem
-  background: $light-bg
-  border-radius: 6px
-  transition: background 0.2s ease
+  gap: 1.25rem
+  padding: 1.5rem
+  background: linear-gradient(135deg, #ffffff 0%, $light-bg 100%)
+  border-radius: 12px
+  transition: all 0.3s ease
+  border: 2px solid transparent
+  cursor: pointer
+  position: relative
+  overflow: hidden
+
+  &::before
+    content: ''
+    position: absolute
+    top: 0
+    left: 0
+    width: 100%
+    height: 100%
+    background: linear-gradient(135deg, rgba($accent-color, 0.05) 0%, rgba($accent-color, 0.02) 100%)
+    opacity: 0
+    transition: opacity 0.3s ease
 
   &:hover
-    background: color.adjust($light-bg, $lightness: -5%)
+    background: linear-gradient(135deg, $light-bg 0%, #ffffff 100%)
+    border-color: $accent-color
+    transform: translateY(-5px)
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1)
 
-.paymentIcon
+    &::before
+      opacity: 1
+
+    .paymentIconWrapper
+      transform: scale(1.1)
+.paymentIconWrapper
+  width: 60px
+  height: 60px
+  display: flex
+  align-items: center
+  justify-content: center
+  background: linear-gradient(135deg, $light-bg 0%, color.adjust($light-bg, $lightness: -5%) 100%)
+  border-radius: 12px
+  flex-shrink: 0
+  transition: all 0.3s ease
+  color: $accent-color
+  font-size: 1.75rem
+
+  svg
+    width: 28px
+    height: 28px
+
+.paymentIconImage
   width: 40px
   height: 40px
+  object-fit: contain
+
+.paymentContent
+  flex: 1
+  min-width: 0
 
 .paymentTitle
-  font-size: 1.1rem
-  margin: 0 0 0.2rem 0
+  font-size: 1.15rem
+  margin: 0 0 0.4rem 0
   color: $primary-color
+  font-weight: 600
 
 .paymentDescription
   margin: 0
   font-size: 0.9rem
   color: $secondary-color
+  line-height: 1.4
 
 .accordionWrapper
   display: flex

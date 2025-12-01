@@ -11,10 +11,20 @@
 
   &Content
     background: #fff
-    padding: 20px
+    padding: 32px
     min-width: 500px
+    max-width: 90vw
     min-height: 180px
-    max-height: 750px
-    border-radius: 20px
-    text-align: center
+    max-height: 90vh
+    border-radius: 16px
+    text-align: left
     overflow: auto
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3)
+    position: relative
+
+    @media (max-width: 768px)
+      padding: 24px
+      min-width: auto
+      width: 95vw
+      max-height: 85vh
+      border-radius: 12px

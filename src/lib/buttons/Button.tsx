@@ -10,8 +10,8 @@ type Props = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 export const Button: FC<Props> = memo(({loading = false, square = false, children, className, ...attributes}: Props) => {
     return (
-        <button 
-            {...attributes} 
+        <button
+            {...attributes}
             className={`${styles.button} ${square ? styles.square : ""} ${className || ""}`.trim()}
         >
             {loading ? <Spin/> : children}

@@ -2,109 +2,126 @@ import {useState, FormEvent} from "react";
 import {MainInput} from "../../lib/input/MainInput.tsx";
 import {MainTextarea} from "../../lib/input/MainTextarea.tsx";
 import {Button} from "../../lib/buttons/Button.tsx";
-import {useAppDispatch} from "../../hooks/state.hook.ts";
+import {useAppDispatch, useAppSelector} from "../../hooks/state.hook.ts";
 import {createRequestFunc} from "../../store/actions/request.action.ts";
-import "./home.sass"
+import {addMessage} from "../../store/slices/push.slice.ts";
+import "./home.sass";
 
 export const Feedback = () => {
     const dispatch = useAppDispatch();
+    const {isLoadingCreateRequest} = useAppSelector(state => state.request);
     const [feedbackData, setFeedbackData] = useState({
         fullName: "",
         email: "",
         question: ""
     });
-    const [isSubmitting, setIsSubmitting] = useState(false);
-    const [success, setSuccess] = useState(false);
-    const [error, setError] = useState("");
+    const [errors, setErrors] = useState<{fullName?: string; email?: string; question?: string}>({});
+
+    const validateForm = () => {
+        const newErrors: {fullName?: string; email?: string; question?: string} = {};
+
+        if (!feedbackData.fullName.trim()) {
+            newErrors.fullName = "Имя обязательно для заполнения";
+        }
+
+        if (!feedbackData.email.trim()) {
+            newErrors.email = "Email обязателен для заполнения";
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(feedbackData.email)) {
+            newErrors.email = "Некорректный email адрес";
+        }
+
+        if (!feedbackData.question.trim()) {
+            newErrors.question = "Вопрос обязателен для заполнения";
+        } else if (feedbackData.question.trim().length < 10) {
+            newErrors.question = "Вопрос должен содержать минимум 10 символов";
+        }
+
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
-        setError("");
-        setSuccess(false);
-
-        if (!feedbackData.fullName.trim() || !feedbackData.email.trim() || !feedbackData.question.trim()) {
-            setError("Все поля обязательны для заполнения");
+        
+        if (!validateForm()) {
             return;
         }
 
-        setIsSubmitting(true);
         try {
-            await dispatch(createRequestFunc(feedbackData)).unwrap();
-            setSuccess(true);
-            setFeedbackData({fullName: "", email: "", question: ""});
-            setTimeout(() => setSuccess(false), 5000);
-        } catch (err: any) {
-            setError(err.message || "Ошибка при отправке заявки");
-        } finally {
-            setIsSubmitting(false);
+            await dispatch(createRequestFunc({
+                fullName: feedbackData.fullName.trim(),
+                email: feedbackData.email.trim(),
+                question: feedbackData.question.trim()
+            })).unwrap();
+
+            dispatch(addMessage({
+                text: "Заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.",
+                type: "success"
+            }));
+
+            // Очищаем форму
+            setFeedbackData({
+                fullName: "",
+                email: "",
+                question: ""
+            });
+            setErrors({});
+        } catch (error: any) {
+            dispatch(addMessage({
+                text: error?.message || "Ошибка при отправке заявки. Попробуйте позже.",
+                type: "error"
+            }));
         }
     };
 
     return (
         <div className="feedback">
-            <div className="feedback__block p-30">
-                <div className="feedback__info">
-                    <h2 className="feedback__title">Остались вопросы?</h2>
+            <div className="feedback__block feedback__info">
+                <div className="feedback__content">
+                    <h2 className="feedback__title">Оставьте заявку</h2>
                     <p className="feedback__text">
-                        Мы всегда готовы помочь вам! Оставьте заявку, и наш специалист свяжется с вами в ближайшее время.
+                        У вас есть вопросы или нужна консультация? Наши специалисты готовы помочь вам выбрать 
+                        подходящие строительные материалы и ответить на все ваши вопросы.
                     </p>
-                    <div className="feedback__note">
-                        <p>⏱️ Среднее время ответа: <strong>в течение 24 часов</strong></p>
-                        <p>📧 Ответ придет на указанный email адрес</p>
-                    </div>
                 </div>
             </div>
-            <div className="feedback__block p-30">
-                <form onSubmit={handleSubmit}>
-                    <div style={{marginBottom: "20px"}}>
-                        <label style={{display: "block", marginBottom: "8px", fontWeight: 500}}>
-                            ФИО
-                        </label>
-                        <MainInput
-                            value={feedbackData.fullName}
-                            onChange={(e) => setFeedbackData({...feedbackData, fullName: e.target.value})}
-                            placeholder="Введите ваше ФИО"
-                            required
-                        />
-                    </div>
-                    <div style={{marginBottom: "20px"}}>
-                        <label style={{display: "block", marginBottom: "8px", fontWeight: 500}}>
-                            Email
-                        </label>
-                        <MainInput
-                            type="email"
-                            value={feedbackData.email}
-                            onChange={(e) => setFeedbackData({...feedbackData, email: e.target.value})}
-                            placeholder="Введите ваш email"
-                            required
-                        />
-                    </div>
-                    <div style={{marginBottom: "20px"}}>
-                        <label style={{display: "block", marginBottom: "8px", fontWeight: 500}}>
-                            Ваш вопрос
-                        </label>
+            <div className="feedback__block feedback__form">
+                <form onSubmit={handleSubmit} className="feedback__form-content">
+                    <MainInput
+                        label="Ваше имя *"
+                        value={feedbackData.fullName}
+                        onChange={(e) => setFeedbackData({...feedbackData, fullName: e.target.value})}
+                        placeholder="Введите ваше имя"
+                        error={errors.fullName}
+                        disabled={isLoadingCreateRequest}
+                    />
+                    <MainInput
+                        label="Email *"
+                        type="email"
+                        value={feedbackData.email}
+                        onChange={(e) => setFeedbackData({...feedbackData, email: e.target.value})}
+                        placeholder="example@mail.com"
+                        error={errors.email}
+                        disabled={isLoadingCreateRequest}
+                    />
+                    <div className="feedback__textarea-wrapper">
+                        <label className="feedback__textarea-label">Ваш вопрос *</label>
                         <MainTextarea
                             value={feedbackData.question}
                             onChange={(e) => setFeedbackData({...feedbackData, question: e.target.value})}
-                            placeholder="Опишите ваш вопрос..."
-                            required
+                            placeholder="Опишите ваш вопрос или задачу..."
+                            disabled={isLoadingCreateRequest}
+                            className={errors.question ? "feedback__textarea--error" : ""}
                         />
+                        {errors.question && (
+                            <p className="feedback__error-text">{errors.question}</p>
+                        )}
                     </div>
-                    {error && (
-                        <div style={{color: "#e74c3c", marginBottom: "15px", fontSize: "14px"}}>
-                            {error}
-                        </div>
-                    )}
-                    {success && (
-                        <div style={{color: "#2ecc71", marginBottom: "15px", fontSize: "14px"}}>
-                            Заявка успешно отправлена! Мы свяжемся с вами в ближайшее время.
-                        </div>
-                    )}
                     <Button
                         type="submit"
-                        disabled={isSubmitting}
-                        loading={isSubmitting}
-                        className="full-width"
+                        loading={isLoadingCreateRequest}
+                        disabled={isLoadingCreateRequest}
+                        className="feedback__submit-btn"
                     >
                         Отправить заявку
                     </Button>

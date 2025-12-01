@@ -81,13 +81,18 @@ export const QuantityButtons = ({ product, article }: Props) => {
 
     return (
         <div className={`${styles.quantity} full-width gap-8 flex-align-center-sbetw`}>
-            <Button onClick={handleDec} disabled={isLoading}>
+            <Button 
+                onClick={handleDec} 
+                disabled={isLoading}
+                loading={isLoading}
+            >
                 -
             </Button>
             <p className="fz-16">{qty}</p>
             <Button
                 onClick={handleInc}
                 disabled={isLoading || qty >= inStock}
+                loading={isLoading}
             >
                 +
             </Button>

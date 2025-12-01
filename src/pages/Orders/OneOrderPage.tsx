@@ -1,8 +1,10 @@
 import {useEffect} from "react";
-import {Link, useParams} from "react-router-dom";
+import {Link, useParams, useNavigate} from "react-router-dom";
 import {useAppDispatch, useAppSelector} from "../../hooks/state.hook.ts";
-import {getOneOrderFunc} from "../../store/actions/order.action.ts";
+import {getOrderByNumberFunc} from "../../store/actions/order.action.ts";
 import {OrderDetails} from "../../lib/order/OrderDetails.tsx";
+import {Breadcrumbs} from "../../lib/breadcrumbs/Breadcrumbs.tsx";
+import {SEO} from "../../lib/seo/SEO.tsx";
 import styles from "./orders.module.sass";
 
 export const OneOrderPage = () => {
@@ -11,50 +13,57 @@ export const OneOrderPage = () => {
     const {orderNumber} = useParams();
 
     useEffect(() => {
-        if (orderNumber) dispatch(getOneOrderFunc({orderNumber}));
+        if (orderNumber) {
+            dispatch(getOrderByNumberFunc(orderNumber));
+        }
     }, [orderNumber, dispatch]);
 
+    const handlePayment = () => {
+        if (currentOrder?.paymentUrl) {
+            window.location.href = currentOrder.paymentUrl;
+        }
+    };
+
     if (isLoadingOrder) {
+        return <p>Загрузка...</p>
+    }
+
+    if (errorOrder || !currentOrder) {
         return (
-            <div className="main__container">
-                <div className="mb-10">
-                    <Link to="/orders">← Назад к списку заказов</Link>
+            <div className="main__container p-20">
+                <Breadcrumbs items={[
+                    {label: 'Главная', path: '/'},
+                    {label: 'Заказы', path: '/orders'},
+                    {label: 'Заказ не найден', path: ''}
+                ]} isLoading={false}/>
+                <SEO
+                    title="Заказ не найден"
+                    description="Заказ не найден или у вас нет доступа к нему"
+                    noindex={true}
+                />
+                <div className={styles.error}>
+                    <h1>Заказ не найден</h1>
+                    <p>Заказ с номером {orderNumber} не найден или у вас нет доступа к нему.</p>
+                    <Link to="/orders" className={styles.backLink}>← Вернуться к списку заказов</Link>
                 </div>
-                <div className={styles.loader}>Загрузка заказа...</div>
             </div>
         );
     }
 
-    if (errorOrder) {
-        return (
-            <div className="main__container">
-                <div className="mb-10">
-                    <Link to="/orders">← Назад к списку заказов</Link>
-                </div>
-                <div className={styles.error}>Ошибка: {errorOrder}</div>
-            </div>
-        );
-    }
-
-    if (!currentOrder) {
-        return (
-            <div className="main__container">
-                <div className="mb-10">
-                    <Link to="/orders">← Назад к списку заказов</Link>
-                </div>
-                <h1 className={styles.title}>Заказ</h1>
-                <p>Заказ не найден.</p>
-            </div>
-        );
-    }
+    const breadcrumbs = [
+        {label: 'Главная', path: '/'},
+        {label: 'Заказы', path: '/orders'},
+        {label: `Заказ ${currentOrder.orderNumber}`, path: ''}
+    ];
 
     return (
-        <div className="main__container">
-            <div className="mb-10">
-                <Link to="/orders">← Назад к списку заказов</Link>
-            </div>
-            <OrderDetails order={currentOrder}/>
+        <div className="main__container p-20">
+            <SEO
+                title={`Заказ ${currentOrder.orderNumber}`}
+                description={`Детальная информация о заказе ${currentOrder.orderNumber}`}
+            />
+            <Breadcrumbs items={breadcrumbs} isLoading={false}/>
+            <OrderDetails order={currentOrder} handlePayment={handlePayment}/>
         </div>
     );
 };
-

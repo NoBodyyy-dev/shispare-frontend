@@ -3,10 +3,13 @@ import {useSocket} from "../../context/SocketContext";
 import {IMessage} from "../../store/interfaces/socket.interface";
 import {useAuth} from "../../context/AuthContext";
 import {useLocaleTime} from "../../hooks/util.hook.ts";
+import {ConfirmModal} from "../../lib/modal/ConfirmModal.tsx";
 import styles from "./chat.module.sass";
-import {IoMdInformationCircleOutline} from "react-icons/io";
+import {GoPencil} from "react-icons/go";
+import {MdContentCopy, MdOutlineDeleteOutline} from "react-icons/md";
+import {CiCircleInfo} from "react-icons/ci";
 import {BsReply} from "react-icons/bs";
-import {MdContentCopy, MdDeleteOutline, MdOutlineModeEdit} from "react-icons/md";
+import {IoMdInformationCircleOutline} from "react-icons/io";
 
 interface Props {
     msg: IMessage;
@@ -14,16 +17,19 @@ interface Props {
     onReply?: (msg: IMessage) => void;
     scrollToMessage: (id: string, isReply: boolean) => void;
     registerRef: (el: HTMLDivElement | null) => void;
+    openMenuMessageId: string | null;
+    setOpenMenuMessageId: (id: string | null) => void;
 }
 
-export const Message: React.FC<Props> = ({msg, onEdit, onReply, scrollToMessage, registerRef}) => {
+export const Message: React.FC<Props> = ({msg, onEdit, onReply, scrollToMessage, registerRef, openMenuMessageId, setOpenMenuMessageId}) => {
     const {markSeen, deleteMessage} = useSocket();
     const {user} = useAuth();
     const ref = useRef<HTMLDivElement | null>(null);
 
-    const [menuVisible, setMenuVisible] = useState(false);
+    const menuVisible = openMenuMessageId === msg._id;
     const [menuPos, setMenuPos] = useState<{ x: number; y: number } | null>(null);
     const [showInfo, setShowInfo] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
     useEffect(() => {
         const el = ref.current;
@@ -50,79 +56,109 @@ export const Message: React.FC<Props> = ({msg, onEdit, onReply, scrollToMessage,
 
     const handleContextMenu = (e: React.MouseEvent) => {
         e.preventDefault();
-        const viewportWidth = window.innerWidth;
-        const viewportHeight = window.innerHeight;
-        const menuWidth = 180; // примерная ширина меню
-        const menuHeight = 250; // примерная высота меню (с учетом всех пунктов)
+        e.stopPropagation();
+        const x = e.clientX;
+        const y = e.clientY;
         
-        let x = e.clientX;
-        let y = e.clientY;
+        // Получаем размеры окна
+        const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
         
-        // Проверяем, не выходит ли меню за правую границу
-        if (x + menuWidth > viewportWidth) {
-            x = viewportWidth - menuWidth - 10;
+        // Примерные размеры меню (будут скорректированы после рендера)
+        const menuWidth = 200;
+        const menuHeight = 250;
+        const padding = 10;
+        
+        // Корректируем позицию если меню выходит за границы
+        let adjustedX = x;
+        let adjustedY = y;
+        
+        // Проверка по горизонтали
+        if (x + menuWidth + padding > windowWidth) {
+            adjustedX = windowWidth - menuWidth - padding;
+        }
+        if (adjustedX < padding) {
+            adjustedX = padding;
         }
         
-        // Проверяем, не выходит ли меню за нижнюю границу
-        if (y + menuHeight > viewportHeight) {
-            y = viewportHeight - menuHeight - 10;
+        // Проверка по вертикали
+        if (y + menuHeight + padding > windowHeight) {
+            adjustedY = windowHeight - menuHeight - padding;
+        }
+        if (adjustedY < padding) {
+            adjustedY = padding;
         }
         
-        // Проверяем, не выходит ли меню за левую границу
-        if (x < 10) {
-            x = 10;
-        }
-        
-        // Проверяем, не выходит ли меню за верхнюю границу
-        if (y < 10) {
-            y = 10;
-        }
-        
-        setMenuPos({x, y});
-        setMenuVisible(true);
+        setMenuPos({x: adjustedX, y: adjustedY});
+        setOpenMenuMessageId(msg._id);
     };
 
     const handleCopy = () => {
         navigator.clipboard.writeText(msg.content || "");
-        setMenuVisible(false);
+        setOpenMenuMessageId(null);
     };
 
     const handleEdit = () => {
         onEdit?.(msg);
-        setMenuVisible(false);
+        setOpenMenuMessageId(null);
     };
 
     const handleDelete = () => {
-        if (!confirm('Удалить сообщение?')) {
-            setMenuVisible(false);
-            return;
-        }
+        setShowDeleteConfirm(true);
+        setOpenMenuMessageId(null);
+    }
+
+    const handleDeleteConfirm = () => {
         deleteMessage?.(msg._id);
-        setMenuVisible(false);
+        setShowDeleteConfirm(false);
     }
 
     const handleReply = () => {
         onReply?.(msg);
-        setMenuVisible(false);
+        setOpenMenuMessageId(null);
     };
 
     const handleInfo = () => {
         setShowInfo(true);
-        setMenuVisible(false);
+        setOpenMenuMessageId(null);
     };
 
     const formatedTime: string = useLocaleTime(msg.createdAt);
     const isOwner: boolean = user!._id === msg.senderId._id;
 
-    useEffect(() => {
-        const close = () => setMenuVisible(false);
-        window.addEventListener("click", close);
-        return () => window.removeEventListener("click", close);
-    }, []);
+    const decodeFilename = (filename: string): string => {
+        try {
+            return decodeURIComponent(filename);
+        } catch {
+            return filename;
+        }
+    };
 
     useEffect(() => {
-        console.log(msg)
-    }, []);
+        if (!menuVisible) return;
+        
+        const close = (e: MouseEvent) => {
+            // Закрываем меню при клике вне его
+            const target = e.target as HTMLElement;
+            const menuElement = document.querySelector(`.${styles.contextMenu}`);
+            if (menuElement && !menuElement.contains(target)) {
+                setOpenMenuMessageId(null);
+            }
+        };
+        
+        // Небольшая задержка, чтобы не закрыть меню сразу после открытия
+        const timeoutId = setTimeout(() => {
+            window.addEventListener("click", close);
+            window.addEventListener("contextmenu", close);
+        }, 100);
+        
+        return () => {
+            clearTimeout(timeoutId);
+            window.removeEventListener("click", close);
+            window.removeEventListener("contextmenu", close);
+        };
+    }, [menuVisible, setOpenMenuMessageId]);
+
 
     return (
         <div className={`${styles.messageBlock} ${isOwner ? styles.owner : ""}`}>
@@ -149,38 +185,22 @@ export const Message: React.FC<Props> = ({msg, onEdit, onReply, scrollToMessage,
                 {msg.attachments && msg.attachments.length > 0 && (
                     <div className={styles.attachments}>
                         {msg.attachments.map((attachment, index) => {
-                            // Функция для декодирования имени файла с кириллицей
-                            const decodeFilename = (filename: string): string => {
-                                try {
-                                    if (/[^\x00-\x7F]/.test(filename)) {
-                                        return filename;
-                                    }
-                                    try {
-                                        const decoded = decodeURIComponent(escape(filename));
-                                        if (decoded !== filename && /[\u0400-\u04FF]/.test(decoded)) {
-                                            return decoded;
-                                        }
-                                    } catch (e) {
-                                        // Игнорируем ошибки декодирования
-                                    }
-                                } catch (e) {
-                                    // Игнорируем ошибки
-                                }
-                                return filename;
-                            };
-                            const decodedFilename = decodeFilename(attachment.filename);
-                            
+                            const decodedFilename = decodeFilename(attachment.filename || '');
                             return (
                                 <div key={index} className={styles.attachment}>
                                     {attachment.type === 'image' ? (
-                                        <a href={attachment.url} target="_blank" rel="noopener noreferrer">
-                                            <img src={attachment.url} alt={decodedFilename} className={styles.attachmentImage} />
-                                        </a>
+                                        <img
+                                            src={attachment.url}
+                                            alt={decodedFilename}
+                                            className={styles.attachmentImage}
+                                            onClick={() => window.open(attachment.url, '_blank')}
+                                        />
                                     ) : attachment.type === 'video' ? (
-                                        <video controls className={styles.attachmentVideo}>
-                                            <source src={attachment.url} />
-                                            Ваш браузер не поддерживает видео.
-                                        </video>
+                                        <video
+                                            src={attachment.url}
+                                            controls
+                                            className={styles.attachmentVideo}
+                                        />
                                     ) : (
                                         <a
                                             href={attachment.url}
@@ -209,11 +229,13 @@ export const Message: React.FC<Props> = ({msg, onEdit, onReply, scrollToMessage,
                 <ul
                     className={styles.contextMenu}
                     style={{top: menuPos.y, left: menuPos.x}}
+                    onClick={(e) => e.stopPropagation()}
                 >
                     <li onClick={handleCopy}><MdContentCopy /> Копировать</li>
                     {user?._id === msg.senderId._id && <>
-                        <li onClick={handleEdit}><MdOutlineModeEdit /> Изменить</li>
-                        <li onClick={handleDelete}><MdDeleteOutline /> Удалить</li>
+                        <li onClick={handleEdit}><GoPencil />️ Изменить</li>
+                        <li onClick={handleDelete}>
+                            <MdOutlineDeleteOutline /> Удалить</li>
                     </>}
                     <li onClick={handleReply}><BsReply /> Ответить</li>
                     <li onClick={handleInfo}><IoMdInformationCircleOutline /> Инфо о прочтении</li>
@@ -233,6 +255,16 @@ export const Message: React.FC<Props> = ({msg, onEdit, onReply, scrollToMessage,
                     </div>
                 </div>
             )}
+            <ConfirmModal
+                isOpen={showDeleteConfirm}
+                onClose={() => setShowDeleteConfirm(false)}
+                onConfirm={handleDeleteConfirm}
+                title="Удаление сообщения"
+                message="Вы уверены, что хотите удалить это сообщение?"
+                confirmText="Удалить"
+                cancelText="Отмена"
+                confirmButtonStyle="danger"
+            />
         </div>
     );
 };

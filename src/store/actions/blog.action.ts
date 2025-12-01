@@ -27,7 +27,7 @@ export const getCurrentPostFunc = createAsyncThunk(
 
 export const createPostFunc = createAsyncThunk(
     "/blog/createPost",
-    async (payload: { title: string; content: string; image: FileList }, thunkAPI) => {
+    async (payload: { title: string; content: string; image: FileList }, { rejectWithValue }) => {
         try {
             const formData = new FormData();
             formData.append("title", payload.title);
@@ -36,17 +36,40 @@ export const createPostFunc = createAsyncThunk(
                 formData.append("image", payload.image[0]);
             }
 
-            const response = await api.post("/blog/create", formData, {
+            const response = await api.post("/admin/blog/create", formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
                 },
             });
 
-            if (response.status !== 200) return thunkAPI.rejectWithValue(response.data);
+            if (response.status !== 200 && response.status !== 201) return rejectWithValue(response.data);
             return response.data;
-        } catch (e) {
-            return thunkAPI.rejectWithValue(e);
+        } catch (e: any) {
+            const errorData = e.response?.data || e.response || {};
+            const errorPayload: any = {
+                message: errorData.message || e.message || "Ошибка при создании поста",
+                errors: {}
+            };
+            
+            if (Array.isArray(errorData.errors)) {
+                errorData.errors.forEach((err: any) => {
+                    const field = err.param || err.field || 'general';
+                    const message = err.msg || err.message || err;
+                    if (!errorPayload.errors[field]) {
+                        errorPayload.errors[field] = [];
+                    }
+                    if (Array.isArray(errorPayload.errors[field])) {
+                        errorPayload.errors[field].push(message);
+                    } else {
+                        errorPayload.errors[field] = [message];
+                    }
+                });
+            } else if (errorData.errors && typeof errorData.errors === 'object') {
+                errorPayload.errors = errorData.errors;
+            }
+            
+            return rejectWithValue(errorPayload);
         }
     }
 );
@@ -60,7 +83,7 @@ export const updatePostFunc = createAsyncThunk(
             if (payload.content) formData.append("content", payload.content);
             if (payload.image && payload.image[0]) formData.append("image", payload.image[0]);
 
-            const response = await api.post(`/blog/update/${payload.id}`, formData, {
+            const response = await api.post(`/admin/blog/update/${payload.id}`, formData, {
                 headers: {
                     "Content-Type": "multipart/form-data",
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -79,16 +102,16 @@ export const deletePostFunc = createAsyncThunk(
     "/blog/deletePost",
     async (id: string, thunkAPI) => {
         try {
-            const response = await api.delete(`/blog/delete/${id}`, {
+            const response = await api.delete(`/admin/blog/delete/${id}`, {
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem("token")}`,
                 },
             });
 
             if (response.status !== 200) return thunkAPI.rejectWithValue(response.data);
-            return response.data;
-        } catch (e) {
-            return thunkAPI.rejectWithValue(e);
+            return { post: { _id: id, ...response.data } };
+        } catch (e: any) {
+            return thunkAPI.rejectWithValue(e.response?.data || { message: "Ошибка при удалении поста" });
         }
     }
 );

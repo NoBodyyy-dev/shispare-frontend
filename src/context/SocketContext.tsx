@@ -14,6 +14,21 @@ import {addMessage} from "../store/slices/push.slice.ts";
 import {UserInterface} from "../store/interfaces/user.interface.ts";
 import {IOrder} from "../store/interfaces/order.interface.ts";
 
+// Функция для получения текста статуса заказа на русском
+const getOrderStatusText = (status: string): string => {
+    const statusMap: Record<string, string> = {
+        'waiting_for_payment': 'Ожидание оплаты',
+        'pending': 'В обработке',
+        'processing': 'Обрабатывается',
+        'confirmed': 'Подтвержден',
+        'shipped': 'Отправлен',
+        'delivered': 'Доставлен',
+        'cancelled': 'Отменен',
+        'refunded': 'Возвращен'
+    };
+    return statusMap[status] || status;
+};
+
 const SocketContext = createContext<SocketContextType | null>(null);
 
 export const SocketProvider = ({children}: { children: ReactNode }) => {
@@ -84,11 +99,30 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
             console.log(res);
             if (res.success) {
                 setOrders(prev => [...prev, res.order]);
+                // Уведомление для администратора при новом заказе
+                dispatch(addMessage({
+                    text: `Новый заказ #${res.order.orderNumber}`,
+                    type: 'info'
+                }));
             }
         };
 
         const handleAdminOrderUpdated = (order: IOrder) => {
             setOrders(prev => prev.map(o => o._id === order._id ? order : o));
+            // Уведомление для администратора при изменении статуса заказа
+            dispatch(addMessage({
+                text: `Статус заказа #${order.orderNumber} изменен на: ${getOrderStatusText(order.status)}`,
+                type: 'info'
+            }));
+        };
+
+        const handleOrderUpdated = (data: { orderId: string; status: string }) => {
+            // Уведомление для пользователя при изменении статуса его заказа
+            const statusText = getOrderStatusText(data.status);
+            dispatch(addMessage({
+                text: `Статус вашего заказа изменен на: ${statusText}`,
+                type: 'info'
+            }));
         };
 
         const handleChatNewMessage = (msg: IMessage) => {
@@ -99,8 +133,21 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
                 }
                 return [...prev, msg];
             });
+            // Уведомление только если это не наше сообщение
             if (msg.senderId._id !== user?._id) {
-                dispatch(addMessage(msg.content!));
+                // Для администраторов показываем уведомление о новом сообщении в чате
+                if (user?.role === 'Admin') {
+                    const senderName = typeof msg.senderId === 'object' && msg.senderId?.fullName 
+                        ? msg.senderId.fullName 
+                        : 'Пользователь';
+                    dispatch(addMessage({
+                        text: `Новое сообщение от ${senderName}: ${msg.content || 'файл'}`,
+                        type: 'info'
+                    }));
+                } else {
+                    // Для обычных пользователей просто показываем сообщение
+                    dispatch(addMessage(msg.content!));
+                }
             }
         };
 
@@ -117,7 +164,16 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
         };
 
         const handleChatEditMessage = (msg: IMessage) => {
-            setChatMessages(prev => prev.map(m => m._id === msg._id ? {...msg, edited: true} : m));
+            setChatMessages(prev => prev.map(m => {
+                if (m._id === msg._id) {
+                    return {
+                        ...msg,
+                        edited: true,
+                        updatedAt: msg.updatedAt || new Date()
+                    };
+                }
+                return m;
+            }));
         };
 
         const handleChatDeleteMessage = ({messageId}: { messageId: string }) => {
@@ -153,6 +209,9 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
         newSocket.on("admin:getOrders", handleAdminGetOrders);
         newSocket.on("admin:newOrder", handleAdminNewOrder);
         newSocket.on('admin:orderUpdated', handleAdminOrderUpdated);
+        
+        // Обработчик изменения статуса заказа для пользователей
+        newSocket.on('order-updated', handleOrderUpdated);
 
         newSocket.emit("chat:get", (res: { success: boolean; messages?: IMessage[]; message?: string }) => {
             if (res.success && res.messages) {
@@ -178,6 +237,7 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
             newSocket.off("admin:getOrders", handleAdminGetOrders);
             newSocket.off("admin:newOrder", handleAdminNewOrder);
             newSocket.off('admin:orderUpdated', handleAdminOrderUpdated);
+            newSocket.off('order-updated', handleOrderUpdated);
             newSocket.off("chat:newMessage", handleChatNewMessage);
             newSocket.off('chat:typing', handleChatTyping);
             newSocket.off('chat:editMessage', handleChatEditMessage);
@@ -225,22 +285,56 @@ export const SocketProvider = ({children}: { children: ReactNode }) => {
     };
 
     const sendMessage = (content: string, attachments?: Attachments[], replyTo?: string) => {
-        console.log(">>>", socket);
-        socket?.emit('chat:sendMessage', {content, attachments, replyTo}, (res: any) => {
-            console.log("Test")
-            if (!res.success) console.error(res.message);
+        if (!socket) {
+            dispatch(addMessage({
+                text: "Соединение с сервером потеряно. Переподключение...",
+                type: "error"
+            }));
+            return;
+        }
+        
+        socket.emit('chat:sendMessage', {content, attachments, replyTo}, (res: any) => {
+            if (!res.success) {
+                console.error(res.message);
+                dispatch(addMessage({
+                    text: res.message || "Ошибка при отправке сообщения",
+                    type: "error"
+                }));
+            }
         });
     };
 
     const editMessage = (messageId: string, content?: string, attachments?: Attachments[]) => {
-        socket?.emit('chat:editMessage', {messageId, newContent: content, newAttachments: attachments}, (res: any) => {
-            if (!res.success) console.error(res.message);
+        if (!user?._id) return;
+        socket?.emit('chat:editMessage', {
+            messageId,
+            editorId: user._id,
+            newContent: content,
+            newAttachments: attachments
+        }, (res: any) => {
+            if (!res.success) {
+                console.error(res.message);
+                dispatch(addMessage({
+                    text: res.message || "Ошибка при редактировании сообщения",
+                    type: "error"
+                }));
+            }
         });
     };
 
     const deleteMessage = (messageId: string) => {
-        socket?.emit('chat:deleteMessage', {messageId}, (res: any) => {
-            if (!res.success) console.error(res.message);
+        if (!user?._id) return;
+        socket?.emit('chat:deleteMessage', {
+            messageId,
+            deleterId: user._id
+        }, (res: any) => {
+            if (!res.success) {
+                console.error(res.message);
+                dispatch(addMessage({
+                    text: res.message || "Ошибка при удалении сообщения",
+                    type: "error"
+                }));
+            }
         });
     };
 

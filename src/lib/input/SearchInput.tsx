@@ -1,15 +1,14 @@
-// SearchInput.tsx
 import {useState, useEffect, useRef} from 'react'
 import {useNavigate} from "react-router-dom"
 import {MainInput} from "./MainInput.tsx";
 import {Button} from "../buttons/Button.tsx";
-import styles from "./input.module.sass"
 import {useDebounce} from "../../hooks/util.hook.ts";
-import api from "../../store/api.ts";
 import {FaSearch} from "react-icons/fa";
 import {ProductSuggestions} from "../products/ProductSuggestion.tsx";
 import {CategoryData} from "../../store/interfaces/category.interface.ts";
-import {IProductVariant} from "../../store/interfaces/product.interface.ts";
+import {IVariant} from "../../store/interfaces/product.interface.ts";
+import styles from "./input.module.sass"
+import api from "../../store/api.ts";
 
 interface SearchSuggestion {
     _id: string;
@@ -17,7 +16,7 @@ interface SearchSuggestion {
     slug: string;
     images: string[];
     category: CategoryData | null;
-    variants: IProductVariant[];
+    variants: IVariant[];
     variantIndex: number;
 }
 
@@ -40,10 +39,10 @@ export const SearchInput = () => {
             setIsLoading(true)
             try {
                 const {data} = await api.get(
-                    `/product/search/suggestions?q=${encodeURIComponent(debouncedQuery)}&limit=5`
+                    `/product/search/suggestions?q=${encodeURIComponent(debouncedQuery)}&limit=4`
                 )
                 if (data.success && data.suggestions) {
-                    setSuggestions(data.suggestions)
+                    setSuggestions(data.suggestions.slice(0, 4))
                 } else {
                     setSuggestions([])
                 }
@@ -94,15 +93,11 @@ export const SearchInput = () => {
                 {showSuggestions && query.length >= 2 && (
                     <div className={styles.suggestionsDropdown}>
                         {isLoading && (
-                            <div className={styles.suggestionItem}>
-                                <div className={styles.loading}>Загрузка...</div>
-                            </div>
+                            <div className={styles.loading}>Загрузка...</div>
                         )}
 
                         {!isLoading && suggestions.length === 0 && (
-                            <div className={styles.suggestionItem}>
-                                <div className={styles.noResults}>Ничего не найдено</div>
-                            </div>
+                            <div className={styles.noResults}>Ничего не найдено</div>
                         )}
 
                         {!isLoading && suggestions.length > 0 && (
@@ -114,23 +109,15 @@ export const SearchInput = () => {
                                         onSelect={() => setShowSuggestions(false)}
                                     />
                                 ))}
-                                <div className={styles.suggestionFooter}>
-                                    <Button
-                                        onClick={() => {
-                                            setShowSuggestions(false);
-                                            handleSearch();
-                                        }}
-                                        className={styles.seeAllResults}
-                                    >
-                                        Посмотреть все результаты
-                                    </Button>
-                                </div>
                             </>
                         )}
                     </div>
                 )}
             </div>
-            <Button onClick={handleSearch}>
+            <Button onClick={() => {
+                handleSearch();
+                setShowSuggestions(false);
+            }}>
                 <FaSearch/>
             </Button>
         </div>

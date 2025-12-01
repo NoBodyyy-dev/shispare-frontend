@@ -17,6 +17,8 @@ const userPaths: NavPath[] = [
     {name: "О компании", path: "/about"},
     {name: "Блог", path: "/blog"},
     {name: "Оплата и доставка", path: "/delivery-payment"},
+    {name: "Решения для дома", path: "/solution"},
+    {name: "Калькулятор", path: "/calculator"},
     {name: "Контакты", path: "/contacts"},
 ];
 
@@ -56,7 +58,7 @@ export const Header = memo(() => {
                     </div>
                 </div>
                 <nav>
-                    <ul className="flex gap-10">
+                    <ul className="flex gap-15">
                         {userPaths.map(({name, path}) => (
                             <li key={path} className="">
                                 <Link to={path}>{name}</Link>

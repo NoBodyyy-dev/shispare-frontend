@@ -79,21 +79,225 @@
     clear: both
 
 
+// Стили для формы создания поста
+.formContainer
+  width: 100%
+  max-width: 700px
+  padding: 0
+
+.title
+  font-size: 24px
+  font-weight: 600
+  color: #333
+  margin: 0 0 24px 0
+  text-align: left
+
+.form
+  display: flex
+  flex-direction: column
+  gap: 20px
+
+  .full-width
+    margin-top: 8px
+    padding: 14px 24px
+    font-size: 16px
+    font-weight: 600
+    border-radius: 8px
+    transition: all 0.3s ease
+
+    &:hover:not(:disabled)
+      transform: translateY(-2px)
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15)
+
+.formActions
+  display: flex
+  flex-direction: column
+  gap: 16px
+  margin-top: 8px
+
+.deleteButton
+  width: 100%
+  padding: 12px 24px
+  font-size: 16px
+  font-weight: 600
+  border-radius: 8px
+  background: v.$mainRed
+  color: white
+  border: none
+  cursor: pointer
+  transition: all 0.3s ease
+
+  &:hover:not(:disabled)
+    background: darken(v.$mainRed, 10%)
+    transform: translateY(-2px)
+    box-shadow: 0 4px 12px rgba(v.$mainRed, 0.3)
+
+  &:disabled
+    background: #ccc
+    cursor: not-allowed
+    opacity: 0.7
+
+.submitButtons
+  display: flex
+  gap: 12px
+  width: 100%
+
+.cancelButton
+  flex: 1
+  padding: 14px 24px
+  font-size: 16px
+  font-weight: 600
+  border-radius: 8px
+  background: #f5f5f5
+  color: #333
+  border: 1px solid #ddd
+  cursor: pointer
+  transition: all 0.3s ease
+
+  &:hover:not(:disabled)
+    background: #e8e8e8
+    border-color: #bbb
+    transform: translateY(-2px)
+
+  &:disabled
+    background: #f5f5f5
+    cursor: not-allowed
+    opacity: 0.7
+
+.submitButton
+  flex: 1
+  padding: 14px 24px
+  font-size: 16px
+  font-weight: 600
+  border-radius: 8px
+  transition: all 0.3s ease
+
+  &:hover:not(:disabled)
+    transform: translateY(-2px)
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15)
+
+.formGroup
+  display: flex
+  flex-direction: column
+  gap: 8px
+
+.label
+  font-size: 14px
+  font-weight: 500
+  color: #555
+  text-align: left
+
+.fileInputLabel
+  position: relative
+  display: block
+  cursor: pointer
+
+  &:hover .fileInputText
+    border-color: v.$mainBlue
+    background: #f0f7ff
+    color: v.$mainBlue
+
+.fileInput
+  position: absolute
+  opacity: 0
+  width: 0
+  height: 0
+
+  &:focus + .fileInputText
+    outline: none
+    border-color: v.$mainBlue
+    background: #fff
+    box-shadow: 0 0 0 3px rgba(v.$mainBlue, 0.1)
+
+.fileInputText
+  display: block
+  padding: 14px 16px
+  border: 2px dashed #ddd
+  border-radius: 8px
+  background: #f9f9f9
+  font-size: 14px
+  color: #666
+  text-align: center
+  transition: all 0.3s ease
+  cursor: pointer
+
+.preview
+  margin-top: 12px
+  border-radius: 8px
+  overflow: hidden
+  border: 1px solid #e0e0e0
+  background: #f5f5f5
+  display: flex
+  align-items: center
+  justify-content: center
+  min-height: 200px
+  max-height: 400px
+
+.previewImage
+  width: 100%
+  height: auto
+  max-height: 400px
+  object-fit: contain
+  display: block
+
+.errorText
+  color: v.$mainRed
+  font-size: 13px
+  margin-top: 8px
+  line-height: 1.4
+  padding: 8px 12px
+  background: #fff5f5
+  border-left: 3px solid v.$mainRed
+  border-radius: 4px
+
+  div
+    margin-bottom: 4px
+
+    &:last-child
+      margin-bottom: 0
+
 @media (max-width: 768px)
   .container
     padding: 15px
 
-
   .article
     padding: 20px
 
-
   .title
     font-size: 1.8rem
-
 
   .text
     font-size: 1rem
 
     p:first-child::first-letter
       font-size: 2.8rem
+
+  .formContainer
+    max-width: 100%
+
+  .title
+    font-size: 20px
+    margin-bottom: 20px
+
+  .form
+    gap: 16px
+
+  .preview
+    min-height: 150px
+    max-height: 300px
+
+  .previewImage
+    max-height: 300px
+
+  .formActions
+    gap: 12px
+
+  .submitButtons
+    flex-direction: column
+    gap: 8px
+
+  .deleteButton,
+  .cancelButton,
+  .submitButton
+    width: 100%
+    flex: none
